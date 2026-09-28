@@ -16,6 +16,8 @@ const computerId = process.env.CC_COMPUTER_ID;
 const district = process.env.CC_DISTRICT;
 const runId = process.env.CC_RUN_ID;
 const task = process.env.CC_TASK;
+const runtimeBackend = process.env.CC_RUNTIME_BACKEND || 'local-process';
+const runtimeHostId = process.env.CC_RUNTIME_HOST_ID || process.env.HOSTNAME || null;
 const computerRoot = path.resolve(process.env.CC_COMPUTER_ROOT);
 const repoRoot = path.resolve(process.env.CC_REPO_ROOT);
 const workspace = path.join(computerRoot,'workspace');
@@ -119,6 +121,8 @@ try {
     home:process.env.HOME || process.env.USERPROFILE || null,
     tmp:process.env.TMPDIR || process.env.TMP || null,
     task,
+    runtime_backend:runtimeBackend,
+    runtime_host_id:runtimeHostId,
     result
   };
   fs.writeFileSync(artifactPath,JSON.stringify(artifact,null,2)+'\n');
@@ -141,6 +145,8 @@ const receipt={
   started_at:startedAt,
   ended_at:new Date().toISOString(),
   task_type:task,
+  runtime_backend:runtimeBackend,
+  runtime_host_id:runtimeHostId,
   status,
   workspace:path.relative(computerRoot,workspace),
   evidence,
