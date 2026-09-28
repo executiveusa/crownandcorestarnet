@@ -1,0 +1,7 @@
+{
+  "source":"communications-fixture",
+  "read_at":"2026-09-28T00:00:00Z",
+  "provenance":"synthetic_fixture",
+  "monthly_missed_calls":12,
+  "median_lead_response_minutes":48
+}
