@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { resolveInside } from './lib/jail.mjs';
+import { runModel } from './model/index.mjs';
 
 const required = ['CC_AGENT_ID','CC_COMPUTER_ID','CC_DISTRICT','CC_RUN_ID','CC_COMPUTER_ROOT','CC_REPO_ROOT','CC_TASK'];
 for (const key of required) {
@@ -104,6 +105,28 @@ try {
   try { resolveInside(workspace,'../escape.txt'); } catch { traversalBlocked=true; }
   if (!traversalBlocked) throw new Error('workspace traversal guard failed');
   evidence.push({type:'isolation_probe',passed:true});
+
+  const promptPath=path.join(repoRoot,'agents','workers',agentId,'PROMPT.md');
+  if(!fs.existsSync(promptPath)) throw new Error('agent prompt contract missing');
+  const systemPrompt=fs.readFileSync(promptPath,'utf8');
+  const modelContext=[
+    readRepoText('client','crown-and-core','FACTS.md'),
+    readRepoText('client','crown-and-core','PUBLIC_TRUTH.md'),
+    readRepoText('HEART_AND_SOUL.md')
+  ].join('\n\n---\n\n');
+  const modelResult=await runModel({
+    agent:{id:agentId,district,computer_id:computerId},
+    task,
+    system:systemPrompt,
+    context:modelContext
+  });
+  evidence.push({
+    type:'model_run',
+    provider:modelResult.provider,
+    model:modelResult.model,
+    external:modelResult.external,
+    response_sha256:crypto.createHash('sha256').update(String(modelResult.content||'')).digest('hex')
+  });
 
   result=executeDomainTask();
 
