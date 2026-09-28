@@ -2,7 +2,6 @@
   "version": 1,
   "backend": "local-process",
   "future_backends": [
-    "docker",
     "firecracker",
     "cloud-computer"
   ],
@@ -109,5 +108,8 @@
       "district": "middleton",
       "workspace": ".runtime/computers/cc-pc-middleton-2/workspace"
     }
-  ]
+  ],
+  "proof_backend": "docker",
+  "development_backend": "local-process",
+  "isolation_authority": "runtime:prove:docker"
 }
