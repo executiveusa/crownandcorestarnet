@@ -45,8 +45,7 @@ function executeDomainTask(){
       const all=[a.manager,...a.agents];
       return {agent_count:all.length,computer_count:c.computers.length,one_to_one:new Set(all.map(x=>x.computer_id)).size===all.length};
     }
-    case 'audit-booking-path':
-      return {booking_path_verified:state().metrics.booking_path_verified,classification:state().metrics.booking_path_verified===null?'UNKNOWN':'MEASURED',mutation:false};
+    case 'audit-booking-path': {      const pub=readRepoJson('data','evidence','public-web-2026-09-28.json');      const gapIds=(pub.observed_gaps||[]).map(x=>x.id);      return {        booking_path_verified:state().metrics.booking_path_verified,        booking_cta_present:pub.verified_public_facts.booking_cta_present,        booking_destination_verified:!gapIds.includes('booking-destination-unverified'),        public_conversion_gaps:gapIds.filter(x=>['hours-conflict','about-placeholders','event-price-placeholder','faq-content-mismatch','booking-destination-unverified'].includes(x)),        mutation:false      };    }
     case 'draft-service-funnel':
       return {artifact_type:'funnel_draft',mobile_first:true,direct_booking_path:true,live_change:false,approval_required:true};
     case 'analyze-dormant-segment':
@@ -58,8 +57,7 @@ function executeDomainTask(){
     }
     case 'design-feedback-flow':
       return {private_feedback:true,same_treatment_all_sentiment:true,optional_honest_review:true,reward_independent_of_review:true};
-    case 'audit-reputation-state':
-      return {google_review_flow_active:state().metrics.google_review_flow_active,review_count:null,rule:'do not fabricate current review count'};
+    case 'audit-reputation-state': {      const pub=readRepoJson('data','evidence','public-web-2026-09-28.json');      return {        google_review_flow_active:state().metrics.google_review_flow_active,        public_listing_observation:pub.verified_public_facts.public_listing_observation,        rule:'Do not relabel a generic public listing observation as a platform-specific review count without platform verification.'      };    }
     case 'audit-response-latency':
       return {median_lead_response_minutes:state().metrics.median_lead_response_minutes,classification:state().metrics.median_lead_response_minutes===null?'UNKNOWN':'MEASURED'};
     case 'draft-no-show-recovery':
