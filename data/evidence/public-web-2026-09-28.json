@@ -67,7 +67,10 @@
       "review_count": 9,
       "source": "structured-local-business-result:Crown & Core Wellness Spa and Salon",
       "note": "Public listing observation only; do not relabel as a specific platform's review count without platform verification."
-    }
+    },
+    "booking_destination_verified": true,
+    "booking_service_catalog_verified": true,
+    "booking_completion_verified": false
   },
   "observed_gaps": [
     {
@@ -106,11 +109,12 @@
       "needs_professional_review": true
     },
     {
-      "id": "booking-destination-unverified",
+      "id": "booking-completion-unverified",
       "severity": "high",
       "category": "conversion",
-      "fact": "A BOOK APPOINTMENT CTA is publicly visible, but this evidence snapshot does not verify the complete booking destination or completion path.",
-      "needs_live_path_test": true
+      "fact": "The public BOOK APPOINTMENT CTA now verifies through to Crown & Core's Square service catalog. Final appointment completion was not tested.",
+      "needs_live_path_test": true,
+      "destination_verified": true
     }
   ],
   "unknowns": [

@@ -10,6 +10,8 @@ Captured from publicly accessible Crown & Core pages and local listing evidence 
 - https://crownandcore.com/
 - Public service areas: Wellness, Spa, Hair, Performance Therapy
 - Public booking CTA exists
+- Public booking CTA reaches Crown & Core's Square service catalog (verified 2026-09-28)
+- Full end-to-end booking completion has **not** been tested
 - Packages/memberships are mentioned
 - 24-hour cancellation language appears on the site
 
@@ -20,7 +22,7 @@ Captured from publicly accessible Crown & Core pages and local listing evidence 
 3. Event page contains an unfinished price placeholder.
 4. Homepage FAQ has a content mismatch in the HBOT answer.
 5. Health-treatment claims need professional review before amplification.
-6. Booking CTA destination/completion path still needs a live end-to-end test.
+6. Square booking destination/service catalog is verified. Final booking completion still needs an owner-approved test that does not create an unintended appointment.
 
 ## Not known from public evidence
 

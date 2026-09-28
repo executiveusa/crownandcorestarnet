@@ -23,11 +23,21 @@ const checks = [
     ].filter(Boolean).join(', ')
   },
   {
-    stage: 'BOOKING',
-    proximity: 9,
-    known: m.booking_path_verified !== null,
-    problem: m.booking_path_verified === false,
-    evidence: m.booking_path_verified === null ? '' : `booking_path_verified=${m.booking_path_verified}`
+    stage: 'BOOKING_DESTINATION',
+    proximity: 8,
+    known: m.booking_destination_verified !== null,
+    problem: m.booking_destination_verified === false,
+    evidence: m.booking_destination_verified === null ? '' : `booking_destination_verified=${m.booking_destination_verified}`
+  },
+  {
+    stage: 'BOOKING_COMPLETION',
+    proximity: 10,
+    known: m.booking_completion_verified !== null,
+    problem: m.booking_completion_verified === false,
+    evidence: [
+      m.booking_service_catalog_verified === null ? null : `service_catalog_verified=${m.booking_service_catalog_verified}`,
+      m.booking_completion_verified === null ? null : `booking_completion_verified=${m.booking_completion_verified}`
+    ].filter(Boolean).join(', ')
   },
   {
     stage: 'RESPONSE',

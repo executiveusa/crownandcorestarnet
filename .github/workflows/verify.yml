@@ -47,3 +47,16 @@ jobs:
 
       - name: Run Manny proof mission on isolated Docker computers
         run: npm run runtime:mission:docker
+
+      - name: Upload machine-verifiable proof receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: crown-core-runtime-proof
+          if-no-files-found: warn
+          retention-days: 30
+          path: |
+            outbox/DOCKER-COMPUTER-PROOF.json
+            .runtime/missions/**/MISSION-RECEIPT.json
+            .runtime/missions/**/*.job.json
+            .runtime/computers/*/receipts/*.json

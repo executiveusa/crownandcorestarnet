@@ -1,7 +1,7 @@
 {
   "name": "crownandcore-operations",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.1.0",
   "type": "module",
   "scripts": {
     "system:check": "node workflows/system-check/index.mjs",
@@ -12,7 +12,7 @@
     "media:plan": "node workflows/media-engine/index.mjs",
     "report:monthly": "node workflows/monthly-report/index.mjs",
     "test": "node test/verify.mjs",
-    "verify": "npm run system:check && npm run middleton:validate && npm run runtime:validate && npm run runtime:prove && npm run runtime:mission && npm run data:readiness && npm run runtime:model:prove && npm run intake:prove && npm test",
+    "verify": "npm run system:check && npm run middleton:validate && npm run runtime:validate && npm run runtime:prove && npm run runtime:mission && npm run data:readiness && npm run runtime:model:prove && npm run intake:prove && npm run booking:proof && npm test",
     "runtime:validate": "node runtime/validate.mjs",
     "runtime:prove": "node runtime/supervisor.mjs",
     "runtime:mission": "node runtime/orchestrator.mjs --mission=runtime/missions/proof-all.json",
@@ -22,6 +22,7 @@
     "runtime:model:prove": "node runtime/model-smoke.mjs",
     "intake:prove": "node workflows/read-only-intake/index.mjs --mode=fixture",
     "square:read:smoke": "node integrations/live-square-smoke.mjs",
-    "runtime:mission:docker": "node runtime/orchestrator.mjs --backend=docker --mission=runtime/missions/proof-all.json"
+    "runtime:mission:docker": "node runtime/orchestrator.mjs --backend=docker --mission=runtime/missions/proof-all.json",
+    "booking:proof": "node test/booking-proof.mjs"
   }
 }
