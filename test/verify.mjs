@@ -22,6 +22,8 @@ run('system check',['workflows/system-check/index.mjs']);
 run('middleton validation',['workflows/middleton/validate.mjs']);
 run('gap audit',['workflows/gap-audit/index.mjs']);
 run('public baseline',['workflows/public-baseline/index.mjs']);
+run('data readiness test',['test/data-readiness.mjs']);
+run('model seam test',['test/model-smoke.mjs']);
 
 const approvedOut=path.join(out,'approved.json');
 run('approval allow',[
