@@ -37,6 +37,9 @@ const failures=[];
 const hosts=receipts.map(x=>x.runtime_host_id);
 if(new Set(hosts).size!==receipts.length) failures.push('container runtime host IDs are not unique');
 if(receipts.some(x=>x.runtime_backend!=='docker')) failures.push('one or more receipts did not identify docker backend');
+if(receipts.some(x=>!x.evidence?.some(e=>e.type==='scope_probe'&&e.passed))) failures.push('one or more receipts missing passed scope probe');
+if(receipts.some(x=>!x.scope_sha256)) failures.push('one or more receipts missing scope hash');
+if(receipts.some(x=>!(x.scope_file_count>0))) failures.push('one or more receipts has empty scoped input');
 
 for(const receipt of receipts){
   const v=verifyReceipt({receipt,repoRoot,agentsDoc,computersDoc,tasksDoc});
@@ -56,6 +59,11 @@ const summary={
   root_filesystem:'read-only',
   capabilities:'ALL dropped',
   no_new_privileges:true,
+  repository_mount:'DENIED',
+  runtime_code_mount:'READ_ONLY',
+  scoped_input_mount:'READ_ONLY',
+  writable_mount:'OWN_COMPUTER_ONLY',
+  scope_manifests_verified:receipts.every(x=>x.evidence?.some(e=>e.type==='scope_probe'&&e.passed)),
   status:failures.length?'FAILED':'VERIFIED',
   failures,
   receipts:receipts.map(x=>({

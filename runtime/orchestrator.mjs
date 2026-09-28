@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { launchLocalProcess } from './backends/local-process.mjs';
+import { launchDockerComputer } from './backends/docker.mjs';
 import { verifyReceipt } from './lib/receipt.mjs';
 
 const repoRoot=process.cwd();
@@ -15,6 +16,9 @@ const args=Object.fromEntries(process.argv.slice(2).map(x=>{
 }));
 const missionFile=args.mission || path.join(repoRoot,'runtime','missions','proof-all.json');
 const mission=JSON.parse(fs.readFileSync(missionFile,'utf8'));
+const backend=args.backend || mission.backend || 'local-process';
+if(!['local-process','docker'].includes(backend)) throw new Error(`unsupported mission backend: ${backend}`);
+const launchComputer=backend==='docker' ? launchDockerComputer : launchLocalProcess;
 
 const allAgents=[agentsDoc.manager,...agentsDoc.agents];
 const wanted=mission.agent_ids?.length?mission.agent_ids:allAgents.map(x=>x.id);
@@ -40,7 +44,7 @@ const runResults=await Promise.all(selected.map(async (x,index)=>{
   };
   fs.writeFileSync(path.join(jobsDir,`${runId}.job.json`),JSON.stringify(job,null,2)+'\n');
   try{
-    const receipt=await launchLocalProcess({repoRoot,agent:x.agent,computer:x.computer,task:x.task,runId});
+    const receipt=await launchComputer({repoRoot,agent:x.agent,computer:x.computer,task:x.task,runId});
     const verification=verifyReceipt({receipt,repoRoot,agentsDoc,computersDoc,tasksDoc});
     const final={...job,status:verification.verified?'VERIFIED':'FAILED_PROOF',ended_at:new Date().toISOString(),receipt,verification};
     fs.writeFileSync(path.join(jobsDir,`${runId}.job.json`),JSON.stringify(final,null,2)+'\n');
@@ -57,6 +61,7 @@ const summary={
   schema:'cc.mission.receipt.v1',
   mission_id:missionId,
   purpose:mission.purpose||null,
+  backend,
   started_at:startedAt,
   ended_at:new Date().toISOString(),
   requested_agents:wanted.length,

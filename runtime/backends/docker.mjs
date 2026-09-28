@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
+import { materializeAgentInput } from '../lib/materialize-input.mjs';
 
 function safeName(s){ return String(s).toLowerCase().replace(/[^a-z0-9_.-]+/g,'-').slice(0,50); }
 
@@ -10,7 +11,13 @@ export function launchDockerComputer({repoRoot,agent,computer,task,runId,image='
   const home=path.join(computerRoot,'home');
   const tmp=path.join(computerRoot,'tmp');
   const receipts=path.join(computerRoot,'receipts');
-  [computerRoot,workspace,home,tmp,receipts].forEach(p=>{ fs.mkdirSync(p,{recursive:true}); try{ fs.chmodSync(p,0o777); }catch{} });
+  [computerRoot,workspace,home,tmp,receipts].forEach(p=>{
+    fs.mkdirSync(p,{recursive:true});
+    try{ fs.chmodSync(p,0o777); }catch{}
+  });
+
+  const scoped=materializeAgentInput({repoRoot,computerRoot,agent});
+  try{ fs.chmodSync(scoped.bundleRoot,0o755); }catch{}
 
   const containerName=safeName(`cc-${agent.id}-${runId}`);
   const args=[
@@ -24,7 +31,8 @@ export function launchDockerComputer({repoRoot,agent,computer,task,runId,image='
     '--pids-limit','64',
     '--memory','256m',
     '--cpus','0.50',
-    '-v',`${repoRoot}:/repo:ro`,
+    '-v',`${repoRoot}/runtime:/runtime:ro`,
+    '-v',`${scoped.bundleRoot}:/input:ro`,
     '-v',`${computerRoot}:/computer:rw`,
     '-w','/computer/workspace',
     '-e',`HOME=/computer/home`,
@@ -37,12 +45,14 @@ export function launchDockerComputer({repoRoot,agent,computer,task,runId,image='
     '-e',`CC_DISTRICT=${agent.district}`,
     '-e',`CC_RUN_ID=${runId}`,
     '-e','CC_COMPUTER_ROOT=/computer',
-    '-e','CC_REPO_ROOT=/repo',
+    '-e','CC_REPO_ROOT=/input',
+    '-e','CC_SCOPE_MANIFEST=/input/SCOPE-MANIFEST.json',
+    '-e',`CC_SCOPE_SHA256=${scoped.sha256}`,
     '-e',`CC_TASK=${task}`,
     '-e','CC_RUNTIME_BACKEND=docker',
     '-e',`CC_RUNTIME_HOST_ID=${containerName}`,
     image,
-    'node','/repo/runtime/agent-worker.mjs'
+    'node','/runtime/agent-worker.mjs'
   ];
 
   return new Promise((resolve,reject)=>{
@@ -55,8 +65,17 @@ export function launchDockerComputer({repoRoot,agent,computer,task,runId,image='
       if(code!==0) return reject(new Error(`docker ${agent.id} exit ${code}: ${stderr||stdout}`));
       try{
         const receipt=JSON.parse(stdout.trim().split(/\r?\n/).at(-1));
-        resolve({...receipt,container_name:containerName,docker_cli_pid:child.pid,computer_root:path.relative(repoRoot,computerRoot)});
-      }catch(e){ reject(new Error(`${agent.id} invalid docker receipt: ${stdout}\n${stderr}`)); }
+        resolve({
+          ...receipt,
+          container_name:containerName,
+          docker_cli_pid:child.pid,
+          computer_root:path.relative(repoRoot,computerRoot),
+          scope_sha256:scoped.sha256,
+          scope_file_count:scoped.manifest.files.length
+        });
+      }catch(e){
+        reject(new Error(`${agent.id} invalid docker receipt: ${stdout}\n${stderr}`));
+      }
     });
   });
 }

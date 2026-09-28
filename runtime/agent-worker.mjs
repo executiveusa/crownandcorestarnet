@@ -96,6 +96,58 @@ function executeDomainTask(){
 
 const startedAt = new Date().toISOString();
 const evidence = [];
+
+if (runtimeBackend === 'docker') {
+  const manifestPath = process.env.CC_SCOPE_MANIFEST;
+  const expectedScopeSha = process.env.CC_SCOPE_SHA256;
+  if (!manifestPath || !expectedScopeSha) {
+    console.error(JSON.stringify({status:'FAILED',error:'docker scope manifest metadata missing'}));
+    process.exit(2);
+  }
+  const rawScope = fs.readFileSync(manifestPath);
+  const actualScopeSha = crypto.createHash('sha256').update(rawScope).digest('hex');
+  const scope = JSON.parse(rawScope.toString('utf8'));
+  if (actualScopeSha !== expectedScopeSha) {
+    console.error(JSON.stringify({status:'FAILED',error:'scope manifest hash mismatch'}));
+    process.exit(2);
+  }
+  if (scope.agent_id !== agentId || scope.district !== district) {
+    console.error(JSON.stringify({status:'FAILED',error:'scope manifest identity mismatch'}));
+    process.exit(2);
+  }
+  const foreignDistricts = (scope.files || [])
+    .map(x => String(x.path || ''))
+    .filter(x => x.startsWith('districts/'))
+    .map(x => x.split('/')[1])
+    .filter(x => x && x !== district && x !== 'middleton');
+
+  const districtsRoot = path.join(repoRoot, 'districts');
+  const physicalDistricts = fs.existsSync(districtsRoot)
+    ? fs.readdirSync(districtsRoot, { withFileTypes:true }).filter(x=>x.isDirectory()).map(x=>x.name)
+    : [];
+  const unauthorizedPhysicalDistricts = physicalDistricts.filter(x => x !== district && x !== 'middleton');
+  const wholeRepositoryVisible = fs.existsSync(path.join(repoRoot,'.git')) || fs.existsSync(path.join(repoRoot,'package.json'));
+
+  evidence.push({
+    type:'scope_probe',
+    passed:foreignDistricts.length===0 && unauthorizedPhysicalDistricts.length===0 && !wholeRepositoryVisible,
+    scope_sha256:actualScopeSha,
+    file_count:(scope.files || []).length,
+    explicit_paths:scope.explicit_paths || [],
+    physical_districts:physicalDistricts,
+    whole_repository_visible:wholeRepositoryVisible,
+    cross_district_policy_grants:[...new Set(
+      (scope.files || [])
+        .map(x => String(x.path || ''))
+        .filter(x => x.startsWith('districts/middleton/') && district !== 'middleton')
+    )]
+  });
+  if (foreignDistricts.length || unauthorizedPhysicalDistricts.length || wholeRepositoryVisible) {
+    console.error(JSON.stringify({status:'FAILED',error:'agent input scope isolation failed'}));
+    process.exit(2);
+  }
+}
+
 let status='COMPLETED';
 let error=null;
 let result=null;

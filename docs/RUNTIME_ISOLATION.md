@@ -1,53 +1,57 @@
-# Runtime isolation
+# Runtime isolation contract
 
-## Requirement
+## Non-negotiable law
 
-Every operational district is isolated. Every agent has exactly one computer identity. No two agents share a computer workspace.
+An agent saying **done** is not evidence.
 
-Manny is a manager, not an execution shortcut. Work is delegated to district agents.
+A job is complete only when a machine-verifiable receipt proves:
 
-## What "computer" means in v0.4
+- the assigned agent ran;
+- on its assigned computer;
+- in its assigned district;
+- on its assigned task;
+- with a unique runtime host;
+- inside its own writable workspace;
+- with only explicitly granted read inputs;
+- with an artifact whose hash verifies;
+- and with required policy assertions passing.
 
-A computer is a distinct runtime identity with:
+## Computer model
 
-- unique `computer_id`
-- unique agent ID
-- unique district
-- dedicated working directory
-- dedicated HOME/TMP directories
-- dedicated receipt directory
-- explicit capability allowlist
-- independent child process for each run
+Production/proof computer = one ephemeral Docker container per agent.
 
-The runtime launches each agent in a separate Node child process. File operations exposed to the worker are jailed to that computer's workspace.
+Each container gets:
 
-This is **process + workspace isolation**, proven by tests. It is not yet a hypervisor/VM security boundary. The runtime contract is designed so the backend can later be swapped to Docker, Firecracker, or a cloud-computer provider without changing district/agent identities.
+- unique container and hostname;
+- unique `/computer` writable root;
+- unique workspace, HOME, TMP and receipts;
+- no network in proof mode;
+- read-only root filesystem;
+- all Linux capabilities dropped;
+- no-new-privileges;
+- PID, memory and CPU limits;
+- read-only runtime code at `/runtime`;
+- scoped input bundle at `/input`, not the whole repository.
 
-## Proof law
+## District isolation
 
-An agent cannot report DONE by prose.
+`runtime/scopes.json` is the capability map.
 
-A completed run requires a receipt containing:
+Every district receives:
 
-- run ID
-- agent ID
-- computer ID
-- district
-- process ID
-- start/end timestamps
-- task type
-- status
-- evidence records
-- output file hashes where applicable
+1. minimal shared Crown & Core truth;
+2. its own district files;
+3. explicitly declared cross-district read grants;
+4. only the assigned agent's prompt.
 
-Manny and the Performance district may only count a task complete when a valid receipt exists.
+Cross-district data is denied unless listed.
 
-## Isolation invariants
+Every bundle gets `SCOPE-MANIFEST.json` with file hashes. The worker checks its identity against that manifest and records the scope hash in the receipt.
 
-1. one agent -> one computer
-2. one computer -> one workspace root
-3. district agent can only write inside its workspace
-4. no shared mutable workspace between agents
-5. all output crossing districts must use explicit artifacts/receipts
-6. live external actions remain approval-gated
-7. failure, timeout, or missing receipt means NOT DONE
+## Development mode
+
+Local-process mode exists for fast development tests.
+
+It is not the isolation proof.
+
+The Docker computer proof is the authority for the claim that each agent has its own isolated computer.

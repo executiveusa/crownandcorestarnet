@@ -5,6 +5,7 @@ const root=process.cwd();
 const agents=JSON.parse(fs.readFileSync(path.join(root,'runtime','agents.json'),'utf8'));
 const computers=JSON.parse(fs.readFileSync(path.join(root,'runtime','computers.json'),'utf8'));
 const tasks=JSON.parse(fs.readFileSync(path.join(root,'runtime','tasks.json'),'utf8'));
+const scopes=JSON.parse(fs.readFileSync(path.join(root,'runtime','scopes.json'),'utf8'));
 const failures=[];
 
 const allAgents=[agents.manager,...agents.agents];
@@ -16,6 +17,8 @@ if(new Set(computerIds).size!==computerIds.length) failures.push('computer IDs a
 if(computers.computers.length!==allAgents.length) failures.push('computer count must equal agent count');
 if(tasks.tasks.length!==allAgents.length) failures.push('task assignment count must equal agent count');
 if(new Set(tasks.tasks.map(x=>x.agent_id)).size!==tasks.tasks.length) failures.push('duplicate task agent assignments');
+if(computers.proof_backend!=='docker') failures.push('docker must be the proof backend');
+if(computers.isolation_authority!=='runtime:prove:docker') failures.push('docker isolation authority not declared');
 
 for(const agent of allAgents){
   if(!tasks.tasks.some(x=>x.agent_id===agent.id)) failures.push(`missing task assignment for ${agent.id}`);
@@ -30,6 +33,18 @@ for(const agent of allAgents){
 }
 
 const districts=[...new Set(agents.agents.map(x=>x.district))];
+const scopeDistricts=['management',...districts];
+for(const district of scopeDistricts){
+  const s=scopes.districts?.[district];
+  if(!s) failures.push(`missing scope for district: ${district}`);
+  for(const rel of (s?.read||[])){
+    if(path.isAbsolute(rel)||rel.split(/[\\/]+/).includes('..')) failures.push(`unsafe scope path for ${district}: ${rel}`);
+    if(rel==='.'||rel==='/'||rel==='districts'||rel==='agents') failures.push(`overbroad scope path for ${district}: ${rel}`);
+  }
+}
+for(const rel of (scopes.shared_read||[])){
+  if(path.isAbsolute(rel)||rel.split(/[\\/]+/).includes('..')) failures.push(`unsafe shared scope path: ${rel}`);
+}
 for(const district of districts){
   const districtPath=path.join(root,'districts',district,'district.json');
   if(!fs.existsSync(districtPath)){ failures.push(`missing district manifest: ${district}`); continue; }
