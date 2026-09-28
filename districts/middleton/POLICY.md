@@ -1,6 +1,6 @@
 # Crown & Core execution policy for Middleton District
 
-The canon records what JP Middleton teaches. This file controls what Crown & Core may actually execute.
+The canon records what JP Middleton teaches. This file controls what Crown & Core may actually execute.\n\n**Crown & Core policy wins over canon.**
 
 ## Precedence
 
