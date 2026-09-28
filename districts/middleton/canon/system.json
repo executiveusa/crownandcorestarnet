@@ -1,0 +1,241 @@
+{
+  "meta": {
+    "name": "The Middleton Method (JP Middleton / Gym Members Now)",
+    "compiled": "2026-09-28",
+    "source": "48 videos published 2026 on youtube.com/@OfficialJPMiddleton - all 48 transcripts pulled and mined, zero missing",
+    "agency_proof_claims": "$25M+ agency revenue (Stripe/processor screenshots shown), $5M+ agency valuation, customers made $55M+; claims are his own, unverified",
+    "how_to_use": "Each item cites source video IDs. Scripts are verbatim where quoted. Metrics are HIS pitch numbers - use as sales ammo, verify before publishing as fact."
+  },
+  "core_thesis": {
+    "statement": "Sell an end-to-end AI SYSTEM (the 'AI Aristotle agency offer'), not automations, agents, or workflows. Solve the macro problem (getting customers and converting them) with micro-services delivered in a fixed sequence, marketing LAST. Become a load-bearing wall in the client's business.",
+    "anti_patterns": [
+      "Selling n8n/agentic workflows (commoditized by Claude Code)",
+      "One-dimensional agencies (ads-only, website-only)",
+      "Tool-dependent offers (if GHL died he'd rebuild on anything)",
+      "Running paid ads before the conversion machine exists",
+      "Offering guarantees (sets up one-sided relationship; offer time-lock pricing instead)"
+    ],
+    "sources": [
+      "fBGbgabk1iE",
+      "PwZtG6PL5-I",
+      "sm2c01maAWg",
+      "x77UCROx4PM"
+    ]
+  },
+  "service_sequence": [
+    {
+      "order": 1,
+      "service": "Conversion website",
+      "what": "Mobile-first, <3s load, no 'contact us' form - one-question form (first name) front and center + promo incentive. Same template per niche, swap brand.",
+      "why_first": "Everything later fails if traffic can't convert; contact forms convert 1-2%",
+      "sources": [
+        "fBGbgabk1iE",
+        "YhgpaOENHik",
+        "MXe1xNEuOZ8"
+      ]
+    },
+    {
+      "order": 2,
+      "service": "AI reactivations",
+      "what": "Plug AI into old lead/customer database, re-engage via SMS with personalized offer (segment by gender/age), qualify, book, remind, re-book no-shows",
+      "why": "No ad spend needed; databases are paid-for assets; avg business follows up 1.3x via email (6% open) but 6 touchpoints needed",
+      "script_example": "We're reopening your consultation spot at Glow Aesthetic Studio with $100 off your first Botox or filler appointment, but only if you book by Friday.",
+      "sources": [
+        "fBGbgabk1iE",
+        "TovKT7FEsF8",
+        "PwZtG6PL5-I"
+      ]
+    },
+    {
+      "order": 3,
+      "service": "Reviews + referrals engine",
+      "what": "Survey active customers 1-5; 4+ gets Google review ask; system auto-responds to the review; referral follow-up with guest passes + raffle multiplier",
+      "scripts": {
+        "feedback_ask": "Hey, we'd really value your feedback and if you give it to us, we'll put your name into a raffle where you have a chance to win a membership for free for the year.",
+        "referral_ask": "Thank you for the review. If you have any friends or family that would like to come in with you, we've got a couple 7-day passes. Anyone that comes from you gets your name into that raffle five more times."
+      },
+      "why": "98% check reviews before buying; 89% of local businesses never ask; reviews = organic Google ranking = free leads",
+      "sources": [
+        "fBGbgabk1iE",
+        "YhgpaOENHik",
+        "TovKT7FEsF8"
+      ]
+    },
+    {
+      "order": 4,
+      "service": "AI website lead nurturing",
+      "what": "Instant AI follow-up on every form fill: qualify, book, remind, re-book. 24/7.",
+      "why": "Avg local business takes 42h to follow up once; 5-minute response lifts conversion 400%+",
+      "sources": [
+        "fBGbgabk1iE",
+        "x77UCROx4PM",
+        "PwZtG6PL5-I"
+      ]
+    },
+    {
+      "order": 5,
+      "service": "AI receptionist",
+      "what": "Answers every call, qualifies, books, SMS confirm/remind/reschedule, FAQ, messages owner when human needed",
+      "why": "62 of 100 calls to local businesses go unanswered; unanswered callers call competitors",
+      "pricing_note": "$1,500/mo per location + $20/mo number port + usage (from live close)",
+      "sources": [
+        "fBGbgabk1iE",
+        "PfhikUzfjDg"
+      ]
+    },
+    {
+      "order": 6,
+      "service": "AI sales coach",
+      "what": "Roleplays the sales process with staff; grades recorded calls 1-10 against the script; trains before cold traffic arrives",
+      "why": "70% of local staff have zero sales training; trained teams sell 50%+ more",
+      "sources": [
+        "fBGbgabk1iE",
+        "vmZL39DrbZE",
+        "PfhikUzfjDg"
+      ]
+    },
+    {
+      "order": 7,
+      "service": "Paid marketing (LAST)",
+      "what": "Hypertargeted FB/IG ads only after 1-6 exist - 'now you're operating at a profit'",
+      "why": "Cold leads are hardest to close; amplify a working machine, don't fund a broken one",
+      "sources": [
+        "fBGbgabk1iE",
+        "x77UCROx4PM"
+      ]
+    }
+  ],
+  "offer_structure": {
+    "principle": "One system, not five services. Sequence is the differentiator - 'no one provides the system of services in the sequential order I provide them'",
+    "client_pitch_frame": "Get closest to the moment a stranger pays, fix backwards: find the numbers, map the customer journey, show the gap on the monthly report call, offer a free month to prove it",
+    "guarantee_policy": "No guarantees - 'I don't offer guarantees because they think it's a one-sided relationship.' Counter with time-locked pricing: 'let's lock in at this price for the next 3 months'",
+    "sources": [
+      "x77UCROx4PM",
+      "fBGbgabk1iE",
+      "PwZtG6PL5-I",
+      "ZOupcRem_bM",
+      "PfhikUzfjDg"
+    ]
+  },
+  "pricing": {
+    "full_system": "$1,500/month per location, month-to-month (closed LIVE on camera at this number; up to $3-4k/mo in high-ticket niches like med spas; range quoted $1,500-$10,000/mo)",
+    "entry_tier": "$250/month - reactivations + reviews/referrals only (downsell seen in live call)",
+    "ai_receptionist_addon": "$1,500/mo per location + $20/mo number port + usage fees; AI connect fee $250/mo",
+    "client_value_anchor": "Compare against client's current wasted spend (e.g. '$2,200/mo getting no one through the door', '$1,600/mo for 2 sales')",
+    "sources": [
+      "sysr3_FmEmk",
+      "PfhikUzfjDg",
+      "ZoX-hKoTkC8",
+      "x77UCROx4PM"
+    ],
+    "top_anchor": "$5,000/month quoted as top end on a cold call ('as far as what we do, it can be as much as $5,000 a month') [ZOupcRem_bM]"
+  },
+  "sales_process": {
+    "name": "Seven-step virtual sales process (used 4,000+ times, closes 50%+ of cold appointments)",
+    "discovery_question_bank": [
+      "Do you have a CRM to track leads and pipeline?",
+      "How many people visited your website / opted in over the last 30 days?",
+      "What do you charge monthly on average per person? What's your revenue last 30 days?",
+      "Who is redoing your website - do they specialize in your niche?",
+      "Do you have a process to get reviews? To get referrals off those reviews? A referral program?",
+      "How does your staff follow up with trial signups today?",
+      "What does your strategy look like to get reviews right now?",
+      "Did the last agency help you get reviews?"
+    ],
+    "live_tactics": [
+      "Run a website diagnostic DURING the call and review it together",
+      "Gap recap before price: 'you said you don't have a process to get reviews, and you recognize it's hurting you...'",
+      "Consequence frame: 'without a review process, any marketing generates a fraction of what it could'",
+      "Show competitor heat-map: businesses with reviews outrank them for '[niche] near me'"
+    ],
+    "close": "Process payment -> sign agreement -> book onboarding call. 'The next thing we're going to do is process payment, sign the agreement, and then book you in for the onboarding so we can get you started.'",
+    "onboarding": "Review agreement together on the call; schedule onboarding; send niche business assessment (in-depth questionnaire) before the onboarding call",
+    "sources": [
+      "vmZL39DrbZE",
+      "PfhikUzfjDg",
+      "ZOupcRem_bM",
+      "x77UCROx4PM",
+      "sysr3_FmEmk"
+    ],
+    "elevator_pitch_verbatim": "Optimizing your digital storefront, optimizing your reviews and referrals, and making sure that everyone that is interested knows about you, hears about you, and when they come through, they get followed up with right away - so that you can focus on giving them a great experience and the system can focus on getting them through the door. [ZOupcRem_bM]",
+    "booking_frame_verbatim": "I'll be able to tell really early on, probably in the first 30 minutes, just based off what we go over and review and the audits I pull between now and then whether or not I can help you out. [ZOupcRem_bM]"
+  },
+  "lead_generation": {
+    "maps_gap_method": "Google Maps + Claude: find niche businesses with weak reviews vs competitors, generate outreach for day 1 / 3 / 7 / 14 based on the review gap. DM on Facebook (his 2019 originals shown), book appointment",
+    "franchise_method": "Skill: input city + industry -> pulls franchises lacking Google reviews + their better-ranked competitors -> generates messaging. Land one franchise client, expand across locations ('you don't need 200 clients, you need one client with 200 cousins')",
+    "market_gap_audit": "Crawl a niche's existing agencies (reviews + websites), compare against the 7 services, output served / partially-served / unserved matrix - nobody sells the whole sequence",
+    "ad_angle_tool": "Industry -> writes copy/headline/description/images trained on $1M+ of his own gym-owner appointment ads",
+    "sources": [
+      "28Nd2Opbmjw",
+      "MXe1xNEuOZ8",
+      "9fADJdhlNFQ",
+      "fBGbgabk1iE",
+      "TovKT7FEsF8"
+    ]
+  },
+  "delivery": {
+    "stack": "GoHighLevel (7 years, same system; before AI existed he ran it with 12 VAs in the Philippines + automations); rebuildable on anything - 'I'm not selling a feature of a tool'",
+    "delivery_sequence": "Week 1: service rolling out (reviews engine first is typical), refine fulfillment, then build into sales coaching",
+    "reporting": "Monthly report call = the upsell moment: show the gap found, what it costs, offer next service (free month to prove)",
+    "retention": "Become every step between stranger and sale = load-bearing wall; his churn stays low because replacement means rebuilding the whole system",
+    "sources": [
+      "fBGbgabk1iE",
+      "RPz2eNCys-Y",
+      "WQaj6DmtCiU",
+      "x77UCROx4PM"
+    ]
+  },
+  "metrics_benchmarks": {
+    "note": "Numbers he quotes in pitches - reuse as sales ammo, attribute to 'industry data' loosely like he does",
+    "items": {
+      "calls_missed": "62 of 100 calls to local businesses unanswered",
+      "followup_time": "42 hours average lead follow-up; most follow up once",
+      "five_min_rule": "respond within 5 minutes = 400%+ conversion lift",
+      "contact_form": "classic contact forms convert 1-2%",
+      "load_speed": ">3s load loses 50%, >5s loses 90%; 70%+ of local sites are that slow",
+      "reviews": "98% check Google reviews before buying; 89% of local businesses never ask",
+      "touchpoints": "6 touchpoints to convert; businesses average 1.3, by email (6% open rate)",
+      "sales_training": "70% of staff never trained; trained teams +50% sales",
+      "ai_skills_premium": "43% of job postings mention AI skills; +$18k/yr advertised",
+      "his_close_rate": "50%+ of cold appointments closed; before system: 6 shows per 100 leads",
+      "receptionist_roi_example": "82 monthly callers -> book half, show half, close half = +10 members/mo = +120/yr"
+    },
+    "sources": [
+      "fBGbgabk1iE",
+      "PwZtG6PL5-I",
+      "PfhikUzfjDg",
+      "sysr3_FmEmk"
+    ]
+  },
+  "niche_strategy": {
+    "criteria": "High customer LTV (med spas, dentists, chiropractors, HVAC, electricians, gyms) -> supports $1,500-$4,000/mo; sub-niche and own the relationships; bad review history = clearest proof they need help",
+    "proof_points": "Gyms (his, $25M); dance studios (brother, $35k/yr->$35k/mo in 6 months); home services/generators (Jason, $11k/mo in 30 days); med spas (~$3k/mo typical)",
+    "sources": [
+      "fBGbgabk1iE",
+      "3eGwUX2_NjE",
+      "TUnsrl0qlag",
+      "g7psPmgbaDQ",
+      "x77UCROx4PM"
+    ]
+  },
+  "partner_exit_model": {
+    "model": "Recruit 5+ partners, scale each to 7 figures profit in DIFFERENT verticals, merge into a portfolio, sell for 9 figures (vs $5M solo) - stated reason for the YouTube channel",
+    "sources": [
+      "fBGbgabk1iE",
+      "sysr3_FmEmk"
+    ]
+  },
+  "coverage": {
+    "videos_in_2026": 48,
+    "transcripts_pulled": 48,
+    "missing": [],
+    "excluded": [
+      {
+        "id": "vVFEGwnguCQ",
+        "reason": "uploaded 2025-12-19 (verified exact date) - outside 'this year'"
+      },
+      "all videos 1y+ old (11 more on channel) - outside scope"
+    ],
+    "note": "Guest/collab videos (Rick Mayo, subscriber case studies, guru rankings, Hormozi interview) mined for method content; pure interview/chit-chat segments contribute less. The 4h48m live-sales-calls video (PfhikUzfjDg) and 1h16m system video (x77UCROx4PM) were the richest sources."
+  }
+}
