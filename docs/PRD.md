@@ -503,3 +503,61 @@ A production-capable action lane requires:
 11. Real read-only connectors.
 12. First approved live experiment.
 13. Paid distribution only after gates pass.
+
+
+## 21. Runtime isolation and proof requirements
+
+### District isolation
+
+Operational districts are isolated execution domains:
+
+- conversion
+- return
+- trust
+- nurture
+- reception
+- media
+- performance
+- middleton
+
+Each district declares its own agent roster and may not silently borrow another district's mutable workspace.
+
+### One agent, one computer
+
+Every registered agent must have exactly one unique computer identity.
+
+Each computer provides:
+
+- dedicated workspace root
+- dedicated HOME/TMP directories
+- independent process for each run
+- explicit capability/task assignment
+- receipts directory
+- workspace-jail checks
+
+Shared project knowledge may be read when explicitly required, but agent writes remain inside its own computer workspace.
+
+### Completion proof
+
+No agent self-attestation is accepted as completion.
+
+A completed task requires a receipt with:
+
+- run ID
+- agent ID
+- computer ID
+- district
+- process ID
+- timestamps
+- assigned task
+- status
+- evidence
+- hashes for written proof artifacts
+
+Missing, invalid, failed, or unverifiable receipt = **NOT DONE**.
+
+### Backend maturity
+
+v0.4 proves separate processes and workspaces. This is a real runtime boundary for orchestration and file-write isolation, but not a hypervisor-grade security boundary.
+
+The computer contract must remain backend-agnostic so production can move individual agents to container/VM/cloud-computer backends without changing their identities, district assignments, or proof contracts.

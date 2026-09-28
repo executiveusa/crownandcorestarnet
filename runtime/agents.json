@@ -1,0 +1,209 @@
+{
+  "version": 1,
+  "manager": {
+    "id": "manny",
+    "district": "management",
+    "computer_id": "cc-pc-manny",
+    "role": "orchestrator",
+    "capabilities": [
+      "read_state",
+      "assign",
+      "approve_request",
+      "report"
+    ]
+  },
+  "agents": [
+    {
+      "id": "path-auditor",
+      "district": "conversion",
+      "computer_id": "cc-pc-conversion-1",
+      "role": "path-auditor",
+      "capabilities": [
+        "read_state",
+        "analyze",
+        "draft",
+        "write_workspace"
+      ]
+    },
+    {
+      "id": "funnel-builder",
+      "district": "conversion",
+      "computer_id": "cc-pc-conversion-2",
+      "role": "funnel-builder",
+      "capabilities": [
+        "read_state",
+        "analyze",
+        "draft",
+        "write_workspace"
+      ]
+    },
+    {
+      "id": "reactivation-analyst",
+      "district": "return",
+      "computer_id": "cc-pc-return-1",
+      "role": "reactivation-analyst",
+      "capabilities": [
+        "read_state",
+        "analyze",
+        "draft",
+        "write_workspace"
+      ]
+    },
+    {
+      "id": "r3-planner",
+      "district": "return",
+      "computer_id": "cc-pc-return-2",
+      "role": "r3-planner",
+      "capabilities": [
+        "read_state",
+        "analyze",
+        "draft",
+        "write_workspace"
+      ]
+    },
+    {
+      "id": "feedback-architect",
+      "district": "trust",
+      "computer_id": "cc-pc-trust-1",
+      "role": "feedback-architect",
+      "capabilities": [
+        "read_state",
+        "analyze",
+        "draft",
+        "write_workspace"
+      ]
+    },
+    {
+      "id": "reputation-auditor",
+      "district": "trust",
+      "computer_id": "cc-pc-trust-2",
+      "role": "reputation-auditor",
+      "capabilities": [
+        "read_state",
+        "analyze",
+        "draft",
+        "write_workspace"
+      ]
+    },
+    {
+      "id": "lead-response-auditor",
+      "district": "nurture",
+      "computer_id": "cc-pc-nurture-1",
+      "role": "lead-response-auditor",
+      "capabilities": [
+        "read_state",
+        "analyze",
+        "draft",
+        "write_workspace"
+      ]
+    },
+    {
+      "id": "recovery-planner",
+      "district": "nurture",
+      "computer_id": "cc-pc-nurture-2",
+      "role": "recovery-planner",
+      "capabilities": [
+        "read_state",
+        "analyze",
+        "draft",
+        "write_workspace"
+      ]
+    },
+    {
+      "id": "missed-call-auditor",
+      "district": "reception",
+      "computer_id": "cc-pc-reception-1",
+      "role": "missed-call-auditor",
+      "capabilities": [
+        "read_state",
+        "analyze",
+        "draft",
+        "write_workspace"
+      ]
+    },
+    {
+      "id": "receptionist-designer",
+      "district": "reception",
+      "computer_id": "cc-pc-reception-2",
+      "role": "receptionist-designer",
+      "capabilities": [
+        "read_state",
+        "analyze",
+        "draft",
+        "write_workspace"
+      ]
+    },
+    {
+      "id": "producer",
+      "district": "media",
+      "computer_id": "cc-pc-media-1",
+      "role": "producer",
+      "capabilities": [
+        "read_sources",
+        "analyze",
+        "draft",
+        "write_workspace"
+      ]
+    },
+    {
+      "id": "clip-librarian",
+      "district": "media",
+      "computer_id": "cc-pc-media-2",
+      "role": "clip-librarian",
+      "capabilities": [
+        "read_sources",
+        "analyze",
+        "draft",
+        "write_workspace"
+      ]
+    },
+    {
+      "id": "attribution-auditor",
+      "district": "performance",
+      "computer_id": "cc-pc-performance-1",
+      "role": "attribution-auditor",
+      "capabilities": [
+        "read_state",
+        "read_receipts",
+        "analyze",
+        "write_report"
+      ]
+    },
+    {
+      "id": "receipt-verifier",
+      "district": "performance",
+      "computer_id": "cc-pc-performance-2",
+      "role": "receipt-verifier",
+      "capabilities": [
+        "read_state",
+        "read_receipts",
+        "analyze",
+        "write_report"
+      ]
+    },
+    {
+      "id": "method-librarian",
+      "district": "middleton",
+      "computer_id": "cc-pc-middleton-1",
+      "role": "method-librarian",
+      "capabilities": [
+        "read_canon",
+        "analyze",
+        "draft",
+        "write_workspace"
+      ]
+    },
+    {
+      "id": "experiment-auditor",
+      "district": "middleton",
+      "computer_id": "cc-pc-middleton-2",
+      "role": "experiment-auditor",
+      "capabilities": [
+        "read_canon",
+        "analyze",
+        "draft",
+        "write_workspace"
+      ]
+    }
+  ]
+}

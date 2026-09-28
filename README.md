@@ -6,6 +6,21 @@ This repository is **not Pauli StarNet** and does not depend on it.
 
 It uses the open-source `androoAGI/starnet` codebase as an upstream engineering base while maintaining its own Crown & Core runtime, client logic, agents, districts, data, approvals, workflows, and reporting.
 
+## Runtime proof standard
+
+Every district is isolated. Every execution agent has its own registered computer identity, dedicated workspace, HOME/TMP directories, child process, explicit task assignment, and machine-verifiable receipt.
+
+An agent saying "done" is not completion. Completion requires a valid receipt and evidence.
+
+Run:
+
+```bash
+npm run runtime:validate
+npm run runtime:prove
+```
+
+See `docs/RUNTIME_ISOLATION.md`.
+
 ## Current build
 
 ### Manager

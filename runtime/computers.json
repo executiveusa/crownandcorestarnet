@@ -1,0 +1,113 @@
+{
+  "version": 1,
+  "backend": "local-process",
+  "future_backends": [
+    "docker",
+    "firecracker",
+    "cloud-computer"
+  ],
+  "computers": [
+    {
+      "id": "cc-pc-manny",
+      "agent_id": "manny",
+      "district": "management",
+      "workspace": ".runtime/computers/cc-pc-manny/workspace"
+    },
+    {
+      "id": "cc-pc-conversion-1",
+      "agent_id": "path-auditor",
+      "district": "conversion",
+      "workspace": ".runtime/computers/cc-pc-conversion-1/workspace"
+    },
+    {
+      "id": "cc-pc-conversion-2",
+      "agent_id": "funnel-builder",
+      "district": "conversion",
+      "workspace": ".runtime/computers/cc-pc-conversion-2/workspace"
+    },
+    {
+      "id": "cc-pc-return-1",
+      "agent_id": "reactivation-analyst",
+      "district": "return",
+      "workspace": ".runtime/computers/cc-pc-return-1/workspace"
+    },
+    {
+      "id": "cc-pc-return-2",
+      "agent_id": "r3-planner",
+      "district": "return",
+      "workspace": ".runtime/computers/cc-pc-return-2/workspace"
+    },
+    {
+      "id": "cc-pc-trust-1",
+      "agent_id": "feedback-architect",
+      "district": "trust",
+      "workspace": ".runtime/computers/cc-pc-trust-1/workspace"
+    },
+    {
+      "id": "cc-pc-trust-2",
+      "agent_id": "reputation-auditor",
+      "district": "trust",
+      "workspace": ".runtime/computers/cc-pc-trust-2/workspace"
+    },
+    {
+      "id": "cc-pc-nurture-1",
+      "agent_id": "lead-response-auditor",
+      "district": "nurture",
+      "workspace": ".runtime/computers/cc-pc-nurture-1/workspace"
+    },
+    {
+      "id": "cc-pc-nurture-2",
+      "agent_id": "recovery-planner",
+      "district": "nurture",
+      "workspace": ".runtime/computers/cc-pc-nurture-2/workspace"
+    },
+    {
+      "id": "cc-pc-reception-1",
+      "agent_id": "missed-call-auditor",
+      "district": "reception",
+      "workspace": ".runtime/computers/cc-pc-reception-1/workspace"
+    },
+    {
+      "id": "cc-pc-reception-2",
+      "agent_id": "receptionist-designer",
+      "district": "reception",
+      "workspace": ".runtime/computers/cc-pc-reception-2/workspace"
+    },
+    {
+      "id": "cc-pc-media-1",
+      "agent_id": "producer",
+      "district": "media",
+      "workspace": ".runtime/computers/cc-pc-media-1/workspace"
+    },
+    {
+      "id": "cc-pc-media-2",
+      "agent_id": "clip-librarian",
+      "district": "media",
+      "workspace": ".runtime/computers/cc-pc-media-2/workspace"
+    },
+    {
+      "id": "cc-pc-performance-1",
+      "agent_id": "attribution-auditor",
+      "district": "performance",
+      "workspace": ".runtime/computers/cc-pc-performance-1/workspace"
+    },
+    {
+      "id": "cc-pc-performance-2",
+      "agent_id": "receipt-verifier",
+      "district": "performance",
+      "workspace": ".runtime/computers/cc-pc-performance-2/workspace"
+    },
+    {
+      "id": "cc-pc-middleton-1",
+      "agent_id": "method-librarian",
+      "district": "middleton",
+      "workspace": ".runtime/computers/cc-pc-middleton-1/workspace"
+    },
+    {
+      "id": "cc-pc-middleton-2",
+      "agent_id": "experiment-auditor",
+      "district": "middleton",
+      "workspace": ".runtime/computers/cc-pc-middleton-2/workspace"
+    }
+  ]
+}
