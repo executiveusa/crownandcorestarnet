@@ -1,0 +1,18 @@
+{
+  "id": "conversion",
+  "isolated": true,
+  "manager": "manny",
+  "agents": [
+    "path-auditor",
+    "funnel-builder"
+  ],
+  "inputs": [
+    "verified Crown & Core state",
+    "approved artifacts"
+  ],
+  "outputs": [
+    "workspace artifacts",
+    "receipts"
+  ],
+  "external_writes": false
+}
