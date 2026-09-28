@@ -1,0 +1,9 @@
+{
+  "name": "crownandcore-operations",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "gap:audit": "node workflows/gap-audit/index.mjs"
+  }
+}
