@@ -1,0 +1,18 @@
+{
+  "id": "reception",
+  "isolated": true,
+  "manager": "manny",
+  "agents": [
+    "missed-call-auditor",
+    "receptionist-designer"
+  ],
+  "inputs": [
+    "verified Crown & Core state",
+    "approved artifacts"
+  ],
+  "outputs": [
+    "workspace artifacts",
+    "receipts"
+  ],
+  "external_writes": false
+}
