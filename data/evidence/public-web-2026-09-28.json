@@ -61,7 +61,13 @@
     ],
     "booking_cta_present": true,
     "packages_or_memberships_mentioned": true,
-    "cancellation_policy_mentions_24_hours": true
+    "cancellation_policy_mentions_24_hours": true,
+    "public_listing_observation": {
+      "rating": 5,
+      "review_count": 9,
+      "source": "structured-local-business-result:Crown & Core Wellness Spa and Salon",
+      "note": "Public listing observation only; do not relabel as a specific platform's review count without platform verification."
+    }
   },
   "observed_gaps": [
     {
