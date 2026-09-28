@@ -7,6 +7,7 @@ const root=process.cwd();
 const agentsDoc=JSON.parse(fs.readFileSync(path.join(root,'runtime','agents.json'),'utf8'));
 const computersDoc=JSON.parse(fs.readFileSync(path.join(root,'runtime','computers.json'),'utf8'));
 const allAgents=[agentsDoc.manager,...agentsDoc.agents];
+const tasksDoc=JSON.parse(fs.readFileSync(path.join(root,'runtime','tasks.json'),'utf8'));
 const runtimeRoot=path.join(root,'.runtime','computers');
 fs.mkdirSync(runtimeRoot,{recursive:true});
 
@@ -21,6 +22,8 @@ function launch(agent,index){
   const tmp=path.join(computerRoot,'tmp');
   [workspace,home,tmp].forEach(p=>fs.mkdirSync(p,{recursive:true}));
   const runId=`proof-${now}-${String(index+1).padStart(2,'0')}-${agent.id}`;
+  const task=tasksDoc.tasks.find(x=>x.agent_id===agent.id)?.task;
+  if(!task) return Promise.reject(new Error(`missing task assignment for ${agent.id}`));
 
   return new Promise((resolve,reject)=>{
     const child=spawn(process.execPath,[path.join(root,'runtime','agent-worker.mjs')],{
@@ -37,7 +40,9 @@ function launch(agent,index){
         CC_COMPUTER_ID:computer.id,
         CC_DISTRICT:agent.district,
         CC_RUN_ID:runId,
-        CC_COMPUTER_ROOT:computerRoot
+        CC_COMPUTER_ROOT:computerRoot,
+        CC_REPO_ROOT:root,
+        CC_TASK:task
       },
       stdio:['ignore','pipe','pipe']
     });
@@ -63,6 +68,8 @@ if(new Set(receipts.map(x=>x.computer_root)).size!==receipts.length) failures.pu
 
 for(const receipt of receipts){
   if(receipt.status!=='COMPLETED') failures.push(`${receipt.agent_id} did not complete`);
+  if(!receipt.task_type) failures.push(`${receipt.agent_id} missing task type`);
+  if(!receipt.evidence?.some(x=>x.type==='domain_assertion')) failures.push(`${receipt.agent_id} missing domain proof`);
   if(!receipt.evidence?.some(x=>x.type==='isolation_probe'&&x.passed)) failures.push(`${receipt.agent_id} missing isolation proof`);
   const art=receipt.evidence?.find(x=>x.type==='artifact');
   if(!art){ failures.push(`${receipt.agent_id} missing artifact evidence`); continue; }
