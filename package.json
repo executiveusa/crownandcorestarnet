@@ -1,7 +1,7 @@
 {
   "name": "crownandcore-operations",
   "private": true,
-  "version": "0.9.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "system:check": "node workflows/system-check/index.mjs",
@@ -21,6 +21,7 @@
     "data:readiness": "node workflows/data-readiness/index.mjs",
     "runtime:model:prove": "node runtime/model-smoke.mjs",
     "intake:prove": "node workflows/read-only-intake/index.mjs --mode=fixture",
-    "square:read:smoke": "node integrations/live-square-smoke.mjs"
+    "square:read:smoke": "node integrations/live-square-smoke.mjs",
+    "runtime:mission:docker": "node runtime/orchestrator.mjs --backend=docker --mission=runtime/missions/proof-all.json"
   }
 }
