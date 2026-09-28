@@ -5,3 +5,5 @@ outbox/
 !.env.example
 node_modules/
 .DS_Store
+
+.runtime/
