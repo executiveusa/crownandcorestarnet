@@ -44,3 +44,6 @@ jobs:
 
       - name: Prove one isolated Docker computer per agent
         run: npm run runtime:prove:docker
+
+      - name: Run Manny proof mission on isolated Docker computers
+        run: npm run runtime:mission:docker
