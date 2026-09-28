@@ -1,30 +1,31 @@
-# Crown & Core Operations
+# Crown & Core StarNet
 
-Client-specific operating system for Crown & Core.
+Independent operating system for Crown & Core.
 
-This repository is the Crown & Core layer. It uses the open-source runtime from `androoAGI/starnet` as an upstream engineering base, but it is not distributed as StarNet and does not reuse upstream branding/artwork.
+This repository is **not Pauli StarNet** and does not depend on it.
 
-## Phase 1 status
+It uses the open-source `androoAGI/starnet` codebase as an upstream engineering base while maintaining its own Crown & Core runtime, client logic, agents, districts, data, approvals, workflows, and reporting.
 
-Current slice: **read-only Gap Audit**
+## Current build
 
-Goal: identify the closest measurable leak between interest and payment before adding more traffic.
+### Manager
+- **Manny** — Crown & Core operating manager
 
-### Run locally
+### Live districts
+- **Middleton District** — revenue-gap method, seven-service sequence, canon, policy overrides, experiment loop
+
+### Live workflow
+- **Gap Audit** — read-only diagnostic that identifies the closest known measurable leak between interest and payment
+
+## Run verification
 
 ```bash
-npm run gap:audit
+npm run verify
 ```
 
-The audit reads `data/current-state.json` and writes a report to `outbox/GAP-AUDIT.md`.
+This validates the Middleton district policy and runs the read-only Gap Audit.
 
-No customer message, social post, review request, booking change, ad change, or external business action is performed in this phase.
-
-## Operating model
-
-Manny is the manager. He prioritizes business leaks, assigns work, requests approval, and reports measurable results.
-
-Rooms:
+## Crown & Core rooms
 
 1. Conversion
 2. Return
@@ -34,7 +35,31 @@ Rooms:
 6. Media
 7. Performance
 
-Paid media is downstream of conversion, follow-up, trust, and measurement.
+## Middleton sequence
+
+1. Conversion
+2. Reactivation
+3. Reviews + referrals
+4. Lead nurturing
+5. Reception
+6. Sales coaching
+7. Paid marketing last
+
+Crown & Core execution policy overrides source tactics where necessary. In particular, review gating is forbidden and source benchmark claims are not treated as Crown & Core facts without verification.
+
+## Proof mode
+
+No customer-facing action is live yet.
+
+No:
+- customer messages
+- social publishing
+- review requests
+- ad changes
+- spending
+- booking changes
+- clinical claims
+- live credentials
 
 ## Upstream runtime
 
@@ -42,7 +67,8 @@ See `UPSTREAM.md`.
 
 ## Next verified slice
 
-1. Populate the current-state file from real Crown & Core data.
+1. Populate `data/current-state.json` from real Crown & Core business data.
 2. Run the Gap Audit.
-3. Confirm the highest-value leak with the owner.
-4. Build only the approved workflow for that leak.
+3. Select one owner-approved leak to test.
+4. Build that workflow behind an approval gate.
+5. Save receipts and attributable results.
