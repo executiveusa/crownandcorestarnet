@@ -1,9 +1,11 @@
 {
   "name": "crownandcore-operations",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
   "scripts": {
-    "gap:audit": "node workflows/gap-audit/index.mjs"
+    "gap:audit": "node workflows/gap-audit/index.mjs",
+    "middleton:validate": "node workflows/middleton/validate.mjs",
+    "verify": "npm run middleton:validate && npm run gap:audit"
   }
 }
