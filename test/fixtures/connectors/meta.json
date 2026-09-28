@@ -1,0 +1,6 @@
+{
+  "source":"meta-fixture",
+  "read_at":"2026-09-28T00:00:00Z",
+  "provenance":"synthetic_fixture",
+  "insights":[{"campaign_id":"x1","spend":"100.50"},{"campaign_id":"x2","spend":"49.50"}]
+}

@@ -1,0 +1,8 @@
+{
+  "source":"analytics-fixture",
+  "read_at":"2026-09-28T00:00:00Z",
+  "provenance":"synthetic_fixture",
+  "monthly_site_sessions":1200,
+  "monthly_inquiries":30,
+  "attribution_ready":false
+}
