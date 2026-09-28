@@ -32,12 +32,13 @@ export function normalizeSquare(raw,{now=new Date()}={}){
       monthly_completed_visits:null,
       monthly_returning_visits:null,
       dormant_customers_90d_plus:dormant,
-      monthly_attributable_revenue:orders.length?monthlyRevenueCents/100:null
+      monthly_attributable_revenue:null
     },
     counts:{customers:customers.length,bookings:bookings.length,orders:orders.length},
+    observed:{monthly_gross_order_total:orders.length?monthlyRevenueCents/100:null},
     notes:[
       'No-show/completed/returning metrics remain null until booking status semantics and visit linkage are verified for this account.',
-      'Order total is not automatically treated as marketing-attributable revenue; normalized field is provisional intake evidence only.'
+      'Order total is not marketing-attributable revenue. It is retained separately as observed gross order total; attributable revenue remains null until source linkage is verified.'
     ]
   };
 }
