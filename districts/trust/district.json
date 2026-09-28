@@ -1,0 +1,18 @@
+{
+  "id": "trust",
+  "isolated": true,
+  "manager": "manny",
+  "agents": [
+    "feedback-architect",
+    "reputation-auditor"
+  ],
+  "inputs": [
+    "verified Crown & Core state",
+    "approved artifacts"
+  ],
+  "outputs": [
+    "workspace artifacts",
+    "receipts"
+  ],
+  "external_writes": false
+}
