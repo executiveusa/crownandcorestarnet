@@ -1,5 +1,4 @@
 import fs from 'node:fs';
-import path from 'node:path';
 import { readJson, writeText, arg, rootPath } from '../../lib/io.mjs';
 
 const stateFile = arg('state', rootPath('data', 'current-state.json'));
@@ -20,6 +19,12 @@ if (fs.existsSync(experimentsFile)) {
 }
 
 const value = v => v === null || v === undefined ? 'Not measured' : String(v);
+const experimentLines = experiments.length
+  ? experiments.map(x => `- ${x.id ?? 'unknown'} — ${x.status ?? 'unknown'} — ${x.decision ?? 'no decision'}`)
+  : ['- No experiment receipts logged.'];
+const unknownLines = Object.entries(m)
+  .filter(([,v]) => v === null)
+  .map(([k]) => `- ${k}`);
 
 const lines = [
   '# Crown & Core — Owner Report',
@@ -40,13 +45,11 @@ const lines = [
   '',
   '## Experiments',
   '',
-  experiments.length
-    ? ...experiments.map(x => `- ${x.id ?? 'unknown'} — ${x.status ?? 'unknown'} — ${x.decision ?? 'no decision'}`)
-    : '- No experiment receipts logged.',
+  ...experimentLines,
   '',
   '## What is still unknown',
   '',
-  ...Object.entries(m).filter(([,v]) => v === null).map(([k]) => `- ${k}`),
+  ...(unknownLines.length ? unknownLines : ['- No null metrics in current state.']),
   '',
   '## Decision rule',
   '',
