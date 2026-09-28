@@ -1,7 +1,7 @@
 {
   "name": "crownandcore-operations",
   "private": true,
-  "version": "0.8.0",
+  "version": "0.9.0",
   "type": "module",
   "scripts": {
     "system:check": "node workflows/system-check/index.mjs",
@@ -12,13 +12,15 @@
     "media:plan": "node workflows/media-engine/index.mjs",
     "report:monthly": "node workflows/monthly-report/index.mjs",
     "test": "node test/verify.mjs",
-    "verify": "npm run system:check && npm run middleton:validate && npm run runtime:validate && npm run runtime:prove && npm run runtime:mission && npm run data:readiness && npm run runtime:model:prove && npm test",
+    "verify": "npm run system:check && npm run middleton:validate && npm run runtime:validate && npm run runtime:prove && npm run runtime:mission && npm run data:readiness && npm run runtime:model:prove && npm run intake:prove && npm test",
     "runtime:validate": "node runtime/validate.mjs",
     "runtime:prove": "node runtime/supervisor.mjs",
     "runtime:mission": "node runtime/orchestrator.mjs --mission=runtime/missions/proof-all.json",
     "runtime:prove:docker": "node runtime/docker-proof.mjs",
     "public:audit": "node workflows/public-baseline/index.mjs",
     "data:readiness": "node workflows/data-readiness/index.mjs",
-    "runtime:model:prove": "node runtime/model-smoke.mjs"
+    "runtime:model:prove": "node runtime/model-smoke.mjs",
+    "intake:prove": "node workflows/read-only-intake/index.mjs --mode=fixture",
+    "square:read:smoke": "node integrations/live-square-smoke.mjs"
   }
 }
