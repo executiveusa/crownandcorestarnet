@@ -1,0 +1,50 @@
+version: 1
+district: middleton
+tenant: crown-and-core
+citizens:
+  - id: method-librarian
+    kind: docs
+    path: districts/middleton/canon/
+    role: canon-keeper
+    status: LIVE
+
+  - id: gap-auditor
+    kind: job
+    path: workflows/gap-audit/
+    role: closest-revenue-leak-audit
+    status: LIVE
+    mode: read-only
+
+  - id: reactivation-drafter
+    kind: job
+    role: owner-approved-reactivation-drafts
+    status: PLANNED
+    outbound: false
+
+  - id: review-engine
+    kind: job
+    role: feedback-review-referral-flow
+    status: PLANNED
+    review_gating: forbidden
+
+  - id: nurture-drafter
+    kind: job
+    role: inquiry-follow-up-and-no-show-drafts
+    status: PLANNED
+    outbound: false
+
+  - id: receptionist-designer
+    kind: job
+    role: missed-call-and-after-hours-flow-design
+    status: PLANNED
+
+  - id: sales-coach-grader
+    kind: job
+    role: front-desk-consultation-quality-review
+    status: PLANNED
+
+  - id: experiment-runner
+    kind: job
+    path: districts/middleton/experiments/loop.md
+    role: bounded-experiment-loop
+    status: PLANNED
