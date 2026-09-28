@@ -120,20 +120,30 @@ if (runtimeBackend === 'docker') {
     .filter(x => x.startsWith('districts/'))
     .map(x => x.split('/')[1])
     .filter(x => x && x !== district && x !== 'middleton');
+
+  const districtsRoot = path.join(repoRoot, 'districts');
+  const physicalDistricts = fs.existsSync(districtsRoot)
+    ? fs.readdirSync(districtsRoot, { withFileTypes:true }).filter(x=>x.isDirectory()).map(x=>x.name)
+    : [];
+  const unauthorizedPhysicalDistricts = physicalDistricts.filter(x => x !== district && x !== 'middleton');
+  const wholeRepositoryVisible = fs.existsSync(path.join(repoRoot,'.git')) || fs.existsSync(path.join(repoRoot,'package.json'));
+
   evidence.push({
     type:'scope_probe',
-    passed:foreignDistricts.length===0,
+    passed:foreignDistricts.length===0 && unauthorizedPhysicalDistricts.length===0 && !wholeRepositoryVisible,
     scope_sha256:actualScopeSha,
     file_count:(scope.files || []).length,
     explicit_paths:scope.explicit_paths || [],
+    physical_districts:physicalDistricts,
+    whole_repository_visible:wholeRepositoryVisible,
     cross_district_policy_grants:[...new Set(
       (scope.files || [])
         .map(x => String(x.path || ''))
         .filter(x => x.startsWith('districts/middleton/') && district !== 'middleton')
     )]
   });
-  if (foreignDistricts.length) {
-    console.error(JSON.stringify({status:'FAILED',error:'unauthorized foreign district files in scope'}));
+  if (foreignDistricts.length || unauthorizedPhysicalDistricts.length || wholeRepositoryVisible) {
+    console.error(JSON.stringify({status:'FAILED',error:'agent input scope isolation failed'}));
     process.exit(2);
   }
 }
