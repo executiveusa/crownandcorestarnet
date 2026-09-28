@@ -4,6 +4,7 @@ import path from 'node:path';
 const root=process.cwd();
 const agents=JSON.parse(fs.readFileSync(path.join(root,'runtime','agents.json'),'utf8'));
 const computers=JSON.parse(fs.readFileSync(path.join(root,'runtime','computers.json'),'utf8'));
+const tasks=JSON.parse(fs.readFileSync(path.join(root,'runtime','tasks.json'),'utf8'));
 const failures=[];
 
 const allAgents=[agents.manager,...agents.agents];
@@ -13,8 +14,11 @@ const computerIds=allAgents.map(x=>x.computer_id);
 if(new Set(agentIds).size!==agentIds.length) failures.push('duplicate agent IDs');
 if(new Set(computerIds).size!==computerIds.length) failures.push('computer IDs are not one-to-one with agents');
 if(computers.computers.length!==allAgents.length) failures.push('computer count must equal agent count');
+if(tasks.tasks.length!==allAgents.length) failures.push('task assignment count must equal agent count');
+if(new Set(tasks.tasks.map(x=>x.agent_id)).size!==tasks.tasks.length) failures.push('duplicate task agent assignments');
 
 for(const agent of allAgents){
+  if(!tasks.tasks.some(x=>x.agent_id===agent.id)) failures.push(`missing task assignment for ${agent.id}`);
   const computer=computers.computers.find(x=>x.id===agent.computer_id);
   if(!computer) failures.push(`missing computer for ${agent.id}`);
   else {
@@ -40,4 +44,4 @@ if(failures.length){
   failures.forEach(x=>console.error('- '+x));
   process.exit(1);
 }
-console.log(`Runtime topology validation passed: ${allAgents.length} agents, ${computers.computers.length} computers, ${districts.length} districts.`);
+console.log(`Runtime topology validation passed: ${allAgents.length} agents, ${computers.computers.length} computers, ${districts.length} districts, ${tasks.tasks.length} assigned tasks.`);
