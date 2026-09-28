@@ -24,6 +24,7 @@ run('gap audit',['workflows/gap-audit/index.mjs']);
 run('public baseline',['workflows/public-baseline/index.mjs']);
 run('data readiness test',['test/data-readiness.mjs']);
 run('model seam test',['test/model-smoke.mjs']);
+run('read-only intake test',['test/read-only-intake.mjs']);
 
 const approvedOut=path.join(out,'approved.json');
 run('approval allow',[
