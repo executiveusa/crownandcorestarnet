@@ -1,0 +1,31 @@
+{
+  "mode": "proof",
+  "default": "deny_external_write",
+  "read_only_without_approval": [
+    "research",
+    "audit",
+    "analyze",
+    "draft",
+    "simulate",
+    "report",
+    "transcript_process"
+  ],
+  "approval_required": [
+    "customer_message",
+    "public_post",
+    "review_request",
+    "reward_issue",
+    "booking_change",
+    "price_or_offer_change",
+    "ad_change",
+    "spend",
+    "health_claim_publish",
+    "live_funnel_change"
+  ],
+  "hard_rules": {
+    "review_gating": false,
+    "invent_testimonial": false,
+    "invent_clinical_outcome": false,
+    "paid_media_before_gate": false
+  }
+}
