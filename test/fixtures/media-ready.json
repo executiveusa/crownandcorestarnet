@@ -1,0 +1,12 @@
+{
+  "source_id": "TEST-MEDIA-1",
+  "source_type": "podcast",
+  "title": "Synthetic episode",
+  "guest": "Synthetic guest",
+  "service": "synthetic service",
+  "duration_minutes": 30,
+  "transcript_available": true,
+  "approved_claims": ["Synthetic approved claim for test only"],
+  "topics": ["topic one","topic two"],
+  "owner_approved_for_publishing": false
+}
