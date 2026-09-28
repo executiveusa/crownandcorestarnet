@@ -1,7 +1,7 @@
 {
   "name": "crownandcore-operations",
   "private": true,
-  "version": "0.6.0",
+  "version": "0.7.0",
   "type": "module",
   "scripts": {
     "system:check": "node workflows/system-check/index.mjs",
@@ -16,6 +16,7 @@
     "runtime:validate": "node runtime/validate.mjs",
     "runtime:prove": "node runtime/supervisor.mjs",
     "runtime:mission": "node runtime/orchestrator.mjs --mission=runtime/missions/proof-all.json",
-    "runtime:prove:docker": "node runtime/docker-proof.mjs"
+    "runtime:prove:docker": "node runtime/docker-proof.mjs",
+    "public:audit": "node workflows/public-baseline/index.mjs"
   }
 }
