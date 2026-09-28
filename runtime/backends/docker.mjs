@@ -9,7 +9,8 @@ export function launchDockerComputer({repoRoot,agent,computer,task,runId,image='
   const workspace=path.join(computerRoot,'workspace');
   const home=path.join(computerRoot,'home');
   const tmp=path.join(computerRoot,'tmp');
-  [workspace,home,tmp].forEach(p=>fs.mkdirSync(p,{recursive:true}));
+  const receipts=path.join(computerRoot,'receipts');
+  [computerRoot,workspace,home,tmp,receipts].forEach(p=>{ fs.mkdirSync(p,{recursive:true}); try{ fs.chmodSync(p,0o777); }catch{} });
 
   const containerName=safeName(`cc-${agent.id}-${runId}`);
   const args=[
