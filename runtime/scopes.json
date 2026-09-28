@@ -1,0 +1,63 @@
+{
+  "version": 1,
+  "law": "Each agent computer receives only its explicit read bundle plus its own writable computer root. Cross-district reads require an explicit grant.",
+  "shared_read": [
+    "HEART_AND_SOUL.md",
+    "client/crown-and-core/FACTS.md",
+    "client/crown-and-core/PUBLIC_TRUTH.md",
+    "data/current-state.json"
+  ],
+  "districts": {
+    "management": {
+      "read": [
+        "runtime/agents.json",
+        "runtime/computers.json",
+        "runtime/tasks.json"
+      ]
+    },
+    "conversion": {
+      "read": [
+        "districts/conversion",
+        "data/evidence/public-web-2026-09-28.json"
+      ]
+    },
+    "return": {
+      "read": [
+        "districts/return",
+        "districts/middleton/POLICY.md"
+      ]
+    },
+    "trust": {
+      "read": [
+        "districts/trust",
+        "districts/middleton/POLICY.md",
+        "data/evidence/public-web-2026-09-28.json"
+      ]
+    },
+    "nurture": {
+      "read": [
+        "districts/nurture"
+      ]
+    },
+    "reception": {
+      "read": [
+        "districts/reception"
+      ]
+    },
+    "media": {
+      "read": [
+        "districts/media"
+      ]
+    },
+    "performance": {
+      "read": [
+        "districts/performance"
+      ]
+    },
+    "middleton": {
+      "read": [
+        "districts/middleton"
+      ]
+    }
+  }
+}
