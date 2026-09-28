@@ -17,7 +17,12 @@
     "google_review_flow_active": null,
     "attribution_ready": null,
     "monthly_ad_spend": null,
-    "monthly_attributable_revenue": null
+    "monthly_attributable_revenue": null,
+    "booking_destination_verified": true,
+    "booking_service_catalog_verified": true,
+    "booking_completion_verified": null
   },
-  "notes": []
+  "notes": [
+    "Public CTA -> Square service catalog verified 2026-09-28. Full booking completion remains unverified."
+  ]
 }
