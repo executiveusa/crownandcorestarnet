@@ -1,7 +1,7 @@
 {
   "name": "crownandcore-operations",
   "private": true,
-  "version": "0.4.0",
+  "version": "0.5.0",
   "type": "module",
   "scripts": {
     "system:check": "node workflows/system-check/index.mjs",
@@ -12,8 +12,9 @@
     "media:plan": "node workflows/media-engine/index.mjs",
     "report:monthly": "node workflows/monthly-report/index.mjs",
     "test": "node test/verify.mjs",
-    "verify": "npm run system:check && npm run middleton:validate && npm run runtime:validate && npm run runtime:prove && npm test",
+    "verify": "npm run system:check && npm run middleton:validate && npm run runtime:validate && npm run runtime:prove && npm run runtime:mission && npm test",
     "runtime:validate": "node runtime/validate.mjs",
-    "runtime:prove": "node runtime/supervisor.mjs"
+    "runtime:prove": "node runtime/supervisor.mjs",
+    "runtime:mission": "node runtime/orchestrator.mjs --mission=runtime/missions/proof-all.json"
   }
 }
