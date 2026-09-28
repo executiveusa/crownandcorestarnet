@@ -1,0 +1,135 @@
+{
+  "version": 1,
+  "connectors": [
+    {
+      "id": "public-web",
+      "districts": [
+        "conversion",
+        "trust"
+      ],
+      "mode": "read_only",
+      "status": "ready_no_auth",
+      "required_env": [],
+      "purpose": "public website/listing evidence"
+    },
+    {
+      "id": "square",
+      "districts": [
+        "conversion",
+        "return",
+        "nurture",
+        "performance"
+      ],
+      "mode": "read_only_first",
+      "status": "blocked_missing_auth",
+      "required_env": [
+        "CC_SQUARE_ACCESS_TOKEN"
+      ],
+      "optional_env": [
+        "CC_SQUARE_LOCATION_ID"
+      ],
+      "purpose": "customers, bookings, visits, orders/payments/revenue as authorized"
+    },
+    {
+      "id": "meta",
+      "districts": [
+        "performance",
+        "media",
+        "conversion"
+      ],
+      "mode": "read_only_first",
+      "status": "blocked_missing_auth",
+      "required_env": [
+        "CC_META_ACCESS_TOKEN",
+        "CC_META_AD_ACCOUNT_ID"
+      ],
+      "optional_env": [
+        "CC_META_PAGE_ID",
+        "CC_META_IG_ACCOUNT_ID"
+      ],
+      "purpose": "campaign, creative and account performance"
+    },
+    {
+      "id": "google-business",
+      "districts": [
+        "trust",
+        "performance"
+      ],
+      "mode": "read_only_first",
+      "status": "blocked_missing_auth",
+      "required_env": [
+        "CC_GOOGLE_ACCESS_TOKEN"
+      ],
+      "optional_env": [
+        "CC_GOOGLE_BUSINESS_ACCOUNT_ID",
+        "CC_GOOGLE_LOCATION_ID"
+      ],
+      "purpose": "business profile and review/reputation data"
+    },
+    {
+      "id": "analytics",
+      "districts": [
+        "conversion",
+        "performance"
+      ],
+      "mode": "read_only_first",
+      "status": "blocked_missing_auth",
+      "required_env": [
+        "CC_GA4_PROPERTY_ID",
+        "CC_GOOGLE_ACCESS_TOKEN"
+      ],
+      "optional_env": [],
+      "purpose": "traffic and conversion measurement"
+    },
+    {
+      "id": "communications",
+      "districts": [
+        "nurture",
+        "reception",
+        "return"
+      ],
+      "mode": "events_read_only_first",
+      "status": "blocked_provider_tbd",
+      "required_env": [],
+      "optional_env": [],
+      "purpose": "missed-call and inquiry events; approved messaging later"
+    },
+    {
+      "id": "perspective",
+      "districts": [
+        "conversion"
+      ],
+      "mode": "draft_first",
+      "status": "blocked_missing_auth",
+      "required_env": [
+        "CC_PERSPECTIVE_TOKEN"
+      ],
+      "optional_env": [],
+      "purpose": "service/campaign funnels"
+    },
+    {
+      "id": "riverside",
+      "districts": [
+        "media"
+      ],
+      "mode": "ingest_first",
+      "status": "blocked_missing_auth",
+      "required_env": [
+        "CC_RIVERSIDE_TOKEN"
+      ],
+      "optional_env": [],
+      "purpose": "podcast/interview recordings and transcripts"
+    },
+    {
+      "id": "media-storage",
+      "districts": [
+        "media"
+      ],
+      "mode": "read_write_approved_assets",
+      "status": "blocked_provider_tbd",
+      "required_env": [],
+      "optional_env": [],
+      "purpose": "owned source media and approved derivatives"
+    }
+  ]
+}

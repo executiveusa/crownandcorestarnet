@@ -19,6 +19,8 @@ if(new Set(tasks.tasks.map(x=>x.agent_id)).size!==tasks.tasks.length) failures.p
 
 for(const agent of allAgents){
   if(!tasks.tasks.some(x=>x.agent_id===agent.id)) failures.push(`missing task assignment for ${agent.id}`);
+  const promptPath=path.join(root,'agents','workers',agent.id,'PROMPT.md');
+  if(!fs.existsSync(promptPath)) failures.push(`missing prompt contract for ${agent.id}`);
   const computer=computers.computers.find(x=>x.id===agent.computer_id);
   if(!computer) failures.push(`missing computer for ${agent.id}`);
   else {
