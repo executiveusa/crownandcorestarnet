@@ -41,6 +41,9 @@ export function verifyReceipt({receipt,repoRoot,agentsDoc,computersDoc,tasksDoc}
 
   if(!(receipt.evidence||[]).some(x=>x.type==='isolation_probe'&&x.passed===true)) errors.push('missing isolation proof');
   if(!(receipt.evidence||[]).some(x=>x.type==='domain_assertion')) errors.push('missing domain assertion');
+  const modelRun=(receipt.evidence||[]).find(x=>x.type==='model_run');
+  if(!modelRun) errors.push('missing model-run proof');
+  else if(!/^[a-f0-9]{64}$/.test(modelRun.response_sha256||'')) errors.push('invalid model response hash');
 
   return {verified:errors.length===0,errors};
 }
