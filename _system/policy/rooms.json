@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "manager": "manny",
+  "rooms": [
+    {"id":"conversion","goal":"Reduce friction between interest and booking","write_live":false},
+    {"id":"return","goal":"Recover and retain existing customers","write_live":false},
+    {"id":"trust","goal":"Collect feedback, reviews, referrals and permissioned proof","write_live":false},
+    {"id":"nurture","goal":"Improve inquiry follow-up, reminders and no-show recovery","write_live":false},
+    {"id":"reception","goal":"Capture missed calls, FAQs and human escalation","write_live":false},
+    {"id":"media","goal":"Build owned podcast, founder, expert and service media assets","write_live":false},
+    {"id":"performance","goal":"Measure experiments, attribution, receipts and reporting","write_live":false}
+  ]
+}
