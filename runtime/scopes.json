@@ -1,15 +1,16 @@
 {
-  "version": 1,
-  "law": "Each agent computer receives only its explicit read bundle plus its own writable computer root. Cross-district reads require an explicit grant.",
+  "version": 2,
+  "law": "ICM load-only-what-the-step-needs. Each agent computer receives explicit shared truth, its district CONTEXT, named references, its own prompt, and its own writable computer root. Cross-district reads require an explicit grant.",
   "shared_read": [
-    "HEART_AND_SOUL.md",
-    "client/crown-and-core/FACTS.md",
-    "client/crown-and-core/PUBLIC_TRUTH.md",
-    "data/current-state.json"
+    "_shared/policy/HEART_AND_SOUL.md",
+    "_shared/client/FACTS.md",
+    "_shared/client/PUBLIC_TRUTH.md",
+    "_shared/state/current-state.json"
   ],
   "districts": {
     "management": {
       "read": [
+        "districts/management/CONTEXT.md",
         "runtime/agents.json",
         "runtime/computers.json",
         "runtime/tasks.json"
@@ -17,46 +18,56 @@
     },
     "conversion": {
       "read": [
-        "districts/conversion",
-        "data/evidence/public-web-2026-09-28.json"
+        "districts/conversion/CONTEXT.md",
+        "_shared/evidence/public-web-2026-09-28.json",
+        "_shared/evidence/public-booking-path-2026-09-28.json",
+        "_shared/client/CUSTOMER_JOURNEY.md"
       ]
     },
     "return": {
       "read": [
-        "districts/return",
+        "districts/return/CONTEXT.md",
+        "_shared/client/BUSINESS_MODEL.md",
         "districts/middleton/POLICY.md"
       ]
     },
     "trust": {
       "read": [
-        "districts/trust",
-        "districts/middleton/POLICY.md",
-        "data/evidence/public-web-2026-09-28.json"
+        "districts/trust/CONTEXT.md",
+        "_shared/evidence/public-web-2026-09-28.json",
+        "districts/middleton/POLICY.md"
       ]
     },
     "nurture": {
       "read": [
-        "districts/nurture"
+        "districts/nurture/CONTEXT.md",
+        "_shared/client/CUSTOMER_JOURNEY.md"
       ]
     },
     "reception": {
       "read": [
-        "districts/reception"
+        "districts/reception/CONTEXT.md",
+        "_shared/client/CUSTOMER_JOURNEY.md"
       ]
     },
     "media": {
       "read": [
-        "districts/media"
+        "districts/media/CONTEXT.md",
+        "_shared/client/BUSINESS_MODEL.md"
       ]
     },
     "performance": {
       "read": [
-        "districts/performance"
+        "districts/performance/CONTEXT.md"
       ]
     },
     "middleton": {
       "read": [
-        "districts/middleton"
+        "districts/middleton/CONTEXT.md",
+        "districts/middleton/POLICY.md",
+        "districts/middleton/canon/system.json",
+        "districts/middleton/canon/metrics.md",
+        "districts/middleton/canon/scripts.md"
       ]
     }
   }
