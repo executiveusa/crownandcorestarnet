@@ -10,7 +10,8 @@
       "assign",
       "approve_request",
       "report"
-    ]
+    ],
+    "prompt_path": "districts/management/agents/manny/PROMPT.md"
   },
   "agents": [
     {
@@ -23,7 +24,8 @@
         "analyze",
         "draft",
         "write_workspace"
-      ]
+      ],
+      "prompt_path": "districts/conversion/agents/path-auditor/PROMPT.md"
     },
     {
       "id": "funnel-builder",
@@ -35,7 +37,8 @@
         "analyze",
         "draft",
         "write_workspace"
-      ]
+      ],
+      "prompt_path": "districts/conversion/agents/funnel-builder/PROMPT.md"
     },
     {
       "id": "reactivation-analyst",
@@ -47,7 +50,8 @@
         "analyze",
         "draft",
         "write_workspace"
-      ]
+      ],
+      "prompt_path": "districts/return/agents/reactivation-analyst/PROMPT.md"
     },
     {
       "id": "r3-planner",
@@ -59,7 +63,8 @@
         "analyze",
         "draft",
         "write_workspace"
-      ]
+      ],
+      "prompt_path": "districts/return/agents/r3-planner/PROMPT.md"
     },
     {
       "id": "feedback-architect",
@@ -71,7 +76,8 @@
         "analyze",
         "draft",
         "write_workspace"
-      ]
+      ],
+      "prompt_path": "districts/trust/agents/feedback-architect/PROMPT.md"
     },
     {
       "id": "reputation-auditor",
@@ -83,7 +89,8 @@
         "analyze",
         "draft",
         "write_workspace"
-      ]
+      ],
+      "prompt_path": "districts/trust/agents/reputation-auditor/PROMPT.md"
     },
     {
       "id": "lead-response-auditor",
@@ -95,7 +102,8 @@
         "analyze",
         "draft",
         "write_workspace"
-      ]
+      ],
+      "prompt_path": "districts/nurture/agents/lead-response-auditor/PROMPT.md"
     },
     {
       "id": "recovery-planner",
@@ -107,7 +115,8 @@
         "analyze",
         "draft",
         "write_workspace"
-      ]
+      ],
+      "prompt_path": "districts/nurture/agents/recovery-planner/PROMPT.md"
     },
     {
       "id": "missed-call-auditor",
@@ -119,7 +128,8 @@
         "analyze",
         "draft",
         "write_workspace"
-      ]
+      ],
+      "prompt_path": "districts/reception/agents/missed-call-auditor/PROMPT.md"
     },
     {
       "id": "receptionist-designer",
@@ -131,7 +141,8 @@
         "analyze",
         "draft",
         "write_workspace"
-      ]
+      ],
+      "prompt_path": "districts/reception/agents/receptionist-designer/PROMPT.md"
     },
     {
       "id": "producer",
@@ -143,7 +154,8 @@
         "analyze",
         "draft",
         "write_workspace"
-      ]
+      ],
+      "prompt_path": "districts/media/agents/producer/PROMPT.md"
     },
     {
       "id": "clip-librarian",
@@ -155,7 +167,8 @@
         "analyze",
         "draft",
         "write_workspace"
-      ]
+      ],
+      "prompt_path": "districts/media/agents/clip-librarian/PROMPT.md"
     },
     {
       "id": "attribution-auditor",
@@ -167,7 +180,8 @@
         "read_receipts",
         "analyze",
         "write_report"
-      ]
+      ],
+      "prompt_path": "districts/performance/agents/attribution-auditor/PROMPT.md"
     },
     {
       "id": "receipt-verifier",
@@ -179,7 +193,8 @@
         "read_receipts",
         "analyze",
         "write_report"
-      ]
+      ],
+      "prompt_path": "districts/performance/agents/receipt-verifier/PROMPT.md"
     },
     {
       "id": "method-librarian",
@@ -191,7 +206,8 @@
         "analyze",
         "draft",
         "write_workspace"
-      ]
+      ],
+      "prompt_path": "districts/middleton/agents/method-librarian/PROMPT.md"
     },
     {
       "id": "experiment-auditor",
@@ -203,7 +219,8 @@
         "analyze",
         "draft",
         "write_workspace"
-      ]
+      ],
+      "prompt_path": "districts/middleton/agents/experiment-auditor/PROMPT.md"
     }
   ]
 }
