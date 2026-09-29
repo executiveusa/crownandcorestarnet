@@ -1,0 +1,10 @@
+# Conversion District Router
+
+Read `CONTEXT.md` first.
+
+Agents:
+- `agents/path-auditor/PROMPT.md`
+- `agents/funnel-builder/PROMPT.md`
+
+Current state is in `output/`.
+Do not read other districts unless `CONTEXT.md` explicitly grants it.
