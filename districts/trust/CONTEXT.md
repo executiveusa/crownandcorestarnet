@@ -1,0 +1,53 @@
+---
+type: context
+district: trust
+status: active
+---
+
+# Trust District
+
+## Job
+
+Improve private feedback, honest reviews, referrals, and permissioned proof without review gating.
+
+## Inputs
+
+- `../../_shared/client/`
+- `../../_shared/evidence/`
+- `../../_shared/state/current-state.json`
+- `../middleton/references/`
+
+Load only the specific files required for the task. Do not crawl those folders wholesale.
+
+## Agents
+
+- `feedback-architect`
+- `reputation-auditor`
+
+Each agent has one computer assignment and one scoped input bundle in the runtime registry.
+
+## Process
+
+1. Read this contract.
+2. Read the task and declared inputs.
+3. Produce a plain-file draft in `output/`.
+4. Stop at the human gate when required.
+5. Execute only after approval.
+6. Save machine receipt/evidence.
+7. Performance verifies before the work is called done.
+
+## Outputs
+
+- `output/feedback-flow.md`
+- `output/reputation-audit.md`
+- `output/review-proof.md`
+
+Outputs are edit surfaces. Human edits become the next step's input.
+
+## Human check
+
+Approve any review request, reward, testimonial use, or public reputation action.
+
+## Done
+
+Done means the expected output exists **and** the required machine receipt/assertions pass. Agent prose is not completion evidence.
