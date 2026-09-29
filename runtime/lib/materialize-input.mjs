@@ -40,7 +40,7 @@ export function materializeAgentInput({ repoRoot, computerRoot, agent }) {
   const paths = [
     ...(scopes.shared_read || []),
     ...(districtScope.read || []),
-    'agents/workers/' + agent.id + '/PROMPT.md'
+    agent.prompt_path || ('agents/workers/' + agent.id + '/PROMPT.md')
   ];
 
   const unique = [...new Set(paths)];
