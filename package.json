@@ -12,7 +12,7 @@
     "media:plan": "node workflows/media-engine/index.mjs",
     "report:monthly": "node workflows/monthly-report/index.mjs",
     "test": "node test/verify.mjs",
-    "verify": "npm run system:check && npm run middleton:validate && npm run runtime:validate && npm run runtime:prove && npm run runtime:mission && npm run data:readiness && npm run runtime:model:prove && npm run intake:prove && npm run booking:proof && npm test",
+    "verify": "npm run system:check && npm run middleton:validate && npm run icm:walk && npm run runtime:validate && npm run runtime:prove && npm run runtime:mission && npm run data:readiness && npm run runtime:model:prove && npm run intake:prove && npm run booking:proof && npm test",
     "runtime:validate": "node runtime/validate.mjs",
     "runtime:prove": "node runtime/supervisor.mjs",
     "runtime:mission": "node runtime/orchestrator.mjs --mission=runtime/missions/proof-all.json",
@@ -23,6 +23,7 @@
     "intake:prove": "node workflows/read-only-intake/index.mjs --mode=fixture",
     "square:read:smoke": "node integrations/live-square-smoke.mjs",
     "runtime:mission:docker": "node runtime/orchestrator.mjs --backend=docker --mission=runtime/missions/proof-all.json",
-    "booking:proof": "node test/booking-proof.mjs"
+    "booking:proof": "node test/booking-proof.mjs",
+    "icm:walk": "node test/icm-walk.mjs"
   }
 }
