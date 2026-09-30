@@ -46,7 +46,7 @@ const runResults=await Promise.all(selected.map(async (x,index)=>{
   try{
     const receipt=await launchComputer({repoRoot,agent:x.agent,computer:x.computer,task:x.task,runId});
     const verification=verifyReceipt({receipt,repoRoot,agentsDoc,computersDoc,tasksDoc});
-    const final={...job,status:verification.verified?'VERIFIED':'FAILED_PROOF',ended_at:new Date().toISOString(),receipt,verification};
+    const final={...job,status:verification.verified?'VERIFIED':'FAILED_PROOF',verification_tier:receipt.verification_tier,business_output_verified:receipt.business_output_verified===true,ended_at:new Date().toISOString(),receipt,verification};
     fs.writeFileSync(path.join(jobsDir,`${runId}.job.json`),JSON.stringify(final,null,2)+'\n');
     return final;
   }catch(e){
@@ -66,15 +66,18 @@ const summary={
   ended_at:new Date().toISOString(),
   requested_agents:wanted.length,
   verified_jobs:runResults.filter(x=>x.status==='VERIFIED').length,
+  operationally_verified_jobs:runResults.filter(x=>x.status==='VERIFIED'&&x.business_output_verified===true).length,
+  structurally_verified_jobs:runResults.filter(x=>x.status==='VERIFIED'&&x.business_output_verified!==true).length,
   failed_jobs:failures.length,
   status:failures.length?'FAILED':'VERIFIED',
-  jobs:runResults.map(x=>({id:x.id,agent_id:x.agent_id,district:x.district,computer_id:x.computer_id,task:x.task,status:x.status}))
+  business_status:failures.length?'FAILED':(runResults.every(x=>x.business_output_verified===true)?'OPERATIONAL':'STRUCTURAL_ONLY'),
+  jobs:runResults.map(x=>({id:x.id,agent_id:x.agent_id,district:x.district,computer_id:x.computer_id,task:x.task,status:x.status,verification_tier:x.verification_tier,business_output_verified:x.business_output_verified===true}))
 };
 const raw=JSON.stringify(summary,null,2)+'\n';
 summary.sha256=crypto.createHash('sha256').update(raw).digest('hex');
 fs.writeFileSync(path.join(jobsDir,'MISSION-RECEIPT.json'),JSON.stringify(summary,null,2)+'\n');
 
-console.log(`${summary.status}: ${summary.mission_id} — ${summary.verified_jobs}/${summary.requested_agents} jobs verified`);
+console.log(`${summary.status}: ${summary.mission_id} — ${summary.verified_jobs}/${summary.requested_agents} jobs verified; business=${summary.business_status}`);
 if(failures.length){
   failures.forEach(x=>console.error(`- ${x.agent_id}: ${x.status}`));
   process.exit(1);
