@@ -30,12 +30,12 @@ Each container gets:
 - all Linux capabilities dropped;
 - no-new-privileges;
 - PID, memory and CPU limits;
-- read-only runtime code at `/runtime`;
-- scoped input bundle at `/input`, not the whole repository.
+- read-only canonical runtime code from `_system/runtime/`, mounted at `/runtime`;
+- scoped ICM input bundle at `/input`, not the whole repository.
 
 ## District isolation
 
-`runtime/scopes.json` is the capability map.
+`_system/runtime/scopes.json` is the capability map.
 
 Every district receives:
 
