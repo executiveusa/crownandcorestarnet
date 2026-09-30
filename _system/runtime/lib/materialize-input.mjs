@@ -37,10 +37,11 @@ export function materializeAgentInput({ repoRoot, computerRoot, agent }) {
   fs.rmSync(bundleRoot, { recursive: true, force: true });
   fs.mkdirSync(bundleRoot, { recursive: true });
 
+  if (!agent.prompt_path) throw new Error('ICM agent missing explicit prompt_path: ' + agent.id);
   const paths = [
     ...(scopes.shared_read || []),
     ...(districtScope.read || []),
-    agent.prompt_path || ('agents/workers/' + agent.id + '/PROMPT.md')
+    agent.prompt_path
   ];
 
   const unique = [...new Set(paths)];

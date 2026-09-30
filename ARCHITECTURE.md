@@ -2,7 +2,7 @@
 
 Canonical architecture lives in [CONTEXT.md](CONTEXT.md).
 
-Migration status and old-path -> new-path mapping live in [docs/icm/MIGRATION_MAP.md](docs/icm/MIGRATION_MAP.md).
+Migration status and old-path -> new-path mapping live in [_system/method/MIGRATION_MAP.md](_system/method/MIGRATION_MAP.md).
 
 Runtime implementation lives in [_system/runtime/](_system/runtime/).
 

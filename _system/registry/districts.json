@@ -1,0 +1,95 @@
+{
+  "version": 1,
+  "manager": "manny",
+  "districts": [
+    {
+      "id": "management",
+      "isolated": true,
+      "external_writes": false,
+      "agents": [
+        "manny"
+      ],
+      "context": "districts/management/CONTEXT.md"
+    },
+    {
+      "id": "conversion",
+      "isolated": true,
+      "external_writes": false,
+      "agents": [
+        "path-auditor",
+        "funnel-builder"
+      ],
+      "context": "districts/conversion/CONTEXT.md"
+    },
+    {
+      "id": "return",
+      "isolated": true,
+      "external_writes": false,
+      "agents": [
+        "reactivation-analyst",
+        "r3-planner"
+      ],
+      "context": "districts/return/CONTEXT.md"
+    },
+    {
+      "id": "trust",
+      "isolated": true,
+      "external_writes": false,
+      "agents": [
+        "feedback-architect",
+        "reputation-auditor"
+      ],
+      "context": "districts/trust/CONTEXT.md"
+    },
+    {
+      "id": "nurture",
+      "isolated": true,
+      "external_writes": false,
+      "agents": [
+        "lead-response-auditor",
+        "recovery-planner"
+      ],
+      "context": "districts/nurture/CONTEXT.md"
+    },
+    {
+      "id": "reception",
+      "isolated": true,
+      "external_writes": false,
+      "agents": [
+        "missed-call-auditor",
+        "receptionist-designer"
+      ],
+      "context": "districts/reception/CONTEXT.md"
+    },
+    {
+      "id": "media",
+      "isolated": true,
+      "external_writes": false,
+      "agents": [
+        "producer",
+        "clip-librarian"
+      ],
+      "context": "districts/media/CONTEXT.md"
+    },
+    {
+      "id": "performance",
+      "isolated": true,
+      "external_writes": false,
+      "agents": [
+        "attribution-auditor",
+        "receipt-verifier"
+      ],
+      "context": "districts/performance/CONTEXT.md"
+    },
+    {
+      "id": "middleton",
+      "isolated": true,
+      "external_writes": false,
+      "agents": [
+        "method-librarian",
+        "experiment-auditor"
+      ],
+      "context": "districts/middleton/CONTEXT.md"
+    }
+  ]
+}

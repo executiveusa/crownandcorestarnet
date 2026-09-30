@@ -8,12 +8,37 @@ const districts=['management','conversion','return','trust','nurture','reception
 function exists(rel){ return fs.existsSync(path.join(root,rel)); }
 function lines(rel){ return fs.readFileSync(path.join(root,rel),'utf8').split(/\r?\n/).length; }
 
-for(const rel of ['CLAUDE.md','CONTEXT.md','_system/CONTEXT.md','_shared/CONTEXT.md','docs/icm/MIGRATION_MAP.md']){
+for(const rel of ['CLAUDE.md','CONTEXT.md','_system/CONTEXT.md','_shared/CONTEXT.md','_system/method/MIGRATION_MAP.md','_system/method/ICM_ARCHITECTURE.md']){
   if(!exists(rel)) failures.push('missing ICM root file: '+rel);
 }
 if(exists('CLAUDE.md') && lines('CLAUDE.md')>60) failures.push('root CLAUDE.md exceeds ~60-line routing target');
 
+const forbiddenLegacy=[
+  'runtime','config','integrations','schemas','schedules','test','workflows',
+  'agents','client','data','lib','registry','scripts',
+  'HEART_AND_SOUL.md','UPSTREAM.md','docs'
+];
+for(const rel of forbiddenLegacy){
+  if(exists(rel)) failures.push('legacy duplicate remains outside ICM home: '+rel);
+}
+
+for(const rel of [
+  '_system/method/ICM_ARCHITECTURE.md',
+  '_system/registry/districts.yaml',
+  '_system/registry/districts.json',
+  '_system/references/UPSTREAM.md',
+  '_system/templates/CLAUDE.md',
+  '_system/templates/CONTEXT.md',
+  '_system/scripts/bootstrap-upstream.sh',
+  '_system/scripts/bootstrap-upstream.ps1',
+  '_system/schedules/schedules.json',
+  '_system/schemas/action-request.example.json'
+]){
+  if(!exists(rel)) failures.push('missing canonical system factory file: '+rel);
+}
+
 for(const d of districts){
+  if(exists(`districts/${d}/district.json`)) failures.push(`legacy district.json remains in ${d}`);
   for(const rel of [`districts/${d}/CLAUDE.md`,`districts/${d}/CONTEXT.md`,`districts/${d}/output/.gitkeep`]){
     if(!exists(rel)) failures.push('missing district ICM surface: '+rel);
   }
@@ -47,3 +72,4 @@ console.log('Root router <= 60 lines.');
 console.log('District contracts: '+districts.length);
 console.log('District-owned agent prompts: '+agents.length);
 console.log('Runtime shared inputs route through _shared.');
+console.log('No forbidden legacy root copies remain.');

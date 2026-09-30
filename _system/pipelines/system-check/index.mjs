@@ -4,12 +4,13 @@ import path from 'node:path';
 const root=process.cwd();
 const failures=[];
 const required=[
-  'CLAUDE.md','CONTEXT.md','docs/PRD.md',
+  'CLAUDE.md','CONTEXT.md','_system/references/PRD.md',
   '_shared/policy/HEART_AND_SOUL.md',
   '_system/policy/rooms.json','_system/policy/permissions.json',
   '_system/integrations/manifest.json','_system/integrations/contracts.json',
   '_system/schedules/schedules.json',
   '_system/runtime/agents.json','_system/runtime/computers.json',
+  '_system/registry/districts.json',
   'districts/middleton/POLICY.md','districts/middleton/canon/system.json'
 ];
 for(const rel of required) if(!fs.existsSync(path.join(root,rel))) failures.push('missing required file: '+rel);

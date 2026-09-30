@@ -11,7 +11,7 @@ This repository is **not Pauli StarNet** and does not depend on it.
 - System factory: `_system/`
 - Shared Crown & Core truth: `_shared/`
 - Business work: `districts/`
-- ICM migration ledger: `docs/icm/MIGRATION_MAP.md`
+- ICM migration ledger: `_system/method/MIGRATION_MAP.md`
 
 ## Proof standard
 

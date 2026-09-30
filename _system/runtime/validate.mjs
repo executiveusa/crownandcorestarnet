@@ -6,6 +6,7 @@ const agents=JSON.parse(fs.readFileSync(path.join(root,'_system','runtime','agen
 const computers=JSON.parse(fs.readFileSync(path.join(root,'_system','runtime','computers.json'),'utf8'));
 const tasks=JSON.parse(fs.readFileSync(path.join(root,'_system','runtime','tasks.json'),'utf8'));
 const scopes=JSON.parse(fs.readFileSync(path.join(root,'_system','runtime','scopes.json'),'utf8'));
+const districtRegistry=JSON.parse(fs.readFileSync(path.join(root,'_system','registry','districts.json'),'utf8'));
 const failures=[];
 
 const allAgents=[agents.manager,...agents.agents];
@@ -45,15 +46,15 @@ for(const district of scopeDistricts){
 for(const rel of (scopes.shared_read||[])){
   if(path.isAbsolute(rel)||rel.split(/[\\/]+/).includes('..')) failures.push(`unsafe shared scope path: ${rel}`);
 }
-for(const district of districts){
-  const districtPath=path.join(root,'districts',district,'district.json');
-  if(!fs.existsSync(districtPath)){ failures.push(`missing district manifest: ${district}`); continue; }
-  const d=JSON.parse(fs.readFileSync(districtPath,'utf8'));
+for(const district of ['management',...districts]){
+  const d=districtRegistry.districts?.find(x=>x.id===district);
+  if(!d){ failures.push(`missing canonical district registry entry: ${district}`); continue; }
   if(d.isolated!==true) failures.push(`district not isolated: ${district}`);
-  const expected=agents.agents.filter(x=>x.district===district).map(x=>x.id).sort();
+  const expected=(district==='management' ? [agents.manager.id] : agents.agents.filter(x=>x.district===district).map(x=>x.id)).sort();
   const actual=[...(d.agents||[])].sort();
   if(JSON.stringify(expected)!==JSON.stringify(actual)) failures.push(`district agent roster mismatch: ${district}`);
   if(d.external_writes!==false) failures.push(`proof-mode district allows external writes: ${district}`);
+  if(d.context!==`districts/${district}/CONTEXT.md`) failures.push(`district context registry mismatch: ${district}`);
 }
 
 if(failures.length){
