@@ -3,7 +3,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 
 const root=process.cwd();
-const baselineBefore=fs.readFileSync(path.join(root,'data','current-state.json'),'utf8');
+const baselineBefore=fs.readFileSync(path.join(root,'_shared','state','current-state.json'),'utf8');
 const r=spawnSync(process.execPath,['workflows/read-only-intake/index.mjs','--mode=fixture'],{cwd:root,encoding:'utf8'});
 if(r.status!==0){ console.error(r.stdout,r.stderr); process.exit(r.status||1); }
 
@@ -21,7 +21,7 @@ if(square?.observed?.monthly_gross_order_total!==325) failures.push('Square fixt
 const blocked=spawnSync(process.execPath,['workflows/read-only-intake/index.mjs','--mode=fixture','--apply=true'],{cwd:root,encoding:'utf8'});
 if(blocked.status===0) failures.push('synthetic fixture was allowed to apply');
 
-const liveNoAuth=spawnSync(process.execPath,['integrations/live-square-smoke.mjs'],{cwd:root,encoding:'utf8',env:{PATH:process.env.PATH||''}});
+const liveNoAuth=spawnSync(process.execPath,['_system/integrations/live-square-smoke.mjs'],{cwd:root,encoding:'utf8',env:{PATH:process.env.PATH||''}});
 if(liveNoAuth.status!==3) failures.push(`Square live smoke should block with code 3 without auth, got ${liveNoAuth.status}`);
 
 if(failures.length){
