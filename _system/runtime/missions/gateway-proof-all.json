@@ -1,0 +1,5 @@
+{
+  "id": "gateway-proof-all-districts",
+  "purpose": "Prove every registered Crown & Core agent can run in its own isolated computer, reach only the internal model gateway, receive schema-valid model output, and remain non-operational until a live upstream is used.",
+  "agent_ids": []
+}
