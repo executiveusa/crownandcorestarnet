@@ -1,6 +1,6 @@
 # Crown & Core StarNet — ICM Migration Map
 
-Status: active migration. Runtime authority has moved to `_system/runtime/` and the legacy runtime copy has been removed after machine proof.
+Status: final verification. All known legacy root copies have been moved to canonical ICM homes and removed on the v4 migration branch. Merge is allowed only after full CI, ICM walk, 17-computer Docker proof, and Docker mission proof pass.
 
 The uploaded ICM Architect method is the architecture authority for this restructure.
 
@@ -123,6 +123,10 @@ The uploaded method explicitly notes that real multi-agent/high-concurrency beha
 | Root router + district contracts | VERIFIED | ICM walk test + full CI |
 | District-owned agent prompts | VERIFIED | 17-agent runtime registry + Docker proof |
 | Shared Crown & Core truth copies | VERIFIED AS READ INPUTS | Docker scope manifests read from `_shared/` |
-| Runtime authority -> `_system/runtime/` | IN VERIFICATION | PR #11 full CI and 17-container proof |
-| Legacy `runtime/` removal | IN VERIFICATION | Must pass PR #11 after deletion |
-| Remaining policy/integrations/tests/workflows | NOT YET MIGRATED | Future slices |
+| Root router + district contracts | VERIFIED | ICM walk test + full CI |
+| District-owned agent prompts | VERIFIED | 17-agent runtime registry + Docker proof |
+| Shared Crown & Core truth -> `_shared/` | VERIFIED | Runtime scope manifests read canonical shared inputs |
+| Runtime authority -> `_system/runtime/` | VERIFIED | Full CI + 17-container proof |
+| System pipelines/tests -> `_system/` + district stages | VERIFIED | PR #12 full CI + Docker proof |
+| Policy/integrations/schemas/schedules/scripts/registry -> `_system/` | FINAL VERIFICATION | v4 branch |
+| Legacy root duplicates removed | FINAL VERIFICATION | ICM walk now fails if any forbidden legacy root returns |
