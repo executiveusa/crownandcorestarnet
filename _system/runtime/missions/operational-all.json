@@ -1,0 +1,5 @@
+{
+  "id": "operational-all-districts",
+  "purpose": "Run every registered Crown & Core agent through the isolated model gateway using a live upstream model and require operational verification receipts.",
+  "agent_ids": []
+}
