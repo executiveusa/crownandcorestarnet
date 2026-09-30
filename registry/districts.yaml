@@ -1,9 +1,0 @@
-version: 1
-districts:
-  - id: middleton
-    tenant: crown-and-core
-    responsibility: revenue-gap-method-canon-and-experiments
-    status: LIVE
-    policy: districts/middleton/POLICY.md
-    canon: districts/middleton/canon/system.json
-    manager: agents/manny/AGENT.md
