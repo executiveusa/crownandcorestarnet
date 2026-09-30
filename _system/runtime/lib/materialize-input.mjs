@@ -29,7 +29,7 @@ function copyRecursive(src, dst, manifest, repoRoot) {
 }
 
 export function materializeAgentInput({ repoRoot, computerRoot, agent }) {
-  const scopes = JSON.parse(fs.readFileSync(path.join(repoRoot, 'runtime', 'scopes.json'), 'utf8'));
+  const scopes = JSON.parse(fs.readFileSync(path.join(repoRoot, '_system', 'runtime', 'scopes.json'), 'utf8'));
   const districtScope = scopes.districts?.[agent.district];
   if (!districtScope) throw new Error('no input scope for district ' + agent.district);
 
