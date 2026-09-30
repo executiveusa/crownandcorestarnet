@@ -1,0 +1,54 @@
+version: 2
+workspace: crown-and-core-starnet
+form:
+  - umbrella
+  - context-map
+
+districts:
+  - id: management
+    status: LIVE
+    context: districts/management/CONTEXT.md
+    manager: districts/management/agents/manny/PROMPT.md
+    responsibility: prioritize-route-approve-report
+
+  - id: conversion
+    status: LIVE
+    context: districts/conversion/CONTEXT.md
+    responsibility: discovery-to-booking-conversion
+
+  - id: return
+    status: LIVE
+    context: districts/return/CONTEXT.md
+    responsibility: reactivation-r3-repeat-visits
+
+  - id: trust
+    status: LIVE
+    context: districts/trust/CONTEXT.md
+    responsibility: feedback-reviews-referrals-proof
+
+  - id: nurture
+    status: LIVE
+    context: districts/nurture/CONTEXT.md
+    responsibility: inquiry-followup-reminders-no-show-recovery
+
+  - id: reception
+    status: LIVE
+    context: districts/reception/CONTEXT.md
+    responsibility: missed-calls-after-hours-faq-escalation
+
+  - id: media
+    status: LIVE
+    context: districts/media/CONTEXT.md
+    responsibility: podcast-founder-expert-owned-media
+
+  - id: performance
+    status: LIVE
+    context: districts/performance/CONTEXT.md
+    responsibility: receipts-attribution-verification-reporting
+
+  - id: middleton
+    status: LIVE
+    context: districts/middleton/CONTEXT.md
+    responsibility: revenue-gap-method-canon-and-experiments
+    policy: districts/middleton/POLICY.md
+    canon: districts/middleton/canon/system.json
