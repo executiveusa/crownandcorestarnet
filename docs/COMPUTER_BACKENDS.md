@@ -24,8 +24,8 @@ Purpose: stronger proof and deployable server runtime.
 Each agent run gets:
 - its own Docker container
 - unique hostname/runtime host ID
-- its own persistent computer directory mounted read/write
-- repository mounted read-only
+- its own persistent computer directory mounted read/write\n- a read-only scoped ICM input bundle instead of the full repository
+- canonical runtime code mounted read-only
 - container root filesystem read-only
 - network disabled during proof runs
 - all Linux capabilities dropped
