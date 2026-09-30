@@ -16,7 +16,8 @@ if(proof.candidate_state?.provenance?.synthetic!==true) failures.push('fixture c
 if(proof.snapshots?.length!==4) failures.push('expected four fixture snapshots');
 const square=proof.snapshots.find(x=>x.connector==='square');
 if(square?.metrics?.monthly_attributable_revenue!==null) failures.push('Square gross revenue was incorrectly labeled attributable');
-if(square?.observed?.monthly_gross_order_total!==325) failures.push('Square fixture gross total normalization wrong');
+if(square?.observed?.monthly_completed_order_totals?.USD!==325) failures.push('Square fixture completed order total normalization wrong');
+if(square?.metrics?.dormant_customers_90d_plus!==1) failures.push('Square fixture dormant count should be promoted only after complete-history proof');
 
 const blocked=spawnSync(process.execPath,['_system/pipelines/read-only-intake/index.mjs','--mode=fixture','--apply=true'],{cwd:root,encoding:'utf8'});
 if(blocked.status===0) failures.push('synthetic fixture was allowed to apply');
