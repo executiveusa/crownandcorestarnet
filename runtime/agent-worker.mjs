@@ -4,7 +4,7 @@ import crypto from 'node:crypto';
 import { resolveInside } from './lib/jail.mjs';
 import { runModel } from './model/index.mjs';
 
-const required = ['CC_AGENT_ID','CC_COMPUTER_ID','CC_DISTRICT','CC_RUN_ID','CC_COMPUTER_ROOT','CC_REPO_ROOT','CC_TASK'];
+const required = ['CC_AGENT_ID','CC_COMPUTER_ID','CC_DISTRICT','CC_RUN_ID','CC_COMPUTER_ROOT','CC_REPO_ROOT','CC_TASK','CC_PROMPT_PATH'];
 for (const key of required) {
   if (!process.env[key]) {
     console.error(JSON.stringify({status:'FAILED',error:`missing ${key}`}));
@@ -17,6 +17,7 @@ const computerId = process.env.CC_COMPUTER_ID;
 const district = process.env.CC_DISTRICT;
 const runId = process.env.CC_RUN_ID;
 const task = process.env.CC_TASK;
+const promptRel = process.env.CC_PROMPT_PATH;
 const runtimeBackend = process.env.CC_RUNTIME_BACKEND || 'local-process';
 const runtimeHostId = process.env.CC_RUNTIME_HOST_ID || process.env.HOSTNAME || null;
 const computerRoot = path.resolve(process.env.CC_COMPUTER_ROOT);
@@ -38,7 +39,7 @@ function assert(condition,message){
 }
 
 function executeDomainTask(){
-  const state=()=>readRepoJson('data','current-state.json');
+  const state=()=>readRepoJson('_shared','state','current-state.json');
   switch(task){
     case 'orchestration-integrity': {
       const a=readRepoJson('runtime','agents.json');
@@ -46,7 +47,7 @@ function executeDomainTask(){
       const all=[a.manager,...a.agents];
       return {agent_count:all.length,computer_count:c.computers.length,one_to_one:new Set(all.map(x=>x.computer_id)).size===all.length};
     }
-    case 'audit-booking-path': {      const pub=readRepoJson('data','evidence','public-web-2026-09-28.json');      const gapIds=(pub.observed_gaps||[]).map(x=>x.id);      return {        booking_path_verified:state().metrics.booking_path_verified,        booking_cta_present:pub.verified_public_facts.booking_cta_present,        booking_destination_verified:!gapIds.includes('booking-destination-unverified'),        public_conversion_gaps:gapIds.filter(x=>['hours-conflict','about-placeholders','event-price-placeholder','faq-content-mismatch','booking-destination-unverified'].includes(x)),        mutation:false      };    }
+    case 'audit-booking-path': {      const pub=readRepoJson('_shared','evidence','public-web-2026-09-28.json');      const gapIds=(pub.observed_gaps||[]).map(x=>x.id);      return {        booking_path_verified:state().metrics.booking_path_verified,        booking_cta_present:pub.verified_public_facts.booking_cta_present,        booking_destination_verified:!gapIds.includes('booking-destination-unverified'),        public_conversion_gaps:gapIds.filter(x=>['hours-conflict','about-placeholders','event-price-placeholder','faq-content-mismatch','booking-destination-unverified'].includes(x)),        mutation:false      };    }
     case 'draft-service-funnel':
       return {artifact_type:'funnel_draft',mobile_first:true,direct_booking_path:true,live_change:false,approval_required:true};
     case 'analyze-dormant-segment':
@@ -58,7 +59,7 @@ function executeDomainTask(){
     }
     case 'design-feedback-flow':
       return {private_feedback:true,same_treatment_all_sentiment:true,optional_honest_review:true,reward_independent_of_review:true};
-    case 'audit-reputation-state': {      const pub=readRepoJson('data','evidence','public-web-2026-09-28.json');      return {        google_review_flow_active:state().metrics.google_review_flow_active,        public_listing_observation:pub.verified_public_facts.public_listing_observation,        rule:'Do not relabel a generic public listing observation as a platform-specific review count without platform verification.'      };    }
+    case 'audit-reputation-state': {      const pub=readRepoJson('_shared','evidence','public-web-2026-09-28.json');      return {        google_review_flow_active:state().metrics.google_review_flow_active,        public_listing_observation:pub.verified_public_facts.public_listing_observation,        rule:'Do not relabel a generic public listing observation as a platform-specific review count without platform verification.'      };    }
     case 'audit-response-latency':
       return {median_lead_response_minutes:state().metrics.median_lead_response_minutes,classification:state().metrics.median_lead_response_minutes===null?'UNKNOWN':'MEASURED'};
     case 'draft-no-show-recovery':
@@ -158,13 +159,13 @@ try {
   if (!traversalBlocked) throw new Error('workspace traversal guard failed');
   evidence.push({type:'isolation_probe',passed:true});
 
-  const promptPath=path.join(repoRoot,'agents','workers',agentId,'PROMPT.md');
+  const promptPath=path.join(repoRoot,...promptRel.split('/'));
   if(!fs.existsSync(promptPath)) throw new Error('agent prompt contract missing');
   const systemPrompt=fs.readFileSync(promptPath,'utf8');
   const modelContext=[
-    readRepoText('client','crown-and-core','FACTS.md'),
-    readRepoText('client','crown-and-core','PUBLIC_TRUTH.md'),
-    readRepoText('HEART_AND_SOUL.md')
+    readRepoText('_shared','client','FACTS.md'),
+    readRepoText('_shared','client','PUBLIC_TRUTH.md'),
+    readRepoText('_shared','policy','HEART_AND_SOUL.md')
   ].join('\n\n---\n\n');
   const modelResult=await runModel({
     agent:{id:agentId,district,computer_id:computerId},
