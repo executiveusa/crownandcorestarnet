@@ -10,6 +10,7 @@ const required=[
   '_system/integrations/manifest.json','_system/integrations/contracts.json',
   '_system/schedules/schedules.json',
   '_system/runtime/agents.json','_system/runtime/computers.json',
+  '_system/registry/districts.json',
   'districts/middleton/POLICY.md','districts/middleton/canon/system.json'
 ];
 for(const rel of required) if(!fs.existsSync(path.join(root,rel))) failures.push('missing required file: '+rel);
