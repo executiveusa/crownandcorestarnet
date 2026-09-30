@@ -10,7 +10,7 @@ export function launchLocalProcess({repoRoot,agent,computer,task,runId}){
   [workspace,home,tmp].forEach(p=>fs.mkdirSync(p,{recursive:true}));
 
   return new Promise((resolve,reject)=>{
-    const child=spawn(process.execPath,[path.join(repoRoot,'runtime','agent-worker.mjs')],{
+    const child=spawn(process.execPath,[path.join(repoRoot,'_system','runtime','agent-worker.mjs')],{
       cwd:workspace,
       env:{
         PATH:process.env.PATH||'',
