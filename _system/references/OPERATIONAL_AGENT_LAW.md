@@ -14,11 +14,11 @@ A fixture model can prove the runtime path. It cannot prove that an AI agent per
 Every agent receipt records a verification tier:
 
 - `structural` — fixture/non-external model or otherwise non-operational analysis.
-- `operational` — external model call plus valid structured agent analysis.
+- `gateway` — isolated agent reached a model gateway and received schema-valid output, but the upstream is not trusted as live business reasoning.\n- `operational` — live trusted upstream model call plus valid structured agent analysis.
 
 ## Completion rule
 
-A runtime test may close with structural verification.
+A runtime test may close with structural verification. A model-network test may close with gateway verification.
 
 A business stage that depends on AI analysis may not be called operationally complete until:
 
@@ -34,3 +34,16 @@ A business stage that depends on AI analysis may not be called operationally com
 The model receives the district's explicit ICM scope, not a generic global context block.
 
 The context bundle is hashed and listed in the artifact so later verification can prove what evidence the model actually received.
+
+
+## Network law
+
+Operational Docker agents do not receive upstream model credentials and do not get general internet access.
+
+Each agent receives its own ephemeral **internal Docker network** containing only:
+- that agent computer;
+- the Crown & Core model gateway.
+
+The model gateway holds the upstream credential separately and is the only bridge to the upstream model provider.
+
+A deterministic mock upstream may prove the gateway/network path, but those receipts are tier `gateway` and set `business_output_verified=false`.
