@@ -20,6 +20,9 @@ if(tasks.tasks.length!==allAgents.length) failures.push('task assignment count m
 if(new Set(tasks.tasks.map(x=>x.agent_id)).size!==tasks.tasks.length) failures.push('duplicate task agent assignments');
 if(computers.proof_backend!=='docker') failures.push('docker must be the proof backend');
 if(computers.isolation_authority!=='runtime:prove:docker') failures.push('docker isolation authority not declared');
+if(computers.operational_backend!=='docker-operational') failures.push('docker-operational must be declared as operational backend');
+if(!fs.existsSync(path.join(root,'_system','runtime','backends','docker-operational.mjs'))) failures.push('missing docker-operational backend');
+if(!fs.existsSync(path.join(root,'_system','runtime','model-gateway','server.mjs'))) failures.push('missing model gateway');
 
 for(const agent of allAgents){
   if(!tasks.tasks.some(x=>x.agent_id===agent.id)) failures.push(`missing task assignment for ${agent.id}`);
