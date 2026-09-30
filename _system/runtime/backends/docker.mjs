@@ -5,7 +5,7 @@ import { materializeAgentInput } from '../lib/materialize-input.mjs';
 
 function safeName(s){ return String(s).toLowerCase().replace(/[^a-z0-9_.-]+/g,'-').slice(0,50); }
 
-export function launchDockerComputer({repoRoot,agent,computer,task,runId,image='node:22-alpine'}){
+export function launchDockerComputer({repoRoot,agent,computer,task,runId,extraReadPaths=[],image='node:22-alpine'}){
   const computerRoot=path.join(repoRoot,'.runtime','computers',computer.id);
   const workspace=path.join(computerRoot,'workspace');
   const home=path.join(computerRoot,'home');
@@ -16,7 +16,7 @@ export function launchDockerComputer({repoRoot,agent,computer,task,runId,image='
     try{ fs.chmodSync(p,0o777); }catch{}
   });
 
-  const scoped=materializeAgentInput({repoRoot,computerRoot,agent});
+  const scoped=materializeAgentInput({repoRoot,computerRoot,agent,extraReadPaths});
   try{ fs.chmodSync(scoped.bundleRoot,0o755); }catch{}
 
   const containerName=safeName(`cc-${agent.id}-${runId}`);
