@@ -32,7 +32,10 @@ for(const agent of allAgents){
     context:bundle.text
   });
   const parsed=parseAgentAnalysis(modelResult.content);
-  const verificationTier=(modelResult.external===true&&parsed.valid===true)?'operational':'structural';
+  const trustLevel=process.env.CC_MODEL_TRUST_LEVEL || (modelResult.external===true?'untrusted_external':'fixture');
+  const verificationTier=(modelResult.external===true&&parsed.valid===true)
+    ? (trustLevel==='live'?'operational':'gateway')
+    : 'structural';
   const artifact={
     schema:'cc.model.proof.v2',
     agent_id:agent.id,
@@ -43,6 +46,7 @@ for(const agent of allAgents){
     model:modelResult.model,
     external:modelResult.external,
     verification_tier:verificationTier,
+    trust_level:trustLevel,
     business_output_verified:verificationTier==='operational',
     structured_output:parsed.valid,
     structured_error:parsed.error,
@@ -63,6 +67,7 @@ for(const agent of allAgents){
     provider:modelResult.provider,
     external:modelResult.external,
     verification_tier:verificationTier,
+    trust_level:trustLevel,
     business_output_verified:verificationTier==='operational',
     structured_output:parsed.valid,
     context_sha256:bundle.sha256,
@@ -77,8 +82,9 @@ const summary={
   provider:process.env.CC_MODEL_PROVIDER||'fixture',
   agent_count:results.length,
   external_calls:results.filter(x=>x.external).length,
-  operationally_verified_agents:results.filter(x=>x.business_output_verified).length,
-  structurally_verified_agents:results.filter(x=>!x.business_output_verified).length,
+  operationally_verified_agents:results.filter(x=>x.verification_tier==='operational').length,
+  gateway_verified_agents:results.filter(x=>x.verification_tier==='gateway').length,
+  structurally_verified_agents:results.filter(x=>x.verification_tier==='structural').length,
   all_prompt_contracts_loaded:results.length===allAgents.length,
   all_structured_outputs:results.every(x=>x.structured_output===true),
   results
