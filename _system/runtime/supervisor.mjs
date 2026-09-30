@@ -4,10 +4,10 @@ import crypto from 'node:crypto';
 import { spawn } from 'node:child_process';
 
 const root=process.cwd();
-const agentsDoc=JSON.parse(fs.readFileSync(path.join(root,'runtime','agents.json'),'utf8'));
-const computersDoc=JSON.parse(fs.readFileSync(path.join(root,'runtime','computers.json'),'utf8'));
+const agentsDoc=JSON.parse(fs.readFileSync(path.join(root,'_system','runtime','agents.json'),'utf8'));
+const computersDoc=JSON.parse(fs.readFileSync(path.join(root,'_system','runtime','computers.json'),'utf8'));
 const allAgents=[agentsDoc.manager,...agentsDoc.agents];
-const tasksDoc=JSON.parse(fs.readFileSync(path.join(root,'runtime','tasks.json'),'utf8'));
+const tasksDoc=JSON.parse(fs.readFileSync(path.join(root,'_system','runtime','tasks.json'),'utf8'));
 const runtimeRoot=path.join(root,'.runtime','computers');
 fs.mkdirSync(runtimeRoot,{recursive:true});
 
@@ -26,7 +26,7 @@ function launch(agent,index){
   if(!task) return Promise.reject(new Error(`missing task assignment for ${agent.id}`));
 
   return new Promise((resolve,reject)=>{
-    const child=spawn(process.execPath,[path.join(root,'runtime','agent-worker.mjs')],{
+    const child=spawn(process.execPath,[path.join(root,'_system','runtime','agent-worker.mjs')],{
       cwd:workspace,
       env:{
         PATH:process.env.PATH || '',
