@@ -71,4 +71,4 @@ Execution authority now lives in `_system/runtime/`. The legacy root-level runti
 
 ## Migration status
 
-The repository is being migrated in verified slices. `docs/icm/MIGRATION_MAP.md` is the authoritative migration map. The runtime slice is complete; remaining policy, integration, tests, and workflow copies migrate only after their canonical homes pass verification.
+The ICM migration is in final verification. Canonical homes now exist under `_system/`, `_shared/`, and `districts/`; legacy root copies have been removed on the migration branch. `docs/icm/MIGRATION_MAP.md` records the evidence and final verification gate.
