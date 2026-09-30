@@ -1,0 +1,107 @@
+import crypto from 'node:crypto';
+import path from 'node:path';
+import { spawnSync } from 'node:child_process';
+
+const root=process.cwd();
+const args=Object.fromEntries(process.argv.slice(2).map(x=>{
+  const i=x.indexOf('=');
+  return i>0?[x.slice(2,i),x.slice(i+1)]:[x.replace(/^--/,''),'true'];
+}));
+const mode=args.mode||'mock';
+if(!['mock','live'].includes(mode)) throw new Error('mode must be mock or live');
+
+function docker(a,{allowFailure=false}={}){
+  const r=spawnSync('docker',a,{cwd:root,encoding:'utf8'});
+  if(!allowFailure&&r.status!==0) throw new Error(`docker ${a.join(' ')} failed: ${r.stderr||r.stdout}`);
+  return r;
+}
+
+function waitForGateway(name){
+  for(let i=0;i<30;i++){
+    const r=docker(['exec',name,'node','-e',"fetch('http://127.0.0.1:8787/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"],{allowFailure:true});
+    if(r.status===0) return;
+    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)),0,0,200);
+  }
+  throw new Error('model gateway health check failed');
+}
+
+const suffix=crypto.randomBytes(4).toString('hex');
+const gateway=`cc-model-gateway-${suffix}`;
+const upstreamNet=`cc-upstream-${suffix}`;
+const mock=`cc-mock-upstream-${suffix}`;
+const localToken=crypto.randomBytes(24).toString('hex');
+const gatewayDir=path.join(root,'_system','runtime','model-gateway');
+
+let startedMock=false;
+let startedGateway=false;
+let createdUpstreamNet=false;
+
+try{
+  let upstreamBase,upstreamKey,upstreamModel;
+
+  if(mode==='mock'){
+    docker(['network','create',upstreamNet]);
+    createdUpstreamNet=true;
+    docker([
+      'run','-d','--rm',
+      '--name',mock,
+      '--network',upstreamNet,
+      '--network-alias','mock-upstream',
+      '-v',`${gatewayDir}:/gateway:ro`,
+      '-e','PORT=8790',
+      'node:22-alpine',
+      'node','/gateway/mock-upstream.mjs'
+    ]);
+    startedMock=true;
+    upstreamBase='http://mock-upstream:8790/v1';
+    upstreamKey='mock-key';
+    upstreamModel='mock-model';
+  } else {
+    upstreamBase=process.env.CC_UPSTREAM_MODEL_BASE_URL;
+    upstreamKey=process.env.CC_UPSTREAM_MODEL_API_KEY;
+    upstreamModel=process.env.CC_UPSTREAM_MODEL_ID;
+    if(!upstreamBase||!upstreamKey||!upstreamModel){
+      console.error('BLOCKED: live mode requires CC_UPSTREAM_MODEL_BASE_URL, CC_UPSTREAM_MODEL_API_KEY, and CC_UPSTREAM_MODEL_ID.');
+      process.exit(3);
+    }
+  }
+
+  const gatewayArgs=[
+    'run','-d','--rm',
+    '--name',gateway,
+    ...(mode==='mock'?['--network',upstreamNet]:[]),
+    '-v',`${gatewayDir}:/gateway:ro`,
+    '-e','PORT=8787',
+    '-e',`CC_GATEWAY_TOKEN=${localToken}`,
+    '-e',`CC_UPSTREAM_BASE_URL=${upstreamBase}`,
+    '-e',`CC_UPSTREAM_API_KEY=${upstreamKey}`,
+    '-e',`CC_UPSTREAM_MODEL=${upstreamModel}`,
+    'node:22-alpine',
+    'node','/gateway/server.mjs'
+  ];
+  docker(gatewayArgs);
+  startedGateway=true;
+  waitForGateway(gateway);
+
+  const childEnv={
+    ...process.env,
+    CC_MODEL_GATEWAY_CONTAINER:gateway,
+    CC_MODEL_GATEWAY_TOKEN:localToken,
+    CC_MODEL_GATEWAY_MODEL:upstreamModel,
+    CC_MODEL_TRUST_LEVEL:mode==='live'?'live':'gateway'
+  };
+
+  const mission=spawnSync(process.execPath,[
+    path.join(root,'_system','runtime','orchestrator.mjs'),
+    '--backend=docker-operational',
+    '--mission=_system/runtime/missions/proof-all.json'
+  ],{cwd:root,encoding:'utf8',env:childEnv});
+
+  process.stdout.write(mission.stdout||'');
+  process.stderr.write(mission.stderr||'');
+  if(mission.status!==0) process.exit(mission.status||1);
+} finally {
+  if(startedGateway) docker(['rm','-f',gateway],{allowFailure:true});
+  if(startedMock) docker(['rm','-f',mock],{allowFailure:true});
+  if(createdUpstreamNet) docker(['network','rm',upstreamNet],{allowFailure:true});
+}
