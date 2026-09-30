@@ -11,9 +11,9 @@
     "management": {
       "read": [
         "districts/management/CONTEXT.md",
-        "runtime/agents.json",
-        "runtime/computers.json",
-        "runtime/tasks.json"
+        "_system/runtime/agents.json",
+        "_system/runtime/computers.json",
+        "_system/runtime/tasks.json"
       ]
     },
     "conversion": {
