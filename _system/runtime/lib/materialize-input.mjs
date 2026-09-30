@@ -28,7 +28,7 @@ function copyRecursive(src, dst, manifest, repoRoot) {
   });
 }
 
-export function materializeAgentInput({ repoRoot, computerRoot, agent }) {
+export function materializeAgentInput({ repoRoot, computerRoot, agent, extraReadPaths = [] }) {
   const scopes = JSON.parse(fs.readFileSync(path.join(repoRoot, '_system', 'runtime', 'scopes.json'), 'utf8'));
   const districtScope = scopes.districts?.[agent.district];
   if (!districtScope) throw new Error('no input scope for district ' + agent.district);
@@ -41,6 +41,7 @@ export function materializeAgentInput({ repoRoot, computerRoot, agent }) {
   const paths = [
     ...(scopes.shared_read || []),
     ...(districtScope.read || []),
+    ...extraReadPaths,
     agent.prompt_path
   ];
 
@@ -66,6 +67,7 @@ export function materializeAgentInput({ repoRoot, computerRoot, agent }) {
     district: agent.district,
     generated_at: new Date().toISOString(),
     explicit_paths: unique,
+    handoff_paths: [...new Set(extraReadPaths)],
     files: files.sort((a, b) => a.path.localeCompare(b.path))
   };
 
