@@ -9,9 +9,9 @@ const tasksDoc=JSON.parse(fs.readFileSync(path.join(root,'_system','runtime','ta
 const allAgents=[agentsDoc.manager,...agentsDoc.agents];
 
 const sharedContext=[
-  fs.readFileSync(path.join(root,'client','crown-and-core','FACTS.md'),'utf8'),
-  fs.readFileSync(path.join(root,'client','crown-and-core','PUBLIC_TRUTH.md'),'utf8'),
-  fs.readFileSync(path.join(root,'HEART_AND_SOUL.md'),'utf8')
+  fs.readFileSync(path.join(root,'_shared','client','FACTS.md'),'utf8'),
+  fs.readFileSync(path.join(root,'_shared','client','PUBLIC_TRUTH.md'),'utf8'),
+  fs.readFileSync(path.join(root,'_shared','policy','HEART_AND_SOUL.md'),'utf8')
 ].join('\n\n---\n\n');
 
 const outDir=path.join(root,'outbox','model-proof');
@@ -21,7 +21,7 @@ const results=[];
 for(const agent of allAgents){
   const assigned=tasksDoc.tasks.find(x=>x.agent_id===agent.id);
   if(!assigned) throw new Error(`missing task for ${agent.id}`);
-  const promptPath=path.join(root,'agents','workers',agent.id,'PROMPT.md');
+  const promptRel=agent.prompt_path || `districts/${agent.district}/agents/${agent.id}/PROMPT.md`;\n  const promptPath=path.join(root,...promptRel.split('/'));
   if(!fs.existsSync(promptPath)) throw new Error(`missing prompt for ${agent.id}`);
   const system=fs.readFileSync(promptPath,'utf8');
   const startedAt=new Date().toISOString();
