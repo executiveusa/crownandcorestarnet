@@ -4,8 +4,8 @@ import crypto from 'node:crypto';
 import { runModel } from './model/index.mjs';
 
 const root=process.cwd();
-const agentsDoc=JSON.parse(fs.readFileSync(path.join(root,'runtime','agents.json'),'utf8'));
-const tasksDoc=JSON.parse(fs.readFileSync(path.join(root,'runtime','tasks.json'),'utf8'));
+const agentsDoc=JSON.parse(fs.readFileSync(path.join(root,'_system','runtime','agents.json'),'utf8'));
+const tasksDoc=JSON.parse(fs.readFileSync(path.join(root,'_system','runtime','tasks.json'),'utf8'));
 const allAgents=[agentsDoc.manager,...agentsDoc.agents];
 
 const sharedContext=[
