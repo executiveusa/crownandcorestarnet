@@ -60,3 +60,7 @@ jobs:
             .runtime/missions/**/MISSION-RECEIPT.json
             .runtime/missions/**/*.job.json
             .runtime/computers/*/receipts/*.json
+            outbox/DATA-READINESS.json
+            outbox/LIVE-READINESS.json
+            outbox/STATE-PROMOTION-CANDIDATE.json
+            outbox/STATE-PROMOTION-RECEIPT.json
