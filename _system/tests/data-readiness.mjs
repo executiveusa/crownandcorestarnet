@@ -3,7 +3,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 
 const root=process.cwd();
-const r=spawnSync(process.execPath,['workflows/data-readiness/index.mjs'],{cwd:root,encoding:'utf8',env:{PATH:process.env.PATH||''}});
+const r=spawnSync(process.execPath,['_system/pipelines/data-readiness/index.mjs'],{cwd:root,encoding:'utf8',env:{PATH:process.env.PATH||''}});
 if(r.status!==0){
   console.error(r.stdout,r.stderr);
   process.exit(r.status||1);
