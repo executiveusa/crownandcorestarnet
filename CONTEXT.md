@@ -27,7 +27,7 @@ Inside a district, numbered stage folders encode sequence only where the work ac
 - `_shared/` — Crown & Core facts, business model, customer journey, approved policy, shared evidence.
 
 **Product / new or changing per run**
-- `districts/*/output/`
+- `districts/*/output/` — business state may be populated automatically only by operationally verified agent receipts
 - runtime receipts and mission artifacts
 - experiment outputs
 
@@ -54,7 +54,8 @@ The filesystem is the state machine:
 - no output = not started;
 - draft output = awaiting review;
 - approved marker + execution receipt = executed;
-- verified receipt + measured artifact = verified.
+- operationally verified agent output + source receipt = verified AI business analysis;
+- verified receipt + measured artifact = verified execution/result.
 
 Agent prose is never state.
 

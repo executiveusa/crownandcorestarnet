@@ -27,6 +27,7 @@ run('live readiness',['_system/tests/live-readiness.mjs']);
 run('Square read-only adapter',['_system/tests/square-readonly-adapter.mjs']);
 run('state promotion',['_system/tests/state-promotion.mjs']);
 run('operational agent protocol',['_system/tests/operational-agent-protocol.mjs']);
+run('operational output publisher',['_system/tests/operational-output-publish.mjs']);
 
 const approvedOut=path.join(out,'approved.json');
 run('approval allow',[

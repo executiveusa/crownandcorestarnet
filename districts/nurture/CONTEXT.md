@@ -49,3 +49,8 @@ Approve customer-facing follow-up or automation before live execution.
 ## Done
 
 Done means the expected output exists **and** the required machine receipt/assertions pass. Agent prose is not completion evidence.
+
+
+## Output-state rule
+
+The runtime may populate declared agent outputs automatically only from an **operationally verified** receipt. Structural and gateway proof runs must not write business state into this district's `output/` surfaces. Human edits remain allowed; source receipts preserve provenance.

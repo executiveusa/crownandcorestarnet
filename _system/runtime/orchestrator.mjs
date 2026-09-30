@@ -5,6 +5,7 @@ import { launchLocalProcess } from './backends/local-process.mjs';
 import { launchDockerComputer } from './backends/docker.mjs';
 import { launchDockerOperationalComputer } from './backends/docker-operational.mjs';
 import { verifyReceipt } from './lib/receipt.mjs';
+import { publishOperationalOutput } from './lib/publish-output.mjs';
 
 const repoRoot=process.cwd();
 const agentsDoc=JSON.parse(fs.readFileSync(path.join(repoRoot,'_system','runtime','agents.json'),'utf8'));
@@ -51,7 +52,19 @@ const runResults=await Promise.all(selected.map(async (x,index)=>{
   try{
     const receipt=await launchComputer({repoRoot,agent:x.agent,computer:x.computer,task:x.task,runId});
     const verification=verifyReceipt({receipt,repoRoot,agentsDoc,computersDoc,tasksDoc});
-    const final={...job,status:verification.verified?'VERIFIED':'FAILED_PROOF',verification_tier:receipt.verification_tier,business_output_verified:receipt.business_output_verified===true,ended_at:new Date().toISOString(),receipt,verification};
+    const publication=verification.verified
+      ? publishOperationalOutput({repoRoot,agent:x.agent,receipt})
+      : {published:false,reason:'receipt_not_verified'};
+    const final={
+      ...job,
+      status:verification.verified?'VERIFIED':'FAILED_PROOF',
+      verification_tier:receipt.verification_tier,
+      business_output_verified:receipt.business_output_verified===true,
+      publication,
+      ended_at:new Date().toISOString(),
+      receipt,
+      verification
+    };
     fs.writeFileSync(path.join(jobsDir,`${runId}.job.json`),JSON.stringify(final,null,2)+'\n');
     return final;
   }catch(e){
@@ -74,6 +87,7 @@ const summary={
   operationally_verified_jobs:runResults.filter(x=>x.status==='VERIFIED'&&x.verification_tier==='operational').length,
   gateway_verified_jobs:runResults.filter(x=>x.status==='VERIFIED'&&x.verification_tier==='gateway').length,
   structurally_verified_jobs:runResults.filter(x=>x.status==='VERIFIED'&&x.verification_tier==='structural').length,
+  published_outputs:runResults.filter(x=>x.publication?.published===true).length,
   failed_jobs:failures.length,
   status:failures.length?'FAILED':'VERIFIED',
   business_status:failures.length?'FAILED':(
@@ -81,7 +95,7 @@ const summary={
     runResults.every(x=>x.verification_tier==='gateway')?'GATEWAY_PROOF':
     runResults.every(x=>x.verification_tier==='structural')?'STRUCTURAL_ONLY':'MIXED_NON_OPERATIONAL'
   ),
-  jobs:runResults.map(x=>({id:x.id,agent_id:x.agent_id,district:x.district,computer_id:x.computer_id,task:x.task,status:x.status,verification_tier:x.verification_tier,business_output_verified:x.business_output_verified===true}))
+  jobs:runResults.map(x=>({id:x.id,agent_id:x.agent_id,district:x.district,computer_id:x.computer_id,task:x.task,status:x.status,verification_tier:x.verification_tier,business_output_verified:x.business_output_verified===true,published_output:x.publication?.published===true?x.publication.path:null}))
 };
 const raw=JSON.stringify(summary,null,2)+'\n';
 summary.sha256=crypto.createHash('sha256').update(raw).digest('hex');

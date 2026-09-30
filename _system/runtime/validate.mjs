@@ -28,6 +28,8 @@ for(const agent of allAgents){
   if(!tasks.tasks.some(x=>x.agent_id===agent.id)) failures.push(`missing task assignment for ${agent.id}`);
   const promptPath=path.join(root,...(agent.prompt_path || `districts/${agent.district}/agents/${agent.id}/PROMPT.md`).split('/'));
   if(!fs.existsSync(promptPath)) failures.push(`missing prompt contract for ${agent.id}`);
+  if(!agent.output_path) failures.push(`missing output_path for ${agent.id}`);
+  else if(!agent.output_path.startsWith(`districts/${agent.district}/output/`)) failures.push(`output_path escapes district output for ${agent.id}`);
   const computer=computers.computers.find(x=>x.id===agent.computer_id);
   if(!computer) failures.push(`missing computer for ${agent.id}`);
   else {
