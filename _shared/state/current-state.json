@@ -1,0 +1,28 @@
+{
+  "client": "crown-and-core",
+  "period": "baseline",
+  "metrics": {
+    "website_mobile_ready": null,
+    "website_load_seconds": null,
+    "booking_path_verified": null,
+    "monthly_site_sessions": null,
+    "monthly_inquiries": null,
+    "median_lead_response_minutes": null,
+    "monthly_missed_calls": null,
+    "monthly_bookings": null,
+    "monthly_no_shows": null,
+    "monthly_completed_visits": null,
+    "monthly_returning_visits": null,
+    "dormant_customers_90d_plus": null,
+    "google_review_flow_active": null,
+    "attribution_ready": null,
+    "monthly_ad_spend": null,
+    "monthly_attributable_revenue": null,
+    "booking_destination_verified": true,
+    "booking_service_catalog_verified": true,
+    "booking_completion_verified": null
+  },
+  "notes": [
+    "Public CTA -> Square service catalog verified 2026-09-28. Full booking completion remains unverified."
+  ]
+}

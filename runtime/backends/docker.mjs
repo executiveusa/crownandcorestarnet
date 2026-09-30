@@ -49,6 +49,7 @@ export function launchDockerComputer({repoRoot,agent,computer,task,runId,image='
     '-e','CC_SCOPE_MANIFEST=/input/SCOPE-MANIFEST.json',
     '-e',`CC_SCOPE_SHA256=${scoped.sha256}`,
     '-e',`CC_TASK=${task}`,
+    '-e',`CC_PROMPT_PATH=${agent.prompt_path || `districts/${agent.district}/agents/${agent.id}/PROMPT.md`}`,
     '-e','CC_RUNTIME_BACKEND=docker',
     '-e',`CC_RUNTIME_HOST_ID=${containerName}`,
     image,

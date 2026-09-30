@@ -1,0 +1,31 @@
+{
+  "observed_at": "2026-09-28T17:24:00Z",
+  "scope": "Public booking path only. No appointment was created and no authenticated Crown & Core data was accessed.",
+  "sources": [
+    {
+      "id": "official-home",
+      "url": "https://crownandcore.com/",
+      "status": 200
+    },
+    {
+      "id": "square-booking",
+      "url": "https://app.squareup.com/appointments/book/xeug2c2nw9gjxe/LDY6NDY9ES2CG/start",
+      "resolved_url": "https://book.squareup.com/appointments/xeug2c2nw9gjxe/location/LDY6NDY9ES2CG/services",
+      "status": 200
+    }
+  ],
+  "verified": {
+    "homepage_booking_cta_present": true,
+    "homepage_booking_cta_destination": "https://app.squareup.com/appointments/book/xeug2c2nw9gjxe/LDY6NDY9ES2CG/start",
+    "square_service_catalog_loaded": true,
+    "square_business_name": "Crown and Core Wellness Spa and Salon",
+    "square_location": "Bellevue, WA",
+    "full_booking_completion_verified": false
+  },
+  "limits": [
+    "No real appointment was created.",
+    "No authenticated Square business account data was read.",
+    "No booking conversion or abandonment rate can be inferred from this public-path proof.",
+    "Availability and final checkout/confirmation behavior were not tested."
+  ]
+}

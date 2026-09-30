@@ -26,7 +26,8 @@ export function launchLocalProcess({repoRoot,agent,computer,task,runId}){
         CC_RUN_ID:runId,
         CC_COMPUTER_ROOT:computerRoot,
         CC_REPO_ROOT:repoRoot,
-        CC_TASK:task
+        CC_TASK:task,
+        CC_PROMPT_PATH:agent.prompt_path || `districts/${agent.district}/agents/${agent.id}/PROMPT.md`
       },
       stdio:['ignore','pipe','pipe']
     });
