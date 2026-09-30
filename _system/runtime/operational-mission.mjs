@@ -1,5 +1,6 @@
 import crypto from 'node:crypto';
 import path from 'node:path';
+import fs from 'node:fs';
 import { spawnSync } from 'node:child_process';
 
 const root=process.cwd();
@@ -10,19 +11,28 @@ const args=Object.fromEntries(process.argv.slice(2).map(x=>{
 const mode=args.mode||'mock';
 if(!['mock','live'].includes(mode)) throw new Error('mode must be mock or live');
 
+if(mode==='live'){
+  for(const key of ['CC_UPSTREAM_MODEL_BASE_URL','CC_UPSTREAM_MODEL_API_KEY','CC_UPSTREAM_MODEL_ID']){
+    if(!process.env[key]){
+      console.error('BLOCKED: live mode requires CC_UPSTREAM_MODEL_BASE_URL, CC_UPSTREAM_MODEL_API_KEY, and CC_UPSTREAM_MODEL_ID.');
+      process.exit(3);
+    }
+  }
+}
+
 function docker(a,{allowFailure=false}={}){
   const r=spawnSync('docker',a,{cwd:root,encoding:'utf8'});
   if(!allowFailure&&r.status!==0) throw new Error(`docker ${a.join(' ')} failed: ${r.stderr||r.stdout}`);
   return r;
 }
 
-function waitForGateway(name){
-  for(let i=0;i<30;i++){
-    const r=docker(['exec',name,'node','-e',"fetch('http://127.0.0.1:8787/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"],{allowFailure:true});
+function waitHttpInContainer(name,url){
+  for(let i=0;i<40;i++){
+    const r=docker(['exec',name,'node','-e',`fetch('${url}').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))`],{allowFailure:true});
     if(r.status===0) return;
     Atomics.wait(new Int32Array(new SharedArrayBuffer(4)),0,0,200);
   }
-  throw new Error('model gateway health check failed');
+  throw new Error(`health check failed: ${name} ${url}`);
 }
 
 const suffix=crypto.randomBytes(4).toString('hex');
@@ -35,6 +45,7 @@ const gatewayDir=path.join(root,'_system','runtime','model-gateway');
 let startedMock=false;
 let startedGateway=false;
 let createdUpstreamNet=false;
+let missionStatus=1;
 
 try{
   let upstreamBase,upstreamKey,upstreamModel;
@@ -53,6 +64,7 @@ try{
       'node','/gateway/mock-upstream.mjs'
     ]);
     startedMock=true;
+    waitHttpInContainer(mock,'http://127.0.0.1:8790/health');
     upstreamBase='http://mock-upstream:8790/v1';
     upstreamKey='mock-key';
     upstreamModel='mock-model';
@@ -60,10 +72,6 @@ try{
     upstreamBase=process.env.CC_UPSTREAM_MODEL_BASE_URL;
     upstreamKey=process.env.CC_UPSTREAM_MODEL_API_KEY;
     upstreamModel=process.env.CC_UPSTREAM_MODEL_ID;
-    if(!upstreamBase||!upstreamKey||!upstreamModel){
-      console.error('BLOCKED: live mode requires CC_UPSTREAM_MODEL_BASE_URL, CC_UPSTREAM_MODEL_API_KEY, and CC_UPSTREAM_MODEL_ID.');
-      process.exit(3);
-    }
   }
 
   const gatewayArgs=[
@@ -81,7 +89,11 @@ try{
   ];
   docker(gatewayArgs);
   startedGateway=true;
-  waitForGateway(gateway);
+  waitHttpInContainer(gateway,'http://127.0.0.1:8787/health');
+
+  const missionFile=mode==='live'
+    ? '_system/runtime/missions/operational-all.json'
+    : '_system/runtime/missions/gateway-proof-all.json';
 
   const childEnv={
     ...process.env,
@@ -94,14 +106,28 @@ try{
   const mission=spawnSync(process.execPath,[
     path.join(root,'_system','runtime','orchestrator.mjs'),
     '--backend=docker-operational',
-    '--mission=_system/runtime/missions/proof-all.json'
+    `--mission=${missionFile}`
   ],{cwd:root,encoding:'utf8',env:childEnv});
 
   process.stdout.write(mission.stdout||'');
   process.stderr.write(mission.stderr||'');
-  if(mission.status!==0) process.exit(mission.status||1);
+  missionStatus=mission.status??1;
+  if(missionStatus===0){
+    const missionId=mode==='live'?'operational-all-districts':'gateway-proof-all-districts';
+    const receiptPath=path.join(root,'.runtime','missions',missionId,'MISSION-RECEIPT.json');
+    const receipt=JSON.parse(fs.readFileSync(receiptPath,'utf8'));
+    const expected=mode==='live'?'OPERATIONAL':'GATEWAY_PROOF';
+    if(receipt.business_status!==expected){
+      console.error(`Mission proof mismatch: expected business_status=${expected}, got ${receipt.business_status}`);
+      missionStatus=1;
+    } else {
+      console.log(`Verified mission tier: ${receipt.business_status}`);
+    }
+  }
 } finally {
   if(startedGateway) docker(['rm','-f',gateway],{allowFailure:true});
   if(startedMock) docker(['rm','-f',mock],{allowFailure:true});
   if(createdUpstreamNet) docker(['network','rm',upstreamNet],{allowFailure:true});
 }
+
+process.exit(missionStatus);
