@@ -1,7 +1,7 @@
 {
   "name": "crownandcore-operations",
   "private": true,
-  "version": "1.6.0",
+  "version": "1.7.0",
   "type": "module",
   "scripts": {
     "system:check": "node _system/pipelines/system-check/index.mjs",
@@ -29,6 +29,8 @@
     "square:state:read": "node districts/management/stages/01_observe/square-state-read/index.mjs",
     "state:promote": "node districts/management/stages/04_review/state-promotion/index.mjs",
     "live:data:test": "node _system/tests/live-readiness.mjs && node _system/tests/square-readonly-adapter.mjs && node _system/tests/state-promotion.mjs",
-    "agent:protocol:test": "node _system/tests/operational-agent-protocol.mjs"
+    "agent:protocol:test": "node _system/tests/operational-agent-protocol.mjs",
+    "runtime:mission:gateway-proof": "node _system/runtime/operational-mission.mjs --mode=mock",
+    "runtime:mission:operational": "node _system/runtime/operational-mission.mjs --mode=live"
   }
 }
