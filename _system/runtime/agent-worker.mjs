@@ -100,7 +100,7 @@ function executeDomainTask(){
 const startedAt = new Date().toISOString();
 const evidence = [];
 
-if (runtimeBackend === 'docker') {
+if (runtimeBackend.startsWith('docker')) {
   const manifestPath = process.env.CC_SCOPE_MANIFEST;
   const expectedScopeSha = process.env.CC_SCOPE_SHA256;
   if (!manifestPath || !expectedScopeSha) {
@@ -181,7 +181,10 @@ try {
     context:contextBundle.text
   });
   const parsedAnalysis=parseAgentAnalysis(modelResult.content);
-  const verificationTier=(modelResult.external===true && parsedAnalysis.valid===true)?'operational':'structural';
+  const trustLevel=process.env.CC_MODEL_TRUST_LEVEL || (modelResult.external===true?'untrusted_external':'fixture');
+  verificationTier=(modelResult.external===true && parsedAnalysis.valid===true)
+    ? (trustLevel==='live'?'operational':'gateway')
+    : 'structural';
 
   evidence.push({
     type:'context_bundle',
@@ -198,6 +201,7 @@ try {
     external:modelResult.external,
     structured_output:parsedAnalysis.valid,
     structured_error:parsedAnalysis.error,
+    trust_level:trustLevel,
     business_analysis_verified:verificationTier==='operational',
     response_sha256:crypto.createHash('sha256').update(String(modelResult.content||'')).digest('hex')
   });
