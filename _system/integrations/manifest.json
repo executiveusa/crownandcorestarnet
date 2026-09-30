@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "integrations": [
+    {"id":"square","purpose":"bookings, customers, visits, revenue","mode":"planned_read_only","secrets_committed":false},
+    {"id":"perspective","purpose":"service-specific mobile funnels","mode":"planned","secrets_committed":false},
+    {"id":"riverside","purpose":"podcast and remote interview capture","mode":"planned","secrets_committed":false},
+    {"id":"meta","purpose":"campaign and content analytics, later approved distribution","mode":"planned_read_only","secrets_committed":false},
+    {"id":"google-business","purpose":"reputation and profile intelligence","mode":"planned_read_only","secrets_committed":false},
+    {"id":"analytics","purpose":"traffic, booking clicks and attribution","mode":"planned_read_only","secrets_committed":false},
+    {"id":"communications","purpose":"missed-call events and approved SMS/email","mode":"planned","secrets_committed":false},
+    {"id":"media-storage","purpose":"original media, transcripts, edits and delivery assets","mode":"planned","secrets_committed":false}
+  ]
+}
