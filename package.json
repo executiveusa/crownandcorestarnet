@@ -1,7 +1,7 @@
 {
   "name": "crownandcore-operations",
   "private": true,
-  "version": "1.1.0",
+  "version": "1.2.0",
   "type": "module",
   "scripts": {
     "system:check": "node workflows/system-check/index.mjs",
@@ -13,16 +13,16 @@
     "report:monthly": "node workflows/monthly-report/index.mjs",
     "test": "node test/verify.mjs",
     "verify": "npm run system:check && npm run middleton:validate && npm run icm:walk && npm run runtime:validate && npm run runtime:prove && npm run runtime:mission && npm run data:readiness && npm run runtime:model:prove && npm run intake:prove && npm run booking:proof && npm test",
-    "runtime:validate": "node runtime/validate.mjs",
-    "runtime:prove": "node runtime/supervisor.mjs",
-    "runtime:mission": "node runtime/orchestrator.mjs --mission=runtime/missions/proof-all.json",
-    "runtime:prove:docker": "node runtime/docker-proof.mjs",
+    "runtime:validate": "node _system/runtime/validate.mjs",
+    "runtime:prove": "node _system/runtime/supervisor.mjs",
+    "runtime:mission": "node _system/runtime/orchestrator.mjs --mission=_system/runtime/missions/proof-all.json",
+    "runtime:prove:docker": "node _system/runtime/docker-proof.mjs",
     "public:audit": "node workflows/public-baseline/index.mjs",
     "data:readiness": "node workflows/data-readiness/index.mjs",
-    "runtime:model:prove": "node runtime/model-smoke.mjs",
+    "runtime:model:prove": "node _system/runtime/model-smoke.mjs",
     "intake:prove": "node workflows/read-only-intake/index.mjs --mode=fixture",
-    "square:read:smoke": "node integrations/live-square-smoke.mjs",
-    "runtime:mission:docker": "node runtime/orchestrator.mjs --backend=docker --mission=runtime/missions/proof-all.json",
+    "square:read:smoke": "node _system/integrations/live-square-smoke.mjs",
+    "runtime:mission:docker": "node _system/runtime/orchestrator.mjs --backend=docker --mission=_system/runtime/missions/proof-all.json",
     "booking:proof": "node test/booking-proof.mjs",
     "icm:walk": "node test/icm-walk.mjs"
   }
