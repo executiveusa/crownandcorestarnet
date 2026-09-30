@@ -4,36 +4,42 @@ Status: final verification. All known legacy root copies have been moved to cano
 
 The uploaded ICM Architect method is the architecture authority for this restructure.
 
-## Hidden form found
+## Hidden form
 
 The repository is not one linear pipeline.
 
 It is an **Umbrella + Context Map**:
 - one Crown & Core identity;
 - multiple isolated districts;
-- each district has its own agents and process;
+- each district owns its agents, contracts, stages, and outputs;
 - stable factory layers are shared selectively;
-- outputs/receipts carry state.
+- outputs and machine receipts carry state.
 
-## Classification
+## Classification and canonical homes
 
-| Current area | Role | Target |
+| Legacy area | Role | Canonical ICM home |
 |---|---|---|
-| `README.md`, `ARCHITECTURE.md` | Catalog / contract | root `CLAUDE.md` + `CONTEXT.md` |
-| `client/crown-and-core/` | Factory | `_shared/client/` |
-| `data/evidence/` | Factory evidence | `_shared/evidence/` |
-| `data/current-state.json` | Working state | `_shared/state/current-state.json` |
-| `config/` | Factory policy | `_system/policy/` |
-| `runtime/` | Factory execution | `_system/runtime/` |
-| `integrations/` | Factory connectors | `_system/integrations/` |
-| `schemas/` | Factory schemas | `_system/schemas/` |
-| `schedules/` | Factory scheduling | `_system/schedules/` |
-| `test/` | Factory verification | `_system/tests/` |
-| `agents/workers/*` | District agent contracts | `districts/<district>/agents/<agent>/` |
-| `agents/manny/` | Management contract | `districts/management/agents/manny/` |
-| `workflows/*` | Process contracts/code | district `stages/` or `_system/pipelines/` |
-| `districts/*/district.json` | Contract metadata | district `CONTEXT.md` + machine config |
-| generated receipts | Product/state | runtime receipt store, indexed not hand-edited |
+| root architecture prose | Catalog / contract | `CLAUDE.md` + `CONTEXT.md` |
+| `client/crown-and-core/` | Shared business truth | `_shared/client/` |
+| `data/evidence/` | Shared evidence | `_shared/evidence/` |
+| `data/current-state.json` | Shared operating state | `_shared/state/current-state.json` |
+| `HEART_AND_SOUL.md` | Shared policy | `_shared/policy/HEART_AND_SOUL.md` |
+| `config/` | System policy | `_system/policy/` |
+| `runtime/` | Execution factory | `_system/runtime/` |
+| `integrations/` | Connectors | `_system/integrations/` |
+| `schemas/` | Machine contracts | `_system/schemas/` |
+| `schedules/` | Scheduling | `_system/schedules/` |
+| `scripts/` | System utilities | `_system/scripts/` |
+| `lib/` | Shared system code | `_system/lib/` |
+| `registry/` | Workspace registry | `_system/registry/` |
+| `test/` | Verification factory | `_system/tests/` |
+| `workflows/*` | Shared pipeline or district process | `_system/pipelines/` or district `stages/` |
+| `agents/workers/*` | Agent contracts | `districts/<district>/agents/<agent>/` |
+| `agents/manny/` | Management agent | `districts/management/agents/manny/` |
+| `districts/*/district.json` | Redundant contract metadata | district `CONTEXT.md` + `_system/registry/` |
+| root `UPSTREAM.md` | Engineering reference | `_system/references/UPSTREAM.md` |
+| root `docs/` | Stable system references | `_system/references/` + `_system/method/` |
+| generated receipts | Product/state | runtime receipt store; generated, never hand-edited |
 
 ## Target tree
 
@@ -41,6 +47,9 @@ It is an **Umbrella + Context Map**:
 crownandcorestarnet/
 ├── CLAUDE.md
 ├── CONTEXT.md
+├── README.md
+├── ARCHITECTURE.md
+├── package.json
 ├── _system/
 │   ├── CONTEXT.md
 │   ├── method/
@@ -51,7 +60,11 @@ crownandcorestarnet/
 │   ├── schedules/
 │   ├── templates/
 │   ├── pipelines/
-│   └── tests/
+│   ├── tests/
+│   ├── scripts/
+│   ├── registry/
+│   ├── references/
+│   └── lib/
 ├── _shared/
 │   ├── CONTEXT.md
 │   ├── client/
@@ -71,62 +84,52 @@ crownandcorestarnet/
     └── middleton/
 ```
 
-Each district uses:
+A district may contain:
 
 ```
 district/
+├── CLAUDE.md
 ├── CONTEXT.md
 ├── agents/
 ├── references/
 ├── stages/
-│   ├── 01_observe/
-│   ├── 02_diagnose/
-│   ├── 03_draft/
-│   ├── 04_review/
-│   ├── 05_execute/
-│   └── 06_verify/
 └── output/
 ```
 
-Stages that do not actually exist for a district must not be invented. The six-stage skeleton is only instantiated where the district's real process needs it.
+Numbered stage folders exist only where a real sequence exists. No speculative empty stages are required.
 
 ## Migration law
 
 1. Inventory before move.
-2. Create target contract.
-3. Copy content to one new home.
-4. Update runtime paths/tests.
-5. Run all CI + Docker isolation proof.
-6. Only then delete the legacy copy.
-7. Never merge a migration slice that breaks the walk test or runtime proof.
-
-## ICM-specific corrections to the current build
-
-- Root routing was too content-heavy and fragmented.
-- Agent prompts lived apart from district ownership.
-- Runtime/config/data were structurally mixed with business work.
-- Several workflow READMEs behaved as contracts but were not named/located as contracts.
-- State existed partly in JSON and partly in prose rather than being readable from output surfaces.
-- District isolation existed at runtime, but the filesystem did not yet mirror that isolation cleanly.
-
-## What remains unchanged
-
-ICM does not remove the need for actual isolated agent computers here.
-
-The uploaded method explicitly notes that real multi-agent/high-concurrency behavior can require framework code. Crown & Core keeps the Docker execution layer; ICM becomes the human-readable architecture and context-routing layer around it.
-
+2. Create the canonical contract/home.
+3. Copy content.
+4. Repoint code and references.
+5. Run verification.
+6. Delete the legacy copy.
+7. Run verification again.
+8. Merge only after the walk test and Docker proofs pass.
 
 ## Verified migration ledger
 
 | Slice | Status | Evidence |
 |---|---|---|
-| Root router + district contracts | VERIFIED | ICM walk test + full CI |
+| Root router + district contracts | VERIFIED | ICM walk + full CI |
 | District-owned agent prompts | VERIFIED | 17-agent runtime registry + Docker proof |
-| Shared Crown & Core truth copies | VERIFIED AS READ INPUTS | Docker scope manifests read from `_shared/` |
-| Root router + district contracts | VERIFIED | ICM walk test + full CI |
-| District-owned agent prompts | VERIFIED | 17-agent runtime registry + Docker proof |
-| Shared Crown & Core truth -> `_shared/` | VERIFIED | Runtime scope manifests read canonical shared inputs |
-| Runtime authority -> `_system/runtime/` | VERIFIED | Full CI + 17-container proof |
-| System pipelines/tests -> `_system/` + district stages | VERIFIED | PR #12 full CI + Docker proof |
-| Policy/integrations/schemas/schedules/scripts/registry -> `_system/` | FINAL VERIFICATION | v4 branch |
-| Legacy root duplicates removed | FINAL VERIFICATION | ICM walk now fails if any forbidden legacy root returns |
+| Shared Crown & Core truth -> `_shared/` | VERIFIED | scope manifests + CI |
+| Runtime authority -> `_system/runtime/` | VERIFIED | full CI + 17-container proof |
+| Shared pipelines/tests -> `_system/` + district stages | VERIFIED | PR #12 full CI + Docker proof |
+| Policy/integrations/schemas/schedules/scripts/lib/registry/references -> `_system/` | FINAL VERIFICATION | v4 branch |
+| Legacy root duplicates removed | FINAL VERIFICATION | ICM walk fails if any forbidden legacy root returns |
+| Redundant district.json files removed | FINAL VERIFICATION | canonical registry + district CONTEXT contracts |
+| Root docs payload moved into canonical system references/method | FINAL VERIFICATION | v4 branch |
+
+## Completion condition
+
+The migration is complete only when:
+- no forbidden legacy root copy remains;
+- every district contract is reachable from the root router;
+- every registered agent prompt lives under its owning district;
+- `npm run verify` passes;
+- `npm run runtime:prove:docker` passes;
+- `npm run runtime:mission:docker` passes;
+- the proof receipts are uploaded by CI.
