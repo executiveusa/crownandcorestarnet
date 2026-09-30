@@ -2,8 +2,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const root=process.cwd();
-const state=JSON.parse(fs.readFileSync(path.join(root,'data','current-state.json'),'utf8'));
-const proof=JSON.parse(fs.readFileSync(path.join(root,'data','evidence','public-booking-path-2026-09-28.json'),'utf8'));
+const state=JSON.parse(fs.readFileSync(path.join(root,'_shared','state','current-state.json'),'utf8'));
+const proof=JSON.parse(fs.readFileSync(path.join(root,'_shared','evidence','public-booking-path-2026-09-28.json'),'utf8'));
 
 const failures=[];
 const m=state.metrics||{};

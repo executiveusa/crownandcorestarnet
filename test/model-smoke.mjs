@@ -4,13 +4,13 @@ import { spawnSync } from 'node:child_process';
 
 const root=process.cwd();
 const env={PATH:process.env.PATH||'',CC_MODEL_PROVIDER:'fixture'};
-const r=spawnSync(process.execPath,['runtime/model-smoke.mjs'],{cwd:root,encoding:'utf8',env});
+const r=spawnSync(process.execPath,['_system/runtime/model-smoke.mjs'],{cwd:root,encoding:'utf8',env});
 if(r.status!==0){
   console.error(r.stdout,r.stderr);
   process.exit(r.status||1);
 }
 const summary=JSON.parse(fs.readFileSync(path.join(root,'outbox','model-proof','SUMMARY.json'),'utf8'));
-const agents=JSON.parse(fs.readFileSync(path.join(root,'runtime','agents.json'),'utf8'));
+const agents=JSON.parse(fs.readFileSync(path.join(root,'_system','runtime','agents.json'),'utf8'));
 const expected=1+agents.agents.length;
 const failures=[];
 if(summary.agent_count!==expected) failures.push(`expected ${expected} agents, got ${summary.agent_count}`);

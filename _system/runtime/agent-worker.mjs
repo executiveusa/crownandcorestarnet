@@ -42,8 +42,8 @@ function executeDomainTask(){
   const state=()=>readRepoJson('_shared','state','current-state.json');
   switch(task){
     case 'orchestration-integrity': {
-      const a=readRepoJson('runtime','agents.json');
-      const c=readRepoJson('runtime','computers.json');
+      const a=readRepoJson('_system','runtime','agents.json');
+      const c=readRepoJson('_system','runtime','computers.json');
       const all=[a.manager,...a.agents];
       return {agent_count:all.length,computer_count:c.computers.length,one_to_one:new Set(all.map(x=>x.computer_id)).size===all.length};
     }

@@ -19,7 +19,7 @@ for(const d of districts){
   }
 }
 
-const registry=JSON.parse(fs.readFileSync(path.join(root,'runtime','agents.json'),'utf8'));
+const registry=JSON.parse(fs.readFileSync(path.join(root,'_system','runtime','agents.json'),'utf8'));
 const agents=[registry.manager,...registry.agents];
 for(const a of agents){
   const expected=`districts/${a.district}/agents/${a.id}/PROMPT.md`;
@@ -27,7 +27,7 @@ for(const a of agents){
   if(!exists(expected)) failures.push(`missing district-owned agent prompt: ${expected}`);
 }
 
-const scopes=JSON.parse(fs.readFileSync(path.join(root,'runtime','scopes.json'),'utf8'));
+const scopes=JSON.parse(fs.readFileSync(path.join(root,'_system','runtime','scopes.json'),'utf8'));
 for(const d of districts){
   if(!scopes.districts?.[d]) failures.push('missing runtime ICM scope: '+d);
   if(!(scopes.districts?.[d]?.read||[]).includes(`districts/${d}/CONTEXT.md`)) failures.push('scope missing own CONTEXT: '+d);

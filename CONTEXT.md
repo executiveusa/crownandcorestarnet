@@ -67,8 +67,8 @@ Each worker has:
 - one scoped input bundle;
 - one writable computer root.
 
-See `_system/runtime/` after migration. During migration the working implementation remains at `runtime/` until moved and reverified.
+Execution authority now lives in `_system/runtime/`. The legacy root-level runtime has been removed after CI and Docker proof passed from the canonical system runtime.
 
 ## Migration status
 
-The current repository predates this ICM contract. `docs/icm/MIGRATION_MAP.md` is the authoritative migration plan. No legacy file is deleted until its new home is verified.
+The repository is being migrated in verified slices. `docs/icm/MIGRATION_MAP.md` is the authoritative migration map. The runtime slice is complete; remaining policy, integration, tests, and workflow copies migrate only after their canonical homes pass verification.

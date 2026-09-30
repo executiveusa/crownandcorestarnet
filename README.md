@@ -4,86 +4,59 @@ Independent operating system for Crown & Core.
 
 This repository is **not Pauli StarNet** and does not depend on it.
 
-It uses the open-source `androoAGI/starnet` codebase as an upstream engineering base while maintaining its own Crown & Core runtime, client logic, agents, districts, data, approvals, workflows, and reporting.
+## Start here
 
-## Runtime proof standard
+- Architecture / operating contract: `CONTEXT.md`
+- Task router: `CLAUDE.md`
+- System factory: `_system/`
+- Shared Crown & Core truth: `_shared/`
+- Business work: `districts/`
+- ICM migration ledger: `docs/icm/MIGRATION_MAP.md`
 
-Every district is isolated. Every execution agent has its own registered computer identity, dedicated workspace, HOME/TMP directories, child process, explicit task assignment, and machine-verifiable receipt.
+## Proof standard
 
-An agent saying "done" is not completion. Completion requires a valid receipt and evidence.
+An agent saying "done" is not completion.
+
+Completion requires a valid machine receipt, required assertions, and—where applicable—human approval.
 
 Run:
 
 ```bash
-npm run runtime:validate
-npm run runtime:prove
-```
-
-See `docs/RUNTIME_ISOLATION.md`.
-
-## Current build
-
-### Manager
-- **Manny** — Crown & Core operating manager
-
-### Live districts
-- **Middleton District** — revenue-gap method, seven-service sequence, canon, policy overrides, experiment loop
-
-### Live workflow
-- **Gap Audit** — read-only diagnostic that identifies the closest known measurable leak between interest and payment
-
-## Run verification
-
-```bash
 npm run verify
+npm run runtime:prove:docker
+npm run runtime:mission:docker
 ```
 
-This validates the Middleton district policy and runs the read-only Gap Audit.
+## Current operating domains
 
-## Crown & Core rooms
+- Management / Manny
+- Conversion
+- Return
+- Trust
+- Nurture
+- Reception
+- Media
+- Performance
+- Middleton method district
 
-1. Conversion
-2. Return
-3. Trust
-4. Nurture
-5. Reception
-6. Media
-7. Performance
+## Current live boundary
 
-## Middleton sequence
+Proof mode remains read-mostly and approval-gated.
 
-1. Conversion
-2. Reactivation
-3. Reviews + referrals
-4. Lead nurturing
-5. Reception
-6. Sales coaching
-7. Paid marketing last
-
-Crown & Core execution policy overrides source tactics where necessary. In particular, review gating is forbidden and source benchmark claims are not treated as Crown & Core facts without verification.
-
-## Proof mode
-
-No customer-facing action is live yet.
-
-No:
-- customer messages
-- social publishing
-- review requests
-- ad changes
-- spending
+No autonomous:
+- customer messaging
+- public publishing
+- review solicitation
+- ad changes/spend
 - booking changes
 - clinical claims
-- live credentials
 
-## Upstream runtime
+## Next verified business slice
 
-See `UPSTREAM.md`.
-
-## Next verified slice
-
-1. Populate `data/current-state.json` from real Crown & Core business data.
-2. Run the Gap Audit.
-3. Select one owner-approved leak to test.
-4. Build that workflow behind an approval gate.
-5. Save receipts and attributable results.
+1. Populate `_shared/state/current-state.json` from authenticated read-only Crown & Core data.
+2. Run the verified Gap Audit.
+3. Select one evidence-backed leak closest to payment.
+4. Draft one bounded fix inside the owning district.
+5. Stop at the human gate.
+6. Execute only after approval.
+7. Save receipts and measured results.
