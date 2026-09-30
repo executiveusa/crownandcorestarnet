@@ -1,8 +1,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
-import { readSquare } from '../../../../_system/integrations/adapters/square.mjs';
-import { normalizeSquare } from '../../../../_system/integrations/normalize/square.mjs';
+import { readSquare } from '../../../../../_system/integrations/adapters/square.mjs';
+import { normalizeSquare } from '../../../../../_system/integrations/normalize/square.mjs';
 
 const root=process.cwd();
 if(!process.env.CC_SQUARE_ACCESS_TOKEN){
