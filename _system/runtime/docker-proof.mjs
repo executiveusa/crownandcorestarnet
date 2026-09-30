@@ -16,9 +16,9 @@ if(version.status!==0){
 const pull=spawnSync('docker',['pull',image],{encoding:'utf8',stdio:'inherit'});
 if(pull.status!==0) process.exit(pull.status||1);
 
-const agentsDoc=JSON.parse(fs.readFileSync(path.join(repoRoot,'runtime','agents.json'),'utf8'));
-const computersDoc=JSON.parse(fs.readFileSync(path.join(repoRoot,'runtime','computers.json'),'utf8'));
-const tasksDoc=JSON.parse(fs.readFileSync(path.join(repoRoot,'runtime','tasks.json'),'utf8'));
+const agentsDoc=JSON.parse(fs.readFileSync(path.join(repoRoot,'_system','runtime','agents.json'),'utf8'));
+const computersDoc=JSON.parse(fs.readFileSync(path.join(repoRoot,'_system','runtime','computers.json'),'utf8'));
+const tasksDoc=JSON.parse(fs.readFileSync(path.join(repoRoot,'_system','runtime','tasks.json'),'utf8'));
 const allAgents=[agentsDoc.manager,...agentsDoc.agents];
 const stamp=Date.now();
 
