@@ -42,7 +42,8 @@ function launch(agent,index){
         CC_RUN_ID:runId,
         CC_COMPUTER_ROOT:computerRoot,
         CC_REPO_ROOT:root,
-        CC_TASK:task
+        CC_TASK:task,
+        CC_PROMPT_PATH:agent.prompt_path || `districts/${agent.district}/agents/${agent.id}/PROMPT.md`
       },
       stdio:['ignore','pipe','pipe']
     });
