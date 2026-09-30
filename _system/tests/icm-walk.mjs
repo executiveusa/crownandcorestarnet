@@ -25,6 +25,7 @@ for(const rel of forbiddenLegacy){
 for(const rel of [
   '_system/method/ICM_ARCHITECTURE.md',
   '_system/registry/districts.yaml',
+  '_system/registry/districts.json',
   '_system/references/UPSTREAM.md',
   '_system/templates/CLAUDE.md',
   '_system/templates/CONTEXT.md',
