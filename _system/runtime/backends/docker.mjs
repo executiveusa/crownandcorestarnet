@@ -31,7 +31,7 @@ export function launchDockerComputer({repoRoot,agent,computer,task,runId,image='
     '--pids-limit','64',
     '--memory','256m',
     '--cpus','0.50',
-    '-v',`${repoRoot}/runtime:/runtime:ro`,
+    '-v',`${repoRoot}/_system/runtime:/runtime:ro`,
     '-v',`${scoped.bundleRoot}:/input:ro`,
     '-v',`${computerRoot}:/computer:rw`,
     '-w','/computer/workspace',
