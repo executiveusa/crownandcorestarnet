@@ -48,6 +48,9 @@ jobs:
       - name: Run Manny proof mission on isolated Docker computers
         run: npm run runtime:mission:docker
 
+      - name: Prove per-agent internal model-gateway path
+        run: npm run runtime:mission:gateway-proof
+
       - name: Upload machine-verifiable proof receipts
         if: always()
         uses: actions/upload-artifact@v4
