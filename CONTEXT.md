@@ -71,4 +71,4 @@ Execution authority now lives in `_system/runtime/`. The legacy root-level runti
 
 ## Migration status
 
-The ICM migration is in final verification. Canonical homes now exist under `_system/`, `_shared/`, and `districts/`; legacy root copies have been removed on the migration branch. `_system/method/MIGRATION_MAP.md` records the evidence and final verification gate.
+The ICM architecture is canonical and verified. System factory lives under `_system/`, shared Crown & Core truth under `_shared/`, and operational work under `districts/`. `_system/method/MIGRATION_MAP.md` records the migration evidence.
