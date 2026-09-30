@@ -2,7 +2,7 @@
 
 **Product:** Crown & Core StarNet  
 **Repository:** `executiveusa/crownandcorestarnet`  
-**Status:** Build in progress  
+**Status:** Architecture verified; authenticated business-data phase in progress  
 **Owner mode:** proof-first, approval-gated  
 **Primary manager:** Manny
 
@@ -50,6 +50,18 @@ The operating question is:
 - Depending on Pauli StarNet or any other client/project runtime.
 
 ## 4. Product architecture
+
+### ICM filesystem architecture
+
+Crown & Core StarNet uses an **Umbrella + Context Map** ICM structure:
+
+- `CLAUDE.md` routes tasks.
+- `CONTEXT.md` defines the workspace contract.
+- `_system/` contains the stable execution factory.
+- `_shared/` contains canonical Crown & Core truth and shared evidence.
+- `districts/` contains business work, district-owned agents, real process stages, and output state.
+- Every agent uses an explicit district-owned prompt path and an isolated computer assignment.
+- Filesystem state plus machine receipts—not agent prose—determine completion.
 
 ```
 CROWN & CORE STARNET
@@ -558,6 +570,8 @@ Missing, invalid, failed, or unverifiable receipt = **NOT DONE**.
 
 ### Backend maturity
 
-v0.4 proves separate processes and workspaces. This is a real runtime boundary for orchestration and file-write isolation, but not a hypervisor-grade security boundary.
+v1.4 proves the current isolation authority with Docker: 17 registered agents on 17 unique computer identities, scoped read-only input bundles, separate writable computer roots, no whole-repository mount, network disabled in proof runs, read-only container roots, dropped Linux capabilities, resource limits, and machine-verifiable receipts.
 
-The computer contract must remain backend-agnostic so production can move individual agents to container/VM/cloud-computer backends without changing their identities, district assignments, or proof contracts.
+Local-process mode remains a development proof and is not the isolation authority.
+
+The computer contract remains backend-agnostic so a future container/VM/cloud-computer backend must pass the same receipt, scope, and isolation contract before replacing Docker.
