@@ -11,7 +11,7 @@ function docker(args,{allowFailure=false}={}){
   return r;
 }
 
-export function launchDockerOperationalComputer({repoRoot,agent,computer,task,runId,image='node:22-alpine'}){
+export function launchDockerOperationalComputer({repoRoot,agent,computer,task,runId,extraReadPaths=[],image='node:22-alpine'}){
   const gatewayContainer=process.env.CC_MODEL_GATEWAY_CONTAINER;
   const gatewayToken=process.env.CC_MODEL_GATEWAY_TOKEN;
   const gatewayModel=process.env.CC_MODEL_GATEWAY_MODEL;
@@ -28,7 +28,7 @@ export function launchDockerOperationalComputer({repoRoot,agent,computer,task,ru
     try{ fs.chmodSync(p,0o777); }catch{}
   });
 
-  const scoped=materializeAgentInput({repoRoot,computerRoot,agent});
+  const scoped=materializeAgentInput({repoRoot,computerRoot,agent,extraReadPaths});
   try{ fs.chmodSync(scoped.bundleRoot,0o755); }catch{}
 
   const containerName=safeName(`cc-op-${agent.id}-${runId}`);
