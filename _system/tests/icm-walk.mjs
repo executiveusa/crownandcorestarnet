@@ -70,4 +70,5 @@ console.log('ICM walk/invariant check passed.');
 console.log('Root router <= 60 lines.');
 console.log('District contracts: '+districts.length);
 console.log('District-owned agent prompts: '+agents.length);
-console.log('Runtime shared inputs route through _shared.');\nconsole.log('No forbidden legacy root copies remain.');
+console.log('Runtime shared inputs route through _shared.');
+console.log('No forbidden legacy root copies remain.');
