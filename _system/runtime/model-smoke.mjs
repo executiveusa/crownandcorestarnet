@@ -21,7 +21,8 @@ const results=[];
 for(const agent of allAgents){
   const assigned=tasksDoc.tasks.find(x=>x.agent_id===agent.id);
   if(!assigned) throw new Error(`missing task for ${agent.id}`);
-  const promptRel=agent.prompt_path || `districts/${agent.district}/agents/${agent.id}/PROMPT.md`;\n  const promptPath=path.join(root,...promptRel.split('/'));
+  if(!agent.prompt_path) throw new Error(`missing explicit prompt_path for ${agent.id}`);
+  const promptPath=path.join(root,...agent.prompt_path.split('/'));
   if(!fs.existsSync(promptPath)) throw new Error(`missing prompt for ${agent.id}`);
   const system=fs.readFileSync(promptPath,'utf8');
   const startedAt=new Date().toISOString();
