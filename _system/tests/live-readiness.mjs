@@ -25,7 +25,7 @@ if(withToken.status!==0) failures.push('readiness presence test failed with synt
 else {
   const next=JSON.parse(fs.readFileSync(path.join(root,'outbox','LIVE-READINESS.json'),'utf8'));
   const square=next.connectors.find(x=>x.id==='square');
-  if(square?.readiness!=='READY_TO_SMOKE') failures.push('Square should require authenticated smoke after credential presence');
+  if(square?.readiness!=='CREDENTIAL_PRESENT_UNVERIFIED') failures.push('Square should require authenticated smoke after credential presence');
 }
 
 if(failures.length){
