@@ -6,15 +6,15 @@ import { launchDockerComputer } from './backends/docker.mjs';
 import { verifyReceipt } from './lib/receipt.mjs';
 
 const repoRoot=process.cwd();
-const agentsDoc=JSON.parse(fs.readFileSync(path.join(repoRoot,'runtime','agents.json'),'utf8'));
-const computersDoc=JSON.parse(fs.readFileSync(path.join(repoRoot,'runtime','computers.json'),'utf8'));
-const tasksDoc=JSON.parse(fs.readFileSync(path.join(repoRoot,'runtime','tasks.json'),'utf8'));
+const agentsDoc=JSON.parse(fs.readFileSync(path.join(repoRoot,'_system','runtime','agents.json'),'utf8'));
+const computersDoc=JSON.parse(fs.readFileSync(path.join(repoRoot,'_system','runtime','computers.json'),'utf8'));
+const tasksDoc=JSON.parse(fs.readFileSync(path.join(repoRoot,'_system','runtime','tasks.json'),'utf8'));
 
 const args=Object.fromEntries(process.argv.slice(2).map(x=>{
   const i=x.indexOf('=');
   return i>0?[x.slice(2,i),x.slice(i+1)]:[x.replace(/^--/,''),'true'];
 }));
-const missionFile=args.mission || path.join(repoRoot,'runtime','missions','proof-all.json');
+const missionFile=args.mission || path.join(repoRoot,'_system','runtime','missions','proof-all.json');
 const mission=JSON.parse(fs.readFileSync(missionFile,'utf8'));
 const backend=args.backend || mission.backend || 'local-process';
 if(!['local-process','docker'].includes(backend)) throw new Error(`unsupported mission backend: ${backend}`);
