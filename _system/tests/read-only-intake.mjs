@@ -7,7 +7,7 @@ const baselineBefore=fs.readFileSync(path.join(root,'_shared','state','current-s
 const r=spawnSync(process.execPath,['_system/pipelines/read-only-intake/index.mjs','--mode=fixture'],{cwd:root,encoding:'utf8'});
 if(r.status!==0){ console.error(r.stdout,r.stderr); process.exit(r.status||1); }
 
-const baselineAfter=fs.readFileSync(path.join(root,'data','current-state.json'),'utf8');
+const baselineAfter=fs.readFileSync(path.join(root,'_shared','state','current-state.json'),'utf8');
 const proof=JSON.parse(fs.readFileSync(path.join(root,'outbox','READ-ONLY-INTAKE-PROOF.json'),'utf8'));
 const failures=[];
 if(baselineBefore!==baselineAfter) failures.push('fixture intake mutated verified current-state');
