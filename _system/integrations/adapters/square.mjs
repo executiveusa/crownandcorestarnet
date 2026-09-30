@@ -67,14 +67,14 @@ export async function readSquare({
   fetchImpl=fetch,
   token=process.env.CC_SQUARE_ACCESS_TOKEN,
   locationId=process.env.CC_SQUARE_LOCATION_ID,
-  lookbackDays=Number(process.env.CC_SQUARE_LOOKBACK_DAYS||730),
+  bookingStartAt=process.env.CC_SQUARE_BOOKING_START_AT||'2010-01-01T00:00:00Z',
   maxPages=Number(process.env.CC_SQUARE_MAX_PAGES||100),
   now=new Date(),
   mode='live'
 }={}){
   if(mode==='fixture') throw new Error('Use fixture adapter input directly; live Square adapter refuses fake mode.');
   if(!token) throw new Error('CC_SQUARE_ACCESS_TOKEN required');
-  if(!Number.isFinite(lookbackDays)||lookbackDays<91) throw new Error('CC_SQUARE_LOOKBACK_DAYS must be at least 91');
+  if(Number.isNaN(Date.parse(bookingStartAt))) throw new Error('CC_SQUARE_BOOKING_START_AT must be an ISO timestamp');
   if(!Number.isInteger(maxPages)||maxPages<1||maxPages>500) throw new Error('CC_SQUARE_MAX_PAGES must be 1..500');
 
   const h=headers(token);
@@ -83,8 +83,9 @@ export async function readSquare({
   const selectedLocationIds=locationId ? [locationId] : locations.map(x=>x.id).filter(Boolean);
   if(!selectedLocationIds.length) throw new Error('No active Square location available for read-only baseline');
 
-  const startAt=isoDaysAgo(lookbackDays,now);
+  const startAt=new Date(bookingStartAt).toISOString();
   const endAt=now.toISOString();
+  const orderStartAt=new Date(Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),1)).toISOString();
 
   const [customersPage,bookingsPage,ordersPage]=await Promise.all([
     pageGet({fetchImpl,token,pathName:'/v2/customers',itemsKey:'customers',params:{limit:100},maxPages}),
@@ -93,14 +94,14 @@ export async function readSquare({
       params:{limit:100,start_at_min:startAt,start_at_max:endAt,...(locationId?{location_id:locationId}:{})},
       maxPages
     }),
-    pageOrders({fetchImpl,token,locationIds:selectedLocationIds,startAt,endAt,maxPages})
+    pageOrders({fetchImpl,token,locationIds:selectedLocationIds,startAt:orderStartAt,endAt,maxPages})
   ]);
 
   return {
     source:'square',
     api_version:VERSION,
     read_at:new Date().toISOString(),
-    read_window:{start_at:startAt,end_at:endAt,lookback_days:lookbackDays},
+    read_window:{booking_start_at:startAt,order_start_at:orderStartAt,end_at:endAt},
     location_id:locationId||null,
     locations:locations.map(x=>({id:x.id,name:x.name,status:x.status,timezone:x.timezone})),
     selected_location_ids:selectedLocationIds,
