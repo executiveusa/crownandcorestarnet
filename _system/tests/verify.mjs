@@ -23,6 +23,7 @@ run('data readiness test',['_system/tests/data-readiness.mjs']);
 run('model seam test',['_system/tests/model-smoke.mjs']);
 run('read-only intake test',['_system/tests/read-only-intake.mjs']);
 run('booking proof',['_system/tests/booking-proof.mjs']);
+run('Square read-only adapter proof',['_system/tests/square-readonly.mjs']);
 
 const approvedOut=path.join(out,'approved.json');
 run('approval allow',[
