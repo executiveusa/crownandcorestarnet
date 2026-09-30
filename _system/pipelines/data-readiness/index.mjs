@@ -7,21 +7,34 @@ const outPath=path.join(root,'outbox','DATA-READINESS.json');
 
 const connectors=contracts.connectors.map(c=>{
   const missing=(c.required_env||[]).filter(k=>!process.env[k]);
-  let readiness='READY';
+  let readiness='CREDENTIAL_PRESENT_UNVERIFIED';
   if(c.status==='blocked_provider_tbd') readiness='BLOCKED_PROVIDER_TBD';
+  else if(c.status==='ready_no_auth') readiness='READY_NO_AUTH';
   else if(missing.length) readiness='BLOCKED_MISSING_AUTH';
-  else if(c.status==='ready_no_auth') readiness='READY';
-  return {id:c.id,mode:c.mode,districts:c.districts,readiness,missing_env:missing,purpose:c.purpose};
+
+  return {
+    id:c.id,
+    mode:c.mode,
+    districts:c.districts,
+    readiness,
+    missing_env:missing,
+    purpose:c.purpose
+  };
 });
 
 const result={
+  schema:'cc.data-readiness.v2',
   generated_at:new Date().toISOString(),
   proof_mode:true,
-  ready:connectors.filter(x=>x.readiness==='READY').map(x=>x.id),
-  blocked:connectors.filter(x=>x.readiness!=='READY').map(x=>({id:x.id,reason:x.readiness,missing_env:x.missing_env})),
+  secret_values_emitted:false,
+  ready:connectors.filter(x=>x.readiness==='READY_NO_AUTH').map(x=>x.id),
+  ready_to_smoke:connectors.filter(x=>x.readiness==='CREDENTIAL_PRESENT_UNVERIFIED').map(x=>x.id),
+  blocked:connectors.filter(x=>x.readiness.startsWith('BLOCKED')).map(x=>({id:x.id,reason:x.readiness,missing_env:x.missing_env})),
   connectors
 };
+
 fs.mkdirSync(path.dirname(outPath),{recursive:true});
 fs.writeFileSync(outPath,JSON.stringify(result,null,2)+'\n');
-console.log(`Ready connectors: ${result.ready.join(', ')||'none'}`);
+console.log(`Ready without auth: ${result.ready.join(', ')||'none'}`);
+console.log(`Credential present, smoke required: ${result.ready_to_smoke.join(', ')||'none'}`);
 console.log(`Blocked connectors: ${result.blocked.length}`);
