@@ -47,3 +47,19 @@ Each agent receives its own ephemeral **internal Docker network** containing onl
 The model gateway holds the upstream credential separately and is the only bridge to the upstream model provider.
 
 A deterministic mock upstream may prove the gateway/network path, but those receipts are tier `gateway` and set `business_output_verified=false`.
+
+
+## ICM output-state law
+
+District `output/` files are the human-readable business-state surface.
+
+The runtime may write an agent's declared output file automatically **only** when:
+- the job receipt passes verification;
+- `verification_tier=operational`;
+- `business_output_verified=true`;
+- the source artifact hash matches;
+- the agent's `output_path` is inside its owning district.
+
+Structural and gateway proof runs are forbidden from publishing business state.
+
+Published files carry the source artifact, context-bundle, and model-response hashes. Human edits to the Markdown surface are allowed, but the immutable runtime receipt remains the provenance record.
