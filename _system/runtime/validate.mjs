@@ -22,7 +22,7 @@ if(computers.isolation_authority!=='runtime:prove:docker') failures.push('docker
 
 for(const agent of allAgents){
   if(!tasks.tasks.some(x=>x.agent_id===agent.id)) failures.push(`missing task assignment for ${agent.id}`);
-  const promptPath=path.join(root,'agents','workers',agent.id,'PROMPT.md');
+  const promptPath=path.join(root,...(agent.prompt_path || `districts/${agent.district}/agents/${agent.id}/PROMPT.md`).split('/'));
   if(!fs.existsSync(promptPath)) failures.push(`missing prompt contract for ${agent.id}`);
   const computer=computers.computers.find(x=>x.id===agent.computer_id);
   if(!computer) failures.push(`missing computer for ${agent.id}`);
