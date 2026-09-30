@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
 
-export function launchLocalProcess({repoRoot,agent,computer,task,runId}){
+export function launchLocalProcess({repoRoot,agent,computer,task,runId,extraReadPaths=[]}){
   const computerRoot=path.join(repoRoot,'.runtime','computers',computer.id);
   const workspace=path.join(computerRoot,'workspace');
   const home=path.join(computerRoot,'home');
@@ -27,7 +27,8 @@ export function launchLocalProcess({repoRoot,agent,computer,task,runId}){
         CC_COMPUTER_ROOT:computerRoot,
         CC_REPO_ROOT:repoRoot,
         CC_TASK:task,
-        CC_PROMPT_PATH:agent.prompt_path || `districts/${agent.district}/agents/${agent.id}/PROMPT.md`
+        CC_PROMPT_PATH:agent.prompt_path || `districts/${agent.district}/agents/${agent.id}/PROMPT.md`,
+        CC_HANDOFF_PATHS:JSON.stringify(extraReadPaths)
       },
       stdio:['ignore','pipe','pipe']
     });
