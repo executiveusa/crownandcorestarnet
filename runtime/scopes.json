@@ -67,7 +67,8 @@
         "districts/middleton/POLICY.md",
         "districts/middleton/canon/system.json",
         "districts/middleton/canon/metrics.md",
-        "districts/middleton/canon/scripts.md"
+        "districts/middleton/canon/scripts.md",
+        "districts/middleton/experiments/loop.md"
       ]
     }
   }
