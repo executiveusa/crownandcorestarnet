@@ -1,6 +1,6 @@
 # Crown & Core StarNet — ICM Migration Map
 
-Status: proposed + scaffolded, migration in progress.
+Status: active migration. Runtime authority has moved to `_system/runtime/` and the legacy runtime copy has been removed after machine proof.
 
 The uploaded ICM Architect method is the architecture authority for this restructure.
 
@@ -114,3 +114,15 @@ Stages that do not actually exist for a district must not be invented. The six-s
 ICM does not remove the need for actual isolated agent computers here.
 
 The uploaded method explicitly notes that real multi-agent/high-concurrency behavior can require framework code. Crown & Core keeps the Docker execution layer; ICM becomes the human-readable architecture and context-routing layer around it.
+
+
+## Verified migration ledger
+
+| Slice | Status | Evidence |
+|---|---|---|
+| Root router + district contracts | VERIFIED | ICM walk test + full CI |
+| District-owned agent prompts | VERIFIED | 17-agent runtime registry + Docker proof |
+| Shared Crown & Core truth copies | VERIFIED AS READ INPUTS | Docker scope manifests read from `_shared/` |
+| Runtime authority -> `_system/runtime/` | IN VERIFICATION | PR #11 full CI and 17-container proof |
+| Legacy `runtime/` removal | IN VERIFICATION | Must pass PR #11 after deletion |
+| Remaining policy/integrations/tests/workflows | NOT YET MIGRATED | Future slices |
