@@ -29,7 +29,7 @@ jobs:
 
   docker-computers:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -47,6 +47,9 @@ jobs:
 
       - name: Run Manny proof mission on isolated Docker computers
         run: npm run runtime:mission:docker
+
+      - name: Prove per-agent internal model-gateway path
+        run: npm run runtime:mission:gateway-proof
 
       - name: Upload machine-verifiable proof receipts
         if: always()

@@ -111,5 +111,7 @@
   ],
   "proof_backend": "docker",
   "development_backend": "local-process",
-  "isolation_authority": "runtime:prove:docker"
+  "isolation_authority": "runtime:prove:docker",
+  "operational_backend": "docker-operational",
+  "operational_model_path": "per-agent internal Docker network -> Crown & Core model gateway -> upstream model"
 }

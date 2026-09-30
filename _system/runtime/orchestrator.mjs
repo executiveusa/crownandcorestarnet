@@ -3,6 +3,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { launchLocalProcess } from './backends/local-process.mjs';
 import { launchDockerComputer } from './backends/docker.mjs';
+import { launchDockerOperationalComputer } from './backends/docker-operational.mjs';
 import { verifyReceipt } from './lib/receipt.mjs';
 
 const repoRoot=process.cwd();
@@ -17,8 +18,12 @@ const args=Object.fromEntries(process.argv.slice(2).map(x=>{
 const missionFile=args.mission || path.join(repoRoot,'_system','runtime','missions','proof-all.json');
 const mission=JSON.parse(fs.readFileSync(missionFile,'utf8'));
 const backend=args.backend || mission.backend || 'local-process';
-if(!['local-process','docker'].includes(backend)) throw new Error(`unsupported mission backend: ${backend}`);
-const launchComputer=backend==='docker' ? launchDockerComputer : launchLocalProcess;
+if(!['local-process','docker','docker-operational'].includes(backend)) throw new Error(`unsupported mission backend: ${backend}`);
+const launchComputer=backend==='docker'
+  ? launchDockerComputer
+  : backend==='docker-operational'
+    ? launchDockerOperationalComputer
+    : launchLocalProcess;
 
 const allAgents=[agentsDoc.manager,...agentsDoc.agents];
 const wanted=mission.agent_ids?.length?mission.agent_ids:allAgents.map(x=>x.id);
@@ -66,11 +71,16 @@ const summary={
   ended_at:new Date().toISOString(),
   requested_agents:wanted.length,
   verified_jobs:runResults.filter(x=>x.status==='VERIFIED').length,
-  operationally_verified_jobs:runResults.filter(x=>x.status==='VERIFIED'&&x.business_output_verified===true).length,
-  structurally_verified_jobs:runResults.filter(x=>x.status==='VERIFIED'&&x.business_output_verified!==true).length,
+  operationally_verified_jobs:runResults.filter(x=>x.status==='VERIFIED'&&x.verification_tier==='operational').length,
+  gateway_verified_jobs:runResults.filter(x=>x.status==='VERIFIED'&&x.verification_tier==='gateway').length,
+  structurally_verified_jobs:runResults.filter(x=>x.status==='VERIFIED'&&x.verification_tier==='structural').length,
   failed_jobs:failures.length,
   status:failures.length?'FAILED':'VERIFIED',
-  business_status:failures.length?'FAILED':(runResults.every(x=>x.business_output_verified===true)?'OPERATIONAL':'STRUCTURAL_ONLY'),
+  business_status:failures.length?'FAILED':(
+    runResults.every(x=>x.verification_tier==='operational')?'OPERATIONAL':
+    runResults.every(x=>x.verification_tier==='gateway')?'GATEWAY_PROOF':
+    runResults.every(x=>x.verification_tier==='structural')?'STRUCTURAL_ONLY':'MIXED_NON_OPERATIONAL'
+  ),
   jobs:runResults.map(x=>({id:x.id,agent_id:x.agent_id,district:x.district,computer_id:x.computer_id,task:x.task,status:x.status,verification_tier:x.verification_tier,business_output_verified:x.business_output_verified===true}))
 };
 const raw=JSON.stringify(summary,null,2)+'\n';

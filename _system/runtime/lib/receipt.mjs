@@ -55,14 +55,22 @@ export function verifyReceipt({receipt,repoRoot,agentsDoc,computersDoc,tasksDoc}
     if(receipt.verification_tier==='operational'){
       if(modelRun.external!==true) errors.push('operational receipt requires external model run');
       if(modelRun.structured_output!==true) errors.push('operational receipt requires structured model output');
+      if(modelRun.trust_level!=='live') errors.push('operational receipt requires live trust level');
       if(modelRun.business_analysis_verified!==true) errors.push('operational receipt missing business-analysis verification');
       if(receipt.business_output_verified!==true) errors.push('operational receipt must mark business_output_verified');
+    }
+    if(receipt.verification_tier==='gateway'){
+      if(modelRun.external!==true) errors.push('gateway receipt requires model gateway call');
+      if(modelRun.structured_output!==true) errors.push('gateway receipt requires structured model output');
+      if(modelRun.trust_level==='live') errors.push('gateway receipt cannot use live trust level');
+      if(modelRun.business_analysis_verified!==false) errors.push('gateway proof cannot mark business analysis verified');
+      if(receipt.business_output_verified!==false) errors.push('gateway proof cannot mark business output verified');
     }
     if(receipt.verification_tier==='structural' && receipt.business_output_verified!==false) {
       errors.push('structural receipt cannot mark business output verified');
     }
   }
-  if(!['structural','operational'].includes(receipt.verification_tier)) errors.push('invalid verification tier');
+  if(!['structural','gateway','operational'].includes(receipt.verification_tier)) errors.push('invalid verification tier');
 
   return {verified:errors.length===0,errors,verification_tier:receipt.verification_tier,business_output_verified:receipt.business_output_verified===true};
 }

@@ -8,7 +8,7 @@ The model gateway is separate from computer/runtime proof.
 
 `CC_MODEL_PROVIDER=fixture`
 
-Used in CI to prove:
+Used in ordinary CI/runtime proof to verify:
 - agent prompt loads;
 - exact ICM scope is assembled;
 - context bundle is hashed;
@@ -16,30 +16,58 @@ Used in CI to prove:
 - model-provider seam returns schema-valid output;
 - no external model claim is made.
 
-A structural receipt has:
+Receipt:
 
 ```
 verification_tier = structural
 business_output_verified = false
 ```
 
+### Gateway proof
+
+`npm run runtime:mission:gateway-proof`
+
+Every agent receives its own internal Docker network containing only:
+- that agent computer;
+- the Crown & Core model gateway.
+
+The gateway uses a deterministic mock upstream in CI.
+
+This proves:
+- the agent computer can reach the gateway;
+- the agent cannot use general internet egress through its own network;
+- the upstream credential is not present in the agent computer;
+- structured model output travels through the full gateway path;
+- receipt and context hashes still verify.
+
+Receipt:
+
+```
+verification_tier = gateway
+business_output_verified = false
+```
+
+Gateway proof is not live business reasoning.
+
 ### Operational
 
-`CC_MODEL_PROVIDER=http-compatible`
+`npm run runtime:mission:operational`
 
-Requires:
-- `CC_MODEL_BASE_URL`
-- `CC_MODEL_API_KEY`
-- `CC_MODEL_ID`
+Requires on the host/gateway side only:
+- `CC_UPSTREAM_MODEL_BASE_URL`
+- `CC_UPSTREAM_MODEL_API_KEY`
+- `CC_UPSTREAM_MODEL_ID`
+
+The agent containers do **not** receive the upstream API key.
 
 Operational verification requires:
-- an external/live model call;
+- live upstream model call through the Crown & Core gateway;
 - schema-valid agent analysis;
 - hashed scoped context;
 - deterministic domain assertions;
 - artifact and receipt verification.
 
-A successful operational receipt has:
+Receipt:
 
 ```
 verification_tier = operational
@@ -48,8 +76,7 @@ business_output_verified = true
 
 ## Output protocol
 
-Live agents must return JSON with:
-
+Agents return JSON with:
 - status: READY / BLOCKED / UNKNOWN
 - summary
 - findings with evidence refs and confidence
@@ -57,12 +84,10 @@ Live agents must return JSON with:
 - next_action
 - requires_human_approval
 
-The runtime parses this output. Unstructured model prose cannot qualify as operationally verified business output.
+Unstructured model prose cannot qualify as operationally verified business output.
 
-## Network note
+## Credential boundary
 
-The current hardened Docker proof uses `--network none`, so it proves isolated computers with the fixture model.
-
-Live external-model execution requires a separately approved model-gateway network path. Until that path is configured and proven, Docker mission receipts are structural-only.
+The upstream model credential exists only in the model-gateway container environment. Each agent gets a short-lived local gateway token.
 
 No model credential is committed to the repository.
