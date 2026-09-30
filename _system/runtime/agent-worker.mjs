@@ -3,6 +3,8 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { resolveInside } from './lib/jail.mjs';
 import { runModel } from './model/index.mjs';
+import { parseAgentAnalysis } from './model/protocol.mjs';
+import { buildContextBundle } from './lib/context-bundle.mjs';
 
 const required = ['CC_AGENT_ID','CC_COMPUTER_ID','CC_DISTRICT','CC_RUN_ID','CC_COMPUTER_ROOT','CC_REPO_ROOT','CC_TASK','CC_PROMPT_PATH'];
 for (const key of required) {
@@ -152,6 +154,7 @@ if (runtimeBackend === 'docker') {
 let status='COMPLETED';
 let error=null;
 let result=null;
+let verificationTier='structural';
 
 try {
   let traversalBlocked=false;
@@ -162,22 +165,40 @@ try {
   const promptPath=path.join(repoRoot,...promptRel.split('/'));
   if(!fs.existsSync(promptPath)) throw new Error('agent prompt contract missing');
   const systemPrompt=fs.readFileSync(promptPath,'utf8');
-  const modelContext=[
-    readRepoText('_shared','client','FACTS.md'),
-    readRepoText('_shared','client','PUBLIC_TRUTH.md'),
-    readRepoText('_shared','policy','HEART_AND_SOUL.md')
-  ].join('\n\n---\n\n');
+
+  const contextBundle=buildContextBundle({
+    repoRoot,
+    district,
+    promptRel,
+    scopeManifestPath:process.env.CC_SCOPE_MANIFEST||null
+  });
+  if(!contextBundle.files.length) throw new Error('agent context bundle is empty');
+
   const modelResult=await runModel({
     agent:{id:agentId,district,computer_id:computerId},
     task,
     system:systemPrompt,
-    context:modelContext
+    context:contextBundle.text
+  });
+  const parsedAnalysis=parseAgentAnalysis(modelResult.content);
+  const verificationTier=(modelResult.external===true && parsedAnalysis.valid===true)?'operational':'structural';
+
+  evidence.push({
+    type:'context_bundle',
+    sha256:contextBundle.sha256,
+    chars:contextBundle.chars,
+    file_count:contextBundle.files.length,
+    files:contextBundle.files,
+    scope_sha256:contextBundle.scope_sha256
   });
   evidence.push({
     type:'model_run',
     provider:modelResult.provider,
     model:modelResult.model,
     external:modelResult.external,
+    structured_output:parsedAnalysis.valid,
+    structured_error:parsedAnalysis.error,
+    business_analysis_verified:verificationTier==='operational',
     response_sha256:crypto.createHash('sha256').update(String(modelResult.content||'')).digest('hex')
   });
 
@@ -197,6 +218,9 @@ try {
     task,
     runtime_backend:runtimeBackend,
     runtime_host_id:runtimeHostId,
+    verification_tier:verificationTier,
+    model_analysis:parsedAnalysis.valid?parsedAnalysis.analysis:null,
+    deterministic_result:result,
     result
   };
   fs.writeFileSync(artifactPath,JSON.stringify(artifact,null,2)+'\n');
@@ -222,6 +246,8 @@ const receipt={
   runtime_backend:runtimeBackend,
   runtime_host_id:runtimeHostId,
   status,
+  verification_tier:verificationTier,
+  business_output_verified:verificationTier==='operational',
   workspace:path.relative(computerRoot,workspace),
   evidence,
   error
