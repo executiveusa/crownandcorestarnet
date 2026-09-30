@@ -2,10 +2,10 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const root=process.cwd();
-const agents=JSON.parse(fs.readFileSync(path.join(root,'runtime','agents.json'),'utf8'));
-const computers=JSON.parse(fs.readFileSync(path.join(root,'runtime','computers.json'),'utf8'));
-const tasks=JSON.parse(fs.readFileSync(path.join(root,'runtime','tasks.json'),'utf8'));
-const scopes=JSON.parse(fs.readFileSync(path.join(root,'runtime','scopes.json'),'utf8'));
+const agents=JSON.parse(fs.readFileSync(path.join(root,'_system','runtime','agents.json'),'utf8'));
+const computers=JSON.parse(fs.readFileSync(path.join(root,'_system','runtime','computers.json'),'utf8'));
+const tasks=JSON.parse(fs.readFileSync(path.join(root,'_system','runtime','tasks.json'),'utf8'));
+const scopes=JSON.parse(fs.readFileSync(path.join(root,'_system','runtime','scopes.json'),'utf8'));
 const failures=[];
 
 const allAgents=[agents.manager,...agents.agents];
