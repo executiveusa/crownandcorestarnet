@@ -8,7 +8,7 @@ const districts=['management','conversion','return','trust','nurture','reception
 function exists(rel){ return fs.existsSync(path.join(root,rel)); }
 function lines(rel){ return fs.readFileSync(path.join(root,rel),'utf8').split(/\r?\n/).length; }
 
-for(const rel of ['CLAUDE.md','CONTEXT.md','_system/CONTEXT.md','_shared/CONTEXT.md','docs/icm/MIGRATION_MAP.md']){
+for(const rel of ['CLAUDE.md','CONTEXT.md','_system/CONTEXT.md','_shared/CONTEXT.md','_system/method/MIGRATION_MAP.md','_system/method/ICM_ARCHITECTURE.md']){
   if(!exists(rel)) failures.push('missing ICM root file: '+rel);
 }
 if(exists('CLAUDE.md') && lines('CLAUDE.md')>60) failures.push('root CLAUDE.md exceeds ~60-line routing target');
@@ -16,7 +16,7 @@ if(exists('CLAUDE.md') && lines('CLAUDE.md')>60) failures.push('root CLAUDE.md e
 const forbiddenLegacy=[
   'runtime','config','integrations','schemas','schedules','test','workflows',
   'agents','client','data','lib','registry','scripts',
-  'HEART_AND_SOUL.md','UPSTREAM.md'
+  'HEART_AND_SOUL.md','UPSTREAM.md','docs'
 ];
 for(const rel of forbiddenLegacy){
   if(exists(rel)) failures.push('legacy duplicate remains outside ICM home: '+rel);
@@ -37,6 +37,7 @@ for(const rel of [
 }
 
 for(const d of districts){
+  if(exists(`districts/${d}/district.json`)) failures.push(`legacy district.json remains in ${d}`);
   for(const rel of [`districts/${d}/CLAUDE.md`,`districts/${d}/CONTEXT.md`,`districts/${d}/output/.gitkeep`]){
     if(!exists(rel)) failures.push('missing district ICM surface: '+rel);
   }
