@@ -1,6 +1,6 @@
 # Crown & Core StarNet — ICM Migration Map
 
-Status: final verification. All known legacy root copies have been moved to canonical ICM homes and removed on the v4 migration branch. Merge is allowed only after full CI, ICM walk, 17-computer Docker proof, and Docker mission proof pass.
+Status: VERIFIED on the v4 branch. All known legacy root copies have been moved to canonical ICM homes and removed. Full verification and Docker proof passed before final documentation closeout.
 
 The uploaded ICM Architect method is the architecture authority for this restructure.
 
@@ -118,10 +118,10 @@ Numbered stage folders exist only where a real sequence exists. No speculative e
 | Shared Crown & Core truth -> `_shared/` | VERIFIED | scope manifests + CI |
 | Runtime authority -> `_system/runtime/` | VERIFIED | full CI + 17-container proof |
 | Shared pipelines/tests -> `_system/` + district stages | VERIFIED | PR #12 full CI + Docker proof |
-| Policy/integrations/schemas/schedules/scripts/lib/registry/references -> `_system/` | FINAL VERIFICATION | v4 branch |
-| Legacy root duplicates removed | FINAL VERIFICATION | ICM walk fails if any forbidden legacy root returns |
-| Redundant district.json files removed | FINAL VERIFICATION | canonical registry + district CONTEXT contracts |
-| Root docs payload moved into canonical system references/method | FINAL VERIFICATION | v4 branch |
+| Policy/integrations/schemas/schedules/scripts/lib/registry/references -> `_system/` | VERIFIED | PR #13 run 90 |
+| Legacy root duplicates removed | VERIFIED | PR #13 run 90; ICM walk passed with no forbidden legacy roots |
+| Redundant district.json files removed | VERIFIED | canonical `_system/registry/districts.json` + runtime topology validation |
+| Root docs payload moved into canonical system references/method | VERIFIED | PR #13 run 90 |
 
 ## Completion condition
 
@@ -133,3 +133,14 @@ The migration is complete only when:
 - `npm run runtime:prove:docker` passes;
 - `npm run runtime:mission:docker` passes;
 - the proof receipts are uploaded by CI.
+
+
+## v4 proof receipt
+
+- GitHub Actions run: `36675124861`
+- `verify`: PASS
+- `docker-computers`: PASS
+- 17 isolated Docker computers: PASS
+- Manny Docker mission: PASS
+- Receipt artifact: `crown-core-runtime-proof`
+- Artifact SHA-256: `01d7fbdd72ac9ff45f3f3a92d299d5ced765f76a36b28ce3bdc979e37ecab317`
