@@ -21,7 +21,7 @@ function collectFiles(root,rel,out){
   if(TEXT_EXT.has(path.extname(abs).toLowerCase())) out.push({rel:rel.replaceAll('\\','/'),abs});
 }
 
-export function buildContextBundle({repoRoot,district,promptRel,maxChars=80000,maxFileChars=30000,scopeManifestPath=null}){
+export function buildContextBundle({repoRoot,district,agentId=null,promptRel,maxChars=80000,maxFileChars=30000,scopeManifestPath=null}){
   let explicit=[];
   let scopeSha=null;
 
@@ -32,7 +32,10 @@ export function buildContextBundle({repoRoot,district,promptRel,maxChars=80000,m
     explicit=(manifest.files||[]).map(x=>x.path);
   } else {
     const scopes=JSON.parse(fs.readFileSync(path.join(repoRoot,'_system','runtime','scopes.json'),'utf8'));
-    explicit=[...(scopes.shared_read||[]),...(scopes.districts?.[district]?.read||[])];
+    if(!agentId) throw new Error('agentId required when building context without a scope manifest');
+    const agentScope=scopes.agents?.[agentId];
+    if(!agentScope) throw new Error('no explicit context scope for agent '+agentId);
+    explicit=[...(scopes.shared_read||[]),...(agentScope.read||[])];
   }
 
   const candidates=[];
