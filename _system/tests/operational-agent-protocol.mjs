@@ -21,6 +21,7 @@ if(parseAgentAnalysis('not-json').valid) failures.push('invalid analysis accepte
 const bundle=buildContextBundle({
   repoRoot:root,
   district:'conversion',
+  agentId:'path-auditor',
   promptRel:'districts/conversion/agents/path-auditor/PROMPT.md'
 });
 if(!bundle.files.some(x=>x.path==='districts/conversion/CONTEXT.md')) failures.push('conversion context missing from bundle');
