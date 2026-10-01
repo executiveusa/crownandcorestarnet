@@ -53,9 +53,14 @@ for(const a of agents){
 }
 
 const scopes=JSON.parse(fs.readFileSync(path.join(root,'_system','runtime','scopes.json'),'utf8'));
-for(const d of districts){
-  if(!scopes.districts?.[d]) failures.push('missing runtime ICM scope: '+d);
-  if(!(scopes.districts?.[d]?.read||[]).includes(`districts/${d}/CONTEXT.md`)) failures.push('scope missing own CONTEXT: '+d);
+if(scopes.version!==3) failures.push('ICM scopes must use explicit per-agent schema v3');
+if(scopes.districts) failures.push('district-wide runtime scopes remain; per-agent scopes are required');
+for(const a of agents){
+  const s=scopes.agents?.[a.id];
+  if(!s){ failures.push('missing runtime ICM agent scope: '+a.id); continue; }
+  const reads=s.read||[];
+  if(!reads.includes(`districts/${a.district}/CONTEXT.md`)) failures.push('agent scope missing own CONTEXT: '+a.id);
+  if(reads.length>5) failures.push('agent context budget exceeded: '+a.id);
 }
 for(const rel of scopes.shared_read||[]){
   if(!rel.startsWith('_shared/')) failures.push('shared runtime input outside _shared: '+rel);
@@ -72,4 +77,5 @@ console.log('Root router <= 60 lines.');
 console.log('District contracts: '+districts.length);
 console.log('District-owned agent prompts: '+agents.length);
 console.log('Runtime shared inputs route through _shared.');
+console.log('Every agent has an explicit <=5-file task scope plus shared truth and its own prompt.');
 console.log('No forbidden legacy root copies remain.');
