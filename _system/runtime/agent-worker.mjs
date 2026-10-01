@@ -105,18 +105,28 @@ function executeDomainTask(){
       const jobs=handoff?.jobs || [];
       const required=['run_id','agent_id','computer_id','district','task_type','status','evidence'];
       const malformed=jobs.filter(j=>required.some(k=>j[k]===undefined||j[k]===null));
-      const invalid=jobs.filter(j=>j.status!=='VERIFIED');
+      const invalid=jobs.filter(j=>j.status!=='VERIFIED'||j.receipt?.status!=='COMPLETED');
+      const hashFailures=jobs.filter(j=>{
+        if(!j.receipt||!j.receipt_sha256) return true;
+        const raw=JSON.stringify(j.receipt,null,2)+'\n';
+        return crypto.createHash('sha256').update(raw).digest('hex')!==j.receipt_sha256;
+      });
+      const artifactMissing=jobs.filter(j=>!j.artifact_sha256||!j.evidence?.some(e=>e.type==='artifact'&&e.sha256===j.artifact_sha256));
       assert(handoff!==null,'receipt-verifier requires phased worker handoff');
       assert(jobs.length>0,'receipt-verifier received empty worker handoff');
       assert(malformed.length===0,'worker handoff contains malformed receipt summaries');
       assert(invalid.length===0,'worker handoff contains unverified jobs');
+      assert(hashFailures.length===0,'worker handoff receipt hash verification failed');
+      assert(artifactMissing.length===0,'worker handoff missing artifact hash evidence');
       return {
         done_requires_receipt:true,
         handoff_schema:handoff.schema,
         audited_jobs:jobs.length,
         malformed_jobs:malformed.length,
         unverified_jobs:invalid.length,
-        all_upstream_receipts_verified:malformed.length===0&&invalid.length===0,
+        receipt_hash_failures:hashFailures.length,
+        missing_artifact_hashes:artifactMissing.length,
+        all_upstream_receipts_verified:malformed.length===0&&invalid.length===0&&hashFailures.length===0&&artifactMissing.length===0,
         required_fields:required
       };
     }
