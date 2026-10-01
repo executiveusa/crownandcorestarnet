@@ -30,8 +30,8 @@ function copyRecursive(src, dst, manifest, repoRoot) {
 
 export function materializeAgentInput({ repoRoot, computerRoot, agent }) {
   const scopes = JSON.parse(fs.readFileSync(path.join(repoRoot, '_system', 'runtime', 'scopes.json'), 'utf8'));
-  const districtScope = scopes.districts?.[agent.district];
-  if (!districtScope) throw new Error('no input scope for district ' + agent.district);
+  const agentScope = scopes.agents?.[agent.id];
+  if (!agentScope) throw new Error('no explicit input scope for agent ' + agent.id);
 
   const bundleRoot = path.join(computerRoot, 'input');
   fs.rmSync(bundleRoot, { recursive: true, force: true });
@@ -40,7 +40,7 @@ export function materializeAgentInput({ repoRoot, computerRoot, agent }) {
   if (!agent.prompt_path) throw new Error('ICM agent missing explicit prompt_path: ' + agent.id);
   const paths = [
     ...(scopes.shared_read || []),
-    ...(districtScope.read || []),
+    ...(agentScope.read || []),
     agent.prompt_path
   ];
 
@@ -64,6 +64,7 @@ export function materializeAgentInput({ repoRoot, computerRoot, agent }) {
     schema: 'cc.agent.scope.v1',
     agent_id: agent.id,
     district: agent.district,
+    scope_version: scopes.version,
     generated_at: new Date().toISOString(),
     explicit_paths: unique,
     files: files.sort((a, b) => a.path.localeCompare(b.path))
