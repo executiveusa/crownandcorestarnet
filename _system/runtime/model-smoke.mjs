@@ -21,7 +21,7 @@ for(const agent of allAgents){
   const promptPath=path.join(root,...agent.prompt_path.split('/'));
   if(!fs.existsSync(promptPath)) throw new Error(`missing prompt for ${agent.id}`);
   const system=fs.readFileSync(promptPath,'utf8');
-  const bundle=buildContextBundle({repoRoot:root,district:agent.district,promptRel:agent.prompt_path});
+  const bundle=buildContextBundle({repoRoot:root,district:agent.district,agentId:agent.id,promptRel:agent.prompt_path});
   if(!bundle.files.length) throw new Error(`empty context bundle for ${agent.id}`);
 
   const startedAt=new Date().toISOString();

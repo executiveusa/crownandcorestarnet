@@ -39,17 +39,23 @@ for(const agent of allAgents){
 }
 
 const districts=[...new Set(agents.agents.map(x=>x.district))];
-const scopeDistricts=['management',...districts];
-for(const district of scopeDistricts){
-  const s=scopes.districts?.[district];
-  if(!s) failures.push(`missing scope for district: ${district}`);
-  for(const rel of (s?.read||[])){
-    if(path.isAbsolute(rel)||rel.split(/[\\/]+/).includes('..')) failures.push(`unsafe scope path for ${district}: ${rel}`);
-    if(rel==='.'||rel==='/'||rel==='districts'||rel==='agents') failures.push(`overbroad scope path for ${district}: ${rel}`);
+if(scopes.version!==3) failures.push('runtime scopes must use per-agent schema version 3');
+if(scopes.districts) failures.push('district-wide runtime scopes are forbidden; use explicit per-agent scopes');
+for(const agent of allAgents){
+  const s=scopes.agents?.[agent.id];
+  if(!s) { failures.push(`missing explicit scope for agent: ${agent.id}`); continue; }
+  const reads=s.read||[];
+  if(reads.length>5) failures.push(`agent scope exceeds 5 explicit reads: ${agent.id}`);
+  if(!reads.includes(`districts/${agent.district}/CONTEXT.md`)) failures.push(`agent scope missing own district CONTEXT: ${agent.id}`);
+  for(const rel of reads){
+    if(path.isAbsolute(rel)||rel.split(/[\\/]+/).includes('..')) failures.push(`unsafe scope path for ${agent.id}: ${rel}`);
+    if(rel==='.'||rel==='/'||rel==='districts'||rel==='_shared'||rel==='_system') failures.push(`overbroad scope path for ${agent.id}: ${rel}`);
+    if(rel.includes('/agents/') && rel!==agent.prompt_path) failures.push(`agent scope attempts to read another agent contract: ${agent.id} -> ${rel}`);
   }
 }
 for(const rel of (scopes.shared_read||[])){
   if(path.isAbsolute(rel)||rel.split(/[\\/]+/).includes('..')) failures.push(`unsafe shared scope path: ${rel}`);
+  if(!rel.startsWith('_shared/')) failures.push(`shared scope must live under _shared: ${rel}`);
 }
 for(const district of ['management',...districts]){
   const d=districtRegistry.districts?.find(x=>x.id===district);

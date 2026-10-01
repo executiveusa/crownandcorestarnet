@@ -1,74 +1,130 @@
 {
-  "version": 2,
-  "law": "ICM load-only-what-the-step-needs. Each agent computer receives explicit shared truth, its district CONTEXT, named references, its own prompt, and its own writable computer root. Cross-district reads require an explicit grant.",
+  "version": 3,
+  "law": "ICM load-only-what-the-agent-needs. Every computer receives the shared Crown & Core truth, one explicit per-agent read set, that agent's prompt, and its own writable computer root. No district-wide fallback.",
   "shared_read": [
     "_shared/policy/HEART_AND_SOUL.md",
     "_shared/client/FACTS.md",
     "_shared/client/PUBLIC_TRUTH.md",
     "_shared/state/current-state.json"
   ],
-  "districts": {
-    "management": {
+  "agents": {
+    "manny": {
       "read": [
         "districts/management/CONTEXT.md",
         "_system/runtime/agents.json",
         "_system/runtime/computers.json",
-        "_system/runtime/tasks.json"
+        "_system/runtime/tasks.json",
+        "_system/registry/districts.json"
       ]
     },
-    "conversion": {
+    "path-auditor": {
       "read": [
         "districts/conversion/CONTEXT.md",
+        "_shared/client/CUSTOMER_JOURNEY.md",
         "_shared/evidence/public-web-2026-09-28.json",
-        "_shared/evidence/public-booking-path-2026-09-28.json",
-        "_shared/client/CUSTOMER_JOURNEY.md"
+        "_shared/evidence/public-booking-path-2026-09-28.json"
       ]
     },
-    "return": {
+    "funnel-builder": {
+      "read": [
+        "districts/conversion/CONTEXT.md",
+        "_shared/client/BUSINESS_MODEL.md",
+        "_shared/client/CUSTOMER_JOURNEY.md",
+        "_shared/evidence/public-booking-path-2026-09-28.json"
+      ]
+    },
+    "reactivation-analyst": {
       "read": [
         "districts/return/CONTEXT.md",
         "_shared/client/BUSINESS_MODEL.md",
         "districts/middleton/POLICY.md"
       ]
     },
-    "trust": {
+    "r3-planner": {
+      "read": [
+        "districts/return/CONTEXT.md",
+        "_shared/client/BUSINESS_MODEL.md",
+        "districts/middleton/POLICY.md"
+      ]
+    },
+    "feedback-architect": {
+      "read": [
+        "districts/trust/CONTEXT.md",
+        "districts/middleton/POLICY.md"
+      ]
+    },
+    "reputation-auditor": {
       "read": [
         "districts/trust/CONTEXT.md",
         "_shared/evidence/public-web-2026-09-28.json",
         "districts/middleton/POLICY.md"
       ]
     },
-    "nurture": {
+    "lead-response-auditor": {
       "read": [
         "districts/nurture/CONTEXT.md",
         "_shared/client/CUSTOMER_JOURNEY.md"
       ]
     },
-    "reception": {
+    "recovery-planner": {
+      "read": [
+        "districts/nurture/CONTEXT.md",
+        "_shared/client/CUSTOMER_JOURNEY.md"
+      ]
+    },
+    "missed-call-auditor": {
       "read": [
         "districts/reception/CONTEXT.md",
         "_shared/client/CUSTOMER_JOURNEY.md"
       ]
     },
-    "media": {
+    "receptionist-designer": {
+      "read": [
+        "districts/reception/CONTEXT.md",
+        "_shared/client/CUSTOMER_JOURNEY.md"
+      ]
+    },
+    "producer": {
       "read": [
         "districts/media/CONTEXT.md",
         "_shared/client/BUSINESS_MODEL.md"
       ]
     },
-    "performance": {
+    "clip-librarian": {
       "read": [
-        "districts/performance/CONTEXT.md"
+        "districts/media/CONTEXT.md",
+        "_shared/client/BUSINESS_MODEL.md"
       ]
     },
-    "middleton": {
+    "attribution-auditor": {
+      "read": [
+        "districts/performance/CONTEXT.md",
+        "_shared/client/BUSINESS_MODEL.md",
+        "_shared/client/CUSTOMER_JOURNEY.md"
+      ]
+    },
+    "receipt-verifier": {
+      "read": [
+        "districts/performance/CONTEXT.md",
+        "_system/runtime/RECEIPT_LAW.md",
+        "_system/references/OPERATIONAL_AGENT_LAW.md"
+      ]
+    },
+    "method-librarian": {
       "read": [
         "districts/middleton/CONTEXT.md",
         "districts/middleton/POLICY.md",
         "districts/middleton/canon/system.json",
         "districts/middleton/canon/metrics.md",
-        "districts/middleton/canon/scripts.md",
-        "districts/middleton/experiments/loop.md"
+        "districts/middleton/canon/scripts.md"
+      ]
+    },
+    "experiment-auditor": {
+      "read": [
+        "districts/middleton/CONTEXT.md",
+        "districts/middleton/POLICY.md",
+        "districts/middleton/experiments/loop.md",
+        "districts/middleton/canon/metrics.md"
       ]
     }
   }
