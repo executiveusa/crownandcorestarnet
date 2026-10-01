@@ -169,6 +169,7 @@ try {
   const contextBundle=buildContextBundle({
     repoRoot,
     district,
+    agentId,
     promptRel,
     scopeManifestPath:process.env.CC_SCOPE_MANIFEST||null
   });
