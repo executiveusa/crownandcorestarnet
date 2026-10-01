@@ -54,18 +54,24 @@ function resolveAgent(id){
 }
 
 function writeHandoff(phaseName,results,upstreamPhaseReceipts=[]){
-  const jobs=results.map(x=>({
-    run_id:x.receipt?.run_id || x.id,
-    agent_id:x.agent_id,
-    computer_id:x.computer_id,
-    district:x.district,
-    task_type:x.task,
-    status:x.status,
-    verification_tier:x.verification_tier || null,
-    business_output_verified:x.business_output_verified===true,
-    evidence:x.receipt?.evidence || [],
-    artifact_sha256:x.receipt?.evidence?.find(e=>e.type==='artifact')?.sha256 || null
-  }));
+  const jobs=results.map(x=>{
+    const receipt=x.receipt || null;
+    const receiptRaw=receipt ? JSON.stringify(receipt,null,2)+'\n' : null;
+    return {
+      run_id:receipt?.run_id || x.id,
+      agent_id:x.agent_id,
+      computer_id:x.computer_id,
+      district:x.district,
+      task_type:x.task,
+      status:x.status,
+      verification_tier:x.verification_tier || null,
+      business_output_verified:x.business_output_verified===true,
+      evidence:receipt?.evidence || [],
+      artifact_sha256:receipt?.evidence?.find(e=>e.type==='artifact')?.sha256 || null,
+      receipt_sha256:receiptRaw ? crypto.createHash('sha256').update(receiptRaw).digest('hex') : null,
+      receipt
+    };
+  });
   const value={
     schema:'cc.phase.handoff.v1',
     mission_id:missionId,
