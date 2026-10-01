@@ -40,14 +40,30 @@ function assert(condition,message){
   if(!condition) throw new Error(message);
 }
 
+function readRuntimeHandoff(){
+  const rel=process.env.CC_RUNTIME_HANDOFF_REL;
+  if(!rel) return null;
+  if(!rel.startsWith('.runtime/handoffs/')) throw new Error('runtime handoff path outside allowed prefix');
+  const handoff=readRepoJson(...rel.split('/'));
+  return handoff;
+}
+
 function executeDomainTask(){
   const state=()=>readRepoJson('_shared','state','current-state.json');
   switch(task){
     case 'orchestration-integrity': {
       const a=readRepoJson('_system','runtime','agents.json');
-      const c=readRepoJson('_system','runtime','computers.json');
+      const computers=readRepoJson('_system','runtime','computers.json');
       const all=[a.manager,...a.agents];
-      return {agent_count:all.length,computer_count:c.computers.length,one_to_one:new Set(all.map(x=>x.computer_id)).size===all.length};
+      const handoff=readRuntimeHandoff();
+      return {
+        agent_count:all.length,
+        computer_count:computers.computers.length,
+        one_to_one:new Set(all.map(x=>x.computer_id)).size===all.length,
+        phased_handoff_present:handoff!==null,
+        upstream_phases_verified:handoff?.upstream_phases_verified ?? null,
+        upstream_failed_jobs:handoff?.failed_jobs ?? null
+      };
     }
     case 'audit-booking-path': {      const pub=readRepoJson('_shared','evidence','public-web-2026-09-28.json');      const gapIds=(pub.observed_gaps||[]).map(x=>x.id);      return {        booking_path_verified:state().metrics.booking_path_verified,        booking_cta_present:pub.verified_public_facts.booking_cta_present,        booking_destination_verified:!gapIds.includes('booking-destination-unverified'),        public_conversion_gaps:gapIds.filter(x=>['hours-conflict','about-placeholders','event-price-placeholder','faq-content-mismatch','booking-destination-unverified'].includes(x)),        mutation:false      };    }
     case 'draft-service-funnel':
@@ -74,10 +90,36 @@ function executeDomainTask(){
       return {source_first:true,founder_interview:true,expert_interview:true,b_roll:true,podcast:true,publishing:false};
     case 'build-clip-manifest':
       return {timestamp_required:true,source_required:true,invented_claims:false,publishing:false};
-    case 'audit-attribution':
-      return {attribution_ready:state().metrics.attribution_ready,attributable_revenue:state().metrics.monthly_attributable_revenue,unknowns_preserved:true};
-    case 'verify-receipts':
-      return {done_requires_receipt:true,required_fields:['run_id','agent_id','computer_id','district','pid','started_at','ended_at','task_type','status','evidence']};
+    case 'audit-attribution': {
+      const handoff=readRuntimeHandoff();
+      return {
+        attribution_ready:state().metrics.attribution_ready,
+        attributable_revenue:state().metrics.monthly_attributable_revenue,
+        unknowns_preserved:true,
+        worker_handoff_present:handoff!==null,
+        worker_jobs_verified:handoff?.verified_jobs ?? null
+      };
+    }
+    case 'verify-receipts': {
+      const handoff=readRuntimeHandoff();
+      const jobs=handoff?.jobs || [];
+      const required=['run_id','agent_id','computer_id','district','task_type','status','evidence'];
+      const malformed=jobs.filter(j=>required.some(k=>j[k]===undefined||j[k]===null));
+      const invalid=jobs.filter(j=>j.status!=='VERIFIED');
+      assert(handoff!==null,'receipt-verifier requires phased worker handoff');
+      assert(jobs.length>0,'receipt-verifier received empty worker handoff');
+      assert(malformed.length===0,'worker handoff contains malformed receipt summaries');
+      assert(invalid.length===0,'worker handoff contains unverified jobs');
+      return {
+        done_requires_receipt:true,
+        handoff_schema:handoff.schema,
+        audited_jobs:jobs.length,
+        malformed_jobs:malformed.length,
+        unverified_jobs:invalid.length,
+        all_upstream_receipts_verified:malformed.length===0&&invalid.length===0,
+        required_fields:required
+      };
+    }
     case 'validate-canon-use': {
       const canon=readRepoJson('districts','middleton','canon','system.json');
       const last=canon.service_sequence?.at(-1)?.service || '';
