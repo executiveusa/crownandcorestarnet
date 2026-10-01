@@ -27,6 +27,7 @@ export function launchLocalProcess({repoRoot,agent,computer,task,runId}){
         CC_COMPUTER_ROOT:computerRoot,
         CC_REPO_ROOT:repoRoot,
         CC_TASK:task,
+        ...(agent.runtime_handoff_rel?{CC_RUNTIME_HANDOFF_REL:agent.runtime_handoff_rel}:{}),
         CC_PROMPT_PATH:agent.prompt_path || `districts/${agent.district}/agents/${agent.id}/PROMPT.md`
       },
       stdio:['ignore','pipe','pipe']

@@ -45,8 +45,11 @@ jobs:
       - name: Prove one isolated Docker computer per agent
         run: npm run runtime:prove:docker
 
-      - name: Run Manny proof mission on isolated Docker computers
+      - name: Run all-agent concurrency proof on isolated Docker computers
         run: npm run runtime:mission:docker
+
+      - name: Run worker -> Performance -> Manny phased mission
+        run: npm run runtime:mission:phased:docker
 
       - name: Prove per-agent internal model-gateway path
         run: npm run runtime:mission:gateway-proof

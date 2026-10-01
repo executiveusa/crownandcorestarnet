@@ -38,9 +38,14 @@ export function materializeAgentInput({ repoRoot, computerRoot, agent }) {
   fs.mkdirSync(bundleRoot, { recursive: true });
 
   if (!agent.prompt_path) throw new Error('ICM agent missing explicit prompt_path: ' + agent.id);
+  const dynamic = Array.isArray(agent.runtime_extra_read_paths) ? agent.runtime_extra_read_paths : [];
+  for (const rel of dynamic) {
+    if (!rel.startsWith('.runtime/handoffs/')) throw new Error('runtime handoff path outside allowed prefix: ' + rel);
+  }
   const paths = [
     ...(scopes.shared_read || []),
     ...(agentScope.read || []),
+    ...dynamic,
     agent.prompt_path
   ];
 
@@ -67,6 +72,7 @@ export function materializeAgentInput({ repoRoot, computerRoot, agent }) {
     scope_version: scopes.version,
     generated_at: new Date().toISOString(),
     explicit_paths: unique,
+    runtime_handoff_paths: dynamic,
     files: files.sort((a, b) => a.path.localeCompare(b.path))
   };
 

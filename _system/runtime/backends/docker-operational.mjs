@@ -65,6 +65,7 @@ export function launchDockerOperationalComputer({repoRoot,agent,computer,task,ru
     '-e','CC_SCOPE_MANIFEST=/input/SCOPE-MANIFEST.json',
     '-e',`CC_SCOPE_SHA256=${scoped.sha256}`,
     '-e',`CC_TASK=${task}`,
+    ...(agent.runtime_handoff_rel?['-e',`CC_RUNTIME_HANDOFF_REL=${agent.runtime_handoff_rel}`]:[]),
     '-e',`CC_PROMPT_PATH=${agent.prompt_path}`,
     '-e','CC_RUNTIME_BACKEND=docker-operational',
     '-e',`CC_RUNTIME_HOST_ID=${containerName}`,
