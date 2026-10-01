@@ -96,8 +96,8 @@ try{
   waitHttpInContainer(gateway,'http://127.0.0.1:8787/health');
 
   const missionFile=mode==='live'
-    ? '_system/runtime/missions/operational-all.json'
-    : '_system/runtime/missions/gateway-proof-all.json';
+    ? '_system/runtime/missions/phased-operational.json'
+    : '_system/runtime/missions/phased-gateway-proof.json';
 
   const childEnv={
     ...process.env,
@@ -108,7 +108,7 @@ try{
   };
 
   const mission=spawnSync(process.execPath,[
-    path.join(root,'_system','runtime','orchestrator.mjs'),
+    path.join(root,'_system','runtime','phased-orchestrator.mjs'),
     '--backend=docker-operational',
     `--mission=${missionFile}`
   ],{cwd:root,encoding:'utf8',env:childEnv});
@@ -117,7 +117,7 @@ try{
   process.stderr.write(mission.stderr||'');
   missionStatus=mission.status??1;
   if(missionStatus===0){
-    const missionId=mode==='live'?'operational-all-districts':'gateway-proof-all-districts';
+    const missionId=mode==='live'?'phased-operational-all':'phased-gateway-proof-all';
     const receiptPath=path.join(root,'.runtime','missions',missionId,'MISSION-RECEIPT.json');
     const receipt=JSON.parse(fs.readFileSync(receiptPath,'utf8'));
     const expected=mode==='live'?'OPERATIONAL':'GATEWAY_PROOF';
