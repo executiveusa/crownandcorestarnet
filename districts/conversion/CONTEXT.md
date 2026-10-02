@@ -8,25 +8,35 @@ status: active
 
 ## Job
 
-Reduce friction between discovery and completed booking without redesigning blindly.
+Own the public discovery-to-booking experience without redesigning blindly.
+
+## Primary current product
+
+The Crown & Core website challenge is the current priority:
+- `site/CONTEXT.md`
 
 ## Inputs
 
+- `../../MISSION.md`
 - `../../_shared/client/`
+- `../../_shared/brand/`
 - `../../_shared/evidence/`
 - `../../_shared/state/current-state.json`
 
-Load only the specific files required for the task. Do not crawl those folders wholesale.
+Load only the specific files required by the current task contract. Do not crawl those folders wholesale.
 
-## Agents
+## Existing agents
 
 - `path-auditor`
 - `funnel-builder`
 
-Each agent has one computer assignment and one scoped input bundle in the runtime registry.
+Existing agents remain useful for booking/funnel evidence. They are not substitutes for the website product.
 
 ## Process
 
+For website work, follow `site/CONTEXT.md`.
+
+For other conversion work:
 1. Read this contract.
 2. Read the task and declared inputs.
 3. Produce a plain-file draft in `output/`.
@@ -37,21 +47,21 @@ Each agent has one computer assignment and one scoped input bundle in the runtim
 
 ## Outputs
 
+Existing conversion outputs:
 - `output/path-audit.md`
 - `output/funnel-brief.md`
 - `output/booking-proof.md`
 
-Outputs are edit surfaces. Human edits become the next step's input.
+Website product and proof live under `site/`.
 
 ## Human check
 
-Approve live funnel/site/booking changes before execution.
+Approve live site/funnel/booking changes before production execution. Brand-defining website direction also requires the declared site gate.
 
 ## Done
 
-Done means the expected output exists **and** the required machine receipt/assertions pass. Agent prose is not completion evidence.
-
+Done means the expected product/output exists **and** the required runtime evidence passes. Agent prose is not completion evidence.
 
 ## Output-state rule
 
-The runtime may populate declared agent outputs automatically only from an **operationally verified** receipt. Structural and gateway proof runs must not write business state into this district's `output/` surfaces. Human edits remain allowed; source receipts preserve provenance.
+Runtime may populate declared agent outputs automatically only from an operationally verified receipt. Structural/gateway proof must not write business state. Human edits remain allowed; source receipts preserve provenance.
