@@ -17,12 +17,17 @@ if(summary.agent_count!==expected) failures.push(`expected ${expected} agents, g
 if(summary.provider!=='fixture') failures.push('CI model proof must use fixture');
 if(summary.external_calls!==0) failures.push('fixture proof made external calls');
 if(summary.all_prompt_contracts_loaded!==true) failures.push('not all prompt contracts loaded');
+if(summary.all_structured_outputs!==true) failures.push('fixture outputs did not satisfy structured agent protocol');
+if(summary.operationally_verified_agents!==0) failures.push('fixture run must not claim operational business verification');
+if(summary.structurally_verified_agents!==expected) failures.push('all fixture agents should be structural-only');
 for(const result of summary.results||[]){
   if(!/^[a-f0-9]{64}$/.test(result.sha256||'')) failures.push(`bad artifact hash for ${result.agent_id}`);
+  if(!/^[a-f0-9]{64}$/.test(result.context_sha256||'')) failures.push(`bad context hash for ${result.agent_id}`);
+  if(result.business_output_verified!==false) failures.push(`fixture agent ${result.agent_id} falsely marked business output verified`);
 }
 if(failures.length){
   console.error('Model seam test failed');
   failures.forEach(x=>console.error('- '+x));
   process.exit(1);
 }
-console.log('All-agent model seam fixture test passed.');
+console.log('All-agent scoped-context fixture test passed; operational claims remain false.');

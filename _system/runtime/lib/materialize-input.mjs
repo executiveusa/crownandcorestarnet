@@ -30,17 +30,22 @@ function copyRecursive(src, dst, manifest, repoRoot) {
 
 export function materializeAgentInput({ repoRoot, computerRoot, agent }) {
   const scopes = JSON.parse(fs.readFileSync(path.join(repoRoot, '_system', 'runtime', 'scopes.json'), 'utf8'));
-  const districtScope = scopes.districts?.[agent.district];
-  if (!districtScope) throw new Error('no input scope for district ' + agent.district);
+  const agentScope = scopes.agents?.[agent.id];
+  if (!agentScope) throw new Error('no explicit input scope for agent ' + agent.id);
 
   const bundleRoot = path.join(computerRoot, 'input');
   fs.rmSync(bundleRoot, { recursive: true, force: true });
   fs.mkdirSync(bundleRoot, { recursive: true });
 
   if (!agent.prompt_path) throw new Error('ICM agent missing explicit prompt_path: ' + agent.id);
+  const dynamic = Array.isArray(agent.runtime_extra_read_paths) ? agent.runtime_extra_read_paths : [];
+  for (const rel of dynamic) {
+    if (!rel.startsWith('.runtime/handoffs/')) throw new Error('runtime handoff path outside allowed prefix: ' + rel);
+  }
   const paths = [
     ...(scopes.shared_read || []),
-    ...(districtScope.read || []),
+    ...(agentScope.read || []),
+    ...dynamic,
     agent.prompt_path
   ];
 
@@ -64,8 +69,10 @@ export function materializeAgentInput({ repoRoot, computerRoot, agent }) {
     schema: 'cc.agent.scope.v1',
     agent_id: agent.id,
     district: agent.district,
+    scope_version: scopes.version,
     generated_at: new Date().toISOString(),
     explicit_paths: unique,
+    runtime_handoff_paths: dynamic,
     files: files.sort((a, b) => a.path.localeCompare(b.path))
   };
 

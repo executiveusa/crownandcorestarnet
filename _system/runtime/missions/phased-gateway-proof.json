@@ -1,0 +1,38 @@
+{
+  "id": "phased-gateway-proof-all",
+  "purpose": "Prove the phased Crown & Core mission graph through isolated per-agent model gateway computers without treating mock reasoning as operational.",
+  "phases": [
+    {
+      "id": "workers",
+      "agent_ids": [
+        "path-auditor",
+        "funnel-builder",
+        "reactivation-analyst",
+        "r3-planner",
+        "feedback-architect",
+        "reputation-auditor",
+        "lead-response-auditor",
+        "recovery-planner",
+        "missed-call-auditor",
+        "receptionist-designer",
+        "producer",
+        "clip-librarian",
+        "method-librarian",
+        "experiment-auditor"
+      ]
+    },
+    {
+      "id": "performance",
+      "agent_ids": [
+        "receipt-verifier",
+        "attribution-auditor"
+      ]
+    },
+    {
+      "id": "management",
+      "agent_ids": [
+        "manny"
+      ]
+    }
+  ]
+}

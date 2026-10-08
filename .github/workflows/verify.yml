@@ -29,7 +29,7 @@ jobs:
 
   docker-computers:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -45,8 +45,14 @@ jobs:
       - name: Prove one isolated Docker computer per agent
         run: npm run runtime:prove:docker
 
-      - name: Run Manny proof mission on isolated Docker computers
+      - name: Run all-agent concurrency proof on isolated Docker computers
         run: npm run runtime:mission:docker
+
+      - name: Run worker -> Performance -> Manny phased mission
+        run: npm run runtime:mission:phased:docker
+
+      - name: Prove per-agent internal model-gateway path
+        run: npm run runtime:mission:gateway-proof
 
       - name: Upload machine-verifiable proof receipts
         if: always()
@@ -60,3 +66,7 @@ jobs:
             .runtime/missions/**/MISSION-RECEIPT.json
             .runtime/missions/**/*.job.json
             .runtime/computers/*/receipts/*.json
+            outbox/DATA-READINESS.json
+            outbox/LIVE-READINESS.json
+            outbox/STATE-PROMOTION-CANDIDATE.json
+            outbox/STATE-PROMOTION-RECEIPT.json

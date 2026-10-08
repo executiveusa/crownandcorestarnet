@@ -45,3 +45,8 @@ Review discrepancies and decide whether evidence is sufficient to close a stage.
 ## Done
 
 Agent prose is never completion evidence. Required receipts and assertions must pass.
+
+
+## Output-state rule
+
+The runtime may populate declared agent outputs automatically only from an **operationally verified** receipt. Structural and gateway proof runs must not write business state into this district's `output/` surfaces. Human edits remain allowed; source receipts preserve provenance.

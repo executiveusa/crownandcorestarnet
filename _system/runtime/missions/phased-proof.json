@@ -1,0 +1,38 @@
+{
+  "id": "phased-proof-all",
+  "purpose": "Prove Crown & Core execution order: business workers first, Performance verifies second, Manny closes third.",
+  "phases": [
+    {
+      "id": "workers",
+      "agent_ids": [
+        "path-auditor",
+        "funnel-builder",
+        "reactivation-analyst",
+        "r3-planner",
+        "feedback-architect",
+        "reputation-auditor",
+        "lead-response-auditor",
+        "recovery-planner",
+        "missed-call-auditor",
+        "receptionist-designer",
+        "producer",
+        "clip-librarian",
+        "method-librarian",
+        "experiment-auditor"
+      ]
+    },
+    {
+      "id": "performance",
+      "agent_ids": [
+        "receipt-verifier",
+        "attribution-auditor"
+      ]
+    },
+    {
+      "id": "management",
+      "agent_ids": [
+        "manny"
+      ]
+    }
+  ]
+}

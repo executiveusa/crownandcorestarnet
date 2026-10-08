@@ -44,3 +44,8 @@ Approve experiments. Source tactics never override Crown & Core policy.
 ## Done
 
 The experiment is only closed when a verified result exists.
+
+
+## Output-state rule
+
+The runtime may populate declared agent outputs automatically only from an **operationally verified** receipt. Structural and gateway proof runs must not write business state into this district's `output/` surfaces. Human edits remain allowed; source receipts preserve provenance.

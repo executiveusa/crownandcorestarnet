@@ -28,18 +28,20 @@ Each agent has one computer assignment and one scoped input bundle in the runtim
 ## Process
 
 1. Read this contract.
-2. Read the task and declared inputs.
-3. Produce a plain-file draft in `output/`.
-4. Stop at the human gate when required.
-5. Execute only after approval.
-6. Save machine receipt/evidence.
-7. Performance verifies before the work is called done.
+2. If live business truth is required, run the Live Readiness stage before proposing work.
+3. Read the task and declared inputs.
+4. Produce a plain-file draft in `output/`.
+5. Stop at the human gate when required.
+6. Execute only after approval.
+7. Save machine receipt/evidence.
+8. Performance verifies before the work is called done.
 
 ## Outputs
 
 - `output/priority.md`
 - `output/owner-report.md`
 - `output/approved-mission.json`
+- `output/live-readiness.md`
 
 Outputs are edit surfaces. Human edits become the next step's input.
 
@@ -50,3 +52,8 @@ Owner approves gated missions, priorities that change commercial direction, and 
 ## Done
 
 Done means the expected output exists **and** the required machine receipt/assertions pass. Agent prose is not completion evidence.
+
+
+## Output-state rule
+
+The runtime may populate declared agent outputs automatically only from an **operationally verified** receipt. Structural and gateway proof runs must not write business state into this district's `output/` surfaces. Human edits remain allowed; source receipts preserve provenance.

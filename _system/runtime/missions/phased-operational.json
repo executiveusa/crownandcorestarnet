@@ -1,0 +1,38 @@
+{
+  "id": "phased-operational-all",
+  "purpose": "Run the phased Crown & Core mission graph through a live upstream model: workers -> Performance -> Manny.",
+  "phases": [
+    {
+      "id": "workers",
+      "agent_ids": [
+        "path-auditor",
+        "funnel-builder",
+        "reactivation-analyst",
+        "r3-planner",
+        "feedback-architect",
+        "reputation-auditor",
+        "lead-response-auditor",
+        "recovery-planner",
+        "missed-call-auditor",
+        "receptionist-designer",
+        "producer",
+        "clip-librarian",
+        "method-librarian",
+        "experiment-auditor"
+      ]
+    },
+    {
+      "id": "performance",
+      "agent_ids": [
+        "receipt-verifier",
+        "attribution-auditor"
+      ]
+    },
+    {
+      "id": "management",
+      "agent_ids": [
+        "manny"
+      ]
+    }
+  ]
+}

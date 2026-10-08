@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 
-const REQUIRED=['run_id','agent_id','computer_id','district','pid','started_at','ended_at','task_type','status','evidence'];
+const REQUIRED=['run_id','agent_id','computer_id','district','pid','started_at','ended_at','task_type','status','verification_tier','business_output_verified','evidence'];
 
 export function verifyReceipt({receipt,repoRoot,agentsDoc,computersDoc,tasksDoc}){
   const errors=[];
@@ -41,9 +41,36 @@ export function verifyReceipt({receipt,repoRoot,agentsDoc,computersDoc,tasksDoc}
 
   if(!(receipt.evidence||[]).some(x=>x.type==='isolation_probe'&&x.passed===true)) errors.push('missing isolation proof');
   if(!(receipt.evidence||[]).some(x=>x.type==='domain_assertion')) errors.push('missing domain assertion');
+  const contextBundle=(receipt.evidence||[]).find(x=>x.type==='context_bundle');
+  if(!contextBundle) errors.push('missing context-bundle proof');
+  else {
+    if(!/^[a-f0-9]{64}$/.test(contextBundle.sha256||'')) errors.push('invalid context bundle hash');
+    if(!(contextBundle.file_count>0)) errors.push('empty context bundle');
+  }
+
   const modelRun=(receipt.evidence||[]).find(x=>x.type==='model_run');
   if(!modelRun) errors.push('missing model-run proof');
-  else if(!/^[a-f0-9]{64}$/.test(modelRun.response_sha256||'')) errors.push('invalid model response hash');
+  else {
+    if(!/^[a-f0-9]{64}$/.test(modelRun.response_sha256||'')) errors.push('invalid model response hash');
+    if(receipt.verification_tier==='operational'){
+      if(modelRun.external!==true) errors.push('operational receipt requires external model run');
+      if(modelRun.structured_output!==true) errors.push('operational receipt requires structured model output');
+      if(modelRun.trust_level!=='live') errors.push('operational receipt requires live trust level');
+      if(modelRun.business_analysis_verified!==true) errors.push('operational receipt missing business-analysis verification');
+      if(receipt.business_output_verified!==true) errors.push('operational receipt must mark business_output_verified');
+    }
+    if(receipt.verification_tier==='gateway'){
+      if(modelRun.external!==true) errors.push('gateway receipt requires model gateway call');
+      if(modelRun.structured_output!==true) errors.push('gateway receipt requires structured model output');
+      if(modelRun.trust_level==='live') errors.push('gateway receipt cannot use live trust level');
+      if(modelRun.business_analysis_verified!==false) errors.push('gateway proof cannot mark business analysis verified');
+      if(receipt.business_output_verified!==false) errors.push('gateway proof cannot mark business output verified');
+    }
+    if(receipt.verification_tier==='structural' && receipt.business_output_verified!==false) {
+      errors.push('structural receipt cannot mark business output verified');
+    }
+  }
+  if(!['structural','gateway','operational'].includes(receipt.verification_tier)) errors.push('invalid verification tier');
 
-  return {verified:errors.length===0,errors};
+  return {verified:errors.length===0,errors,verification_tier:receipt.verification_tier,business_output_verified:receipt.business_output_verified===true};
 }

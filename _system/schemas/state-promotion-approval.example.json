@@ -1,0 +1,9 @@
+{
+  "id": "CC-STATE-APPROVAL-0001",
+  "type": "state_promotion",
+  "approved": false,
+  "approved_by": null,
+  "approved_at": null,
+  "snapshot_sha256": null,
+  "scope": "Promote non-null, predeclared metrics from one authenticated read-only connector snapshot into shared Crown & Core operating state."
+}
