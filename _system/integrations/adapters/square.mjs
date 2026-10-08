@@ -1,9 +1,10 @@
 const BASE='https://connect.squareup.com';
+const VERSION='2026-09-16';
 
 function headers(token){
   return {
     'Authorization':`Bearer ${token}`,
-    'Square-Version':'2026-09-16',
+    'Square-Version':VERSION,
     'Content-Type':'application/json'
   };
 }
@@ -12,36 +13,105 @@ async function request(fetchImpl,url,options={}){
   const r=await fetchImpl(url,options);
   const text=await r.text();
   let data={};
-  try{ data=text?JSON.parse(text):{}; }catch{ throw new Error(`Square returned non-JSON HTTP ${r.status}`); }
+  try{ data=text?JSON.parse(text):{}; }
+  catch{ throw new Error(`Square returned non-JSON HTTP ${r.status}`); }
   if(!r.ok) throw new Error(`Square HTTP ${r.status}: ${JSON.stringify(data.errors||data)}`);
   return data;
 }
 
-export async function readSquare({fetchImpl=fetch,token=process.env.CC_SQUARE_ACCESS_TOKEN,locationId=process.env.CC_SQUARE_LOCATION_ID,mode='live'}={}){
+function isoDaysAgo(days,now){
+  return new Date(now.getTime()-days*24*60*60*1000).toISOString();
+}
+
+async function pageGet({fetchImpl,token,pathName,itemsKey,params={},maxPages}){
+  const out=[];
+  let cursor=null;
+  for(let page=0; page<maxPages; page++){
+    const qs=new URLSearchParams();
+    for(const [k,v] of Object.entries(params)) if(v!==null && v!==undefined && v!=='') qs.set(k,String(v));
+    if(cursor) qs.set('cursor',cursor);
+    const data=await request(fetchImpl,`${BASE}${pathName}?${qs.toString()}`,{headers:headers(token)});
+    out.push(...(data[itemsKey]||[]));
+    cursor=data.cursor||null;
+    if(!cursor) return {items:out,pages:page+1,truncated:false};
+  }
+  return {items:out,pages:maxPages,truncated:Boolean(cursor)};
+}
+
+async function pageOrders({fetchImpl,token,locationIds,startAt,endAt,maxPages}){
+  const out=[];
+  let cursor=null;
+  for(let page=0; page<maxPages; page++){
+    const body={
+      location_ids:locationIds,
+      limit:100,
+      query:{
+        filter:{date_time_filter:{created_at:{start_at:startAt,end_at:endAt}}},
+        sort:{sort_field:'CREATED_AT',sort_order:'DESC'}
+      }
+    };
+    if(cursor) body.cursor=cursor;
+    const data=await request(fetchImpl,`${BASE}/v2/orders/search`,{
+      method:'POST',
+      headers:headers(token),
+      body:JSON.stringify(body)
+    });
+    out.push(...(data.orders||[]));
+    cursor=data.cursor||null;
+    if(!cursor) return {items:out,pages:page+1,truncated:false};
+  }
+  return {items:out,pages:maxPages,truncated:Boolean(cursor)};
+}
+
+export async function readSquare({
+  fetchImpl=fetch,
+  token=process.env.CC_SQUARE_ACCESS_TOKEN,
+  locationId=process.env.CC_SQUARE_LOCATION_ID,
+  bookingStartAt=process.env.CC_SQUARE_BOOKING_START_AT||'2010-01-01T00:00:00Z',
+  maxPages=Number(process.env.CC_SQUARE_MAX_PAGES||100),
+  now=new Date(),
+  mode='live'
+}={}){
   if(mode==='fixture') throw new Error('Use fixture adapter input directly; live Square adapter refuses fake mode.');
   if(!token) throw new Error('CC_SQUARE_ACCESS_TOKEN required');
+  if(Number.isNaN(Date.parse(bookingStartAt))) throw new Error('CC_SQUARE_BOOKING_START_AT must be an ISO timestamp');
+  if(!Number.isInteger(maxPages)||maxPages<1||maxPages>500) throw new Error('CC_SQUARE_MAX_PAGES must be 1..500');
+
   const h=headers(token);
+  const locationsData=await request(fetchImpl,`${BASE}/v2/locations`,{headers:h});
+  const locations=(locationsData.locations||[]).filter(x=>x.status!=='INACTIVE');
+  const selectedLocationIds=locationId ? [locationId] : locations.map(x=>x.id).filter(Boolean);
+  if(!selectedLocationIds.length) throw new Error('No active Square location available for read-only baseline');
 
-  const [customers,bookings]=await Promise.all([
-    request(fetchImpl,`${BASE}/v2/customers?limit=100`,{headers:h}),
-    request(fetchImpl,`${BASE}/v2/bookings?limit=100`,{headers:h})
+  const startAt=new Date(bookingStartAt).toISOString();
+  const endAt=now.toISOString();
+  const orderStartAt=new Date(Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),1)).toISOString();
+
+  const [customersPage,bookingsPage,ordersPage]=await Promise.all([
+    pageGet({fetchImpl,token,pathName:'/v2/customers',itemsKey:'customers',params:{limit:100},maxPages}),
+    pageGet({
+      fetchImpl,token,pathName:'/v2/bookings',itemsKey:'bookings',
+      params:{limit:100,start_at_min:startAt,start_at_max:endAt,...(locationId?{location_id:locationId}:{})},
+      maxPages
+    }),
+    pageOrders({fetchImpl,token,locationIds:selectedLocationIds,startAt:orderStartAt,endAt,maxPages})
   ]);
-
-  let orders=null;
-  if(locationId){
-    orders=await request(fetchImpl,`${BASE}/v2/orders/search`,{
-      method:'POST',headers:h,
-      body:JSON.stringify({location_ids:[locationId],limit:100,sort:{sort_field:'CREATED_AT',sort_order:'DESC'}})
-    });
-  }
 
   return {
     source:'square',
+    api_version:VERSION,
     read_at:new Date().toISOString(),
+    read_window:{booking_start_at:startAt,order_start_at:orderStartAt,end_at:endAt},
     location_id:locationId||null,
-    customers:customers.customers||[],
-    bookings:bookings.bookings||[],
-    orders:orders?.orders||[],
-    cursors:{customers:customers.cursor||null,bookings:bookings.cursor||null}
+    locations:locations.map(x=>({id:x.id,name:x.name,status:x.status,timezone:x.timezone})),
+    selected_location_ids:selectedLocationIds,
+    customers:customersPage.items,
+    bookings:bookingsPage.items,
+    orders:ordersPage.items,
+    pagination:{
+      customers:{pages:customersPage.pages,truncated:customersPage.truncated},
+      bookings:{pages:bookingsPage.pages,truncated:bookingsPage.truncated},
+      orders:{pages:ordersPage.pages,truncated:ordersPage.truncated}
+    }
   };
 }

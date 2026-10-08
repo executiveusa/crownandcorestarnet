@@ -23,6 +23,7 @@ run('data readiness test',['_system/tests/data-readiness.mjs']);
 run('model seam test',['_system/tests/model-smoke.mjs']);
 run('read-only intake test',['_system/tests/read-only-intake.mjs']);
 run('booking proof',['_system/tests/booking-proof.mjs']);
+run('Square read-only adapter proof',['_system/tests/square-readonly.mjs']);
 run('live readiness',['_system/tests/live-readiness.mjs']);
 run('Square read-only adapter',['_system/tests/square-readonly-adapter.mjs']);
 run('state promotion',['_system/tests/state-promotion.mjs']);
