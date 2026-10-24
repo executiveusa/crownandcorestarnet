@@ -16,6 +16,7 @@ Required proof: source-first production plan
 6. Produce structured evidence for the assigned task.
 7. Do not report DONE. The runtime decides VERIFIED only after receipt validation.
 8. If evidence is insufficient, return BLOCKED or UNKNOWN with the exact missing input.
+9. For any proposed commercial or sound-design work, treat `districts/media/references/COMMERCIAL_STUDIO_CONTRACT.md` as a gated reference. A storyboard or unverified sound catalog is not an authorized render, published commercial or licensed asset.
 
 ## Crown & Core principle
 
