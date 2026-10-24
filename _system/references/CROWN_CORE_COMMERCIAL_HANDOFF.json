@@ -1,0 +1,91 @@
+{
+  "schema_version": "1.0",
+  "project": "crown-core",
+  "task_id": "unify-claude-commercial-organic-2026-10-24",
+  "source_commit": "b303d762f2c1bde625ca0856ffbe600cdbe7d18d",
+  "integration_branch": "integration/crown-core-commercial-organic-2026-10-24",
+  "status": "DRAFT_ONLY",
+  "owner_business": "Crown & Core",
+  "media_spend_usd": 0,
+  "scope": {
+    "controls": "STARNet controls draft plans and approval receipts; external renderers/media libraries remain separate",
+    "business_data": "No clinical or customer data cross-business sharing",
+    "other_business": "Tangles & Locs needs separate owner authentication and tenant records"
+  },
+  "input_refs": [
+    "https://claude.ai/share/0e9891bb-fe5c-4672-bb9b-2ad53e31d142",
+    "https://github.com/executiveusa/crownandcorestarnet",
+    "https://github.com/executiveusa/executiveusa-crown-core-growth-system",
+    "https://github.com/executiveusa/Synthia-2026-4.0",
+    "https://github.com/executiveusa/pauli-montage-video-agent",
+    "https://github.com/executiveusa/macsdigitalmedia"
+  ],
+  "external_dependencies": [
+    {
+      "system": "Claude Commercial Studio",
+      "state": "SOURCE_NOT_DELIVERED",
+      "reported_branch": "build/v2.1-commercial-studio",
+      "reported_items": 65,
+      "verified_count": 0,
+      "reason": "Claude shared snapshot says work remained local and uncommitted"
+    },
+    {
+      "system": "Growth system T-Shape landing and private operator",
+      "state": "SEPARATE_PRIVATE_REPOSITORY",
+      "source_branch": "feat/tshape2-research-and-import",
+      "can_import_client_data": false
+    },
+    {
+      "system": "Synthia W7",
+      "state": "SEPARATE_MERGED_CODEBASE",
+      "action": "reference licensed standards; do not vendor without review"
+    },
+    {
+      "system": "Montage rendering and media",
+      "state": "SEPARATE_OPEN_PRS",
+      "prs": [
+        62,
+        63,
+        72
+      ],
+      "action": "consume stable released interfaces only"
+    }
+  ],
+  "required_tests": [
+    {
+      "name": "npm run verify",
+      "status": "PENDING_GITHUB_CI"
+    },
+    {
+      "name": "npm run runtime:prove:docker",
+      "status": "PENDING_GITHUB_CI"
+    },
+    {
+      "name": "npm run runtime:mission:docker",
+      "status": "PENDING_GITHUB_CI"
+    },
+    {
+      "name": "npm run runtime:mission:phased:docker",
+      "status": "PENDING_GITHUB_CI"
+    },
+    {
+      "name": "commercial studio code/browser/audio QA",
+      "status": "BLOCKED_MISSING_SOURCE"
+    }
+  ],
+  "approvals": {
+    "clinical": "PENDING",
+    "brand_owner": "PENDING",
+    "privacy": "PENDING",
+    "rights": "PENDING",
+    "publish": "PENDING"
+  },
+  "changed_files": [
+    "_system/references/CROWN_CORE_CONSOLIDATION_2026-10-24.md",
+    "districts/media/references/COMMERCIAL_STUDIO_CONTRACT.md",
+    "_system/references/CROWN_CORE_COMMERCIAL_HANDOFF.json",
+    "districts/media/agents/producer/PROMPT.md"
+  ],
+  "rollback": "Revert this additive integration commit/PR; leave other repositories and production untouched.",
+  "next_safe_action": "Obtain Claude uncommitted source as ZIP/patch with hashes, run source and license audit, then update this PR rather than open another."
+}
