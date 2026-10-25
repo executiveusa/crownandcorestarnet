@@ -23,11 +23,11 @@
   "external_dependencies": [
     {
       "system": "Claude Commercial Studio",
-      "state": "SOURCE_NOT_DELIVERED",
+      "state": "DEFERRED_NONBLOCKING",
       "reported_branch": "build/v2.1-commercial-studio",
       "reported_items": 65,
       "verified_count": 0,
-      "reason": "Claude shared snapshot says work remained local and uncommitted"
+      "reason": "Owner explicitly removed standalone audio studio from immediate milestone; historical local source need not be recovered"
     },
     {
       "system": "Growth system T-Shape landing and private operator",
@@ -49,6 +49,17 @@
         72
       ],
       "action": "consume stable released interfaces only"
+    },
+    {
+      "system": "Motion Master",
+      "state": "EXTERNAL_REPO_PRESENT_INTERFACE_REQUIRES_SMOKE_TEST",
+      "repository": "https://github.com/executiveusa/motionmaster",
+      "documented_interfaces": [
+        "MCP plan_video/build_composition/build_hyperframes_composition/mix_footage",
+        "generator/render.sh",
+        "AGPL bridge to Montage API/MCP"
+      ],
+      "next_action": "Verify actual running CLI/API capabilities with nonclinical synthetic input; do not vendor"
     }
   ],
   "required_tests": [
@@ -69,8 +80,8 @@
       "status": "PENDING_GITHUB_CI"
     },
     {
-      "name": "commercial studio code/browser/audio QA",
-      "status": "BLOCKED_MISSING_SOURCE"
+      "name": "external renderer synthetic job and MP4/asset-rights QA",
+      "status": "PENDING_SERVICE_CONNECTION"
     }
   ],
   "approvals": {
@@ -87,5 +98,13 @@
     "districts/media/agents/producer/PROMPT.md"
   ],
   "rollback": "Revert this additive integration commit/PR; leave other repositories and production untouched.",
-  "next_safe_action": "Obtain Claude uncommitted source as ZIP/patch with hashes, run source and license audit, then update this PR rather than open another."
+  "next_safe_action": "Verify currently deployed Motion Master/Montage API or CLI reachability, then create approved 30-second private Crown & Core brand-film job. Sound Studio is deferred, not a blocker.",
+  "last_decision_date": "2026-10-24",
+  "current_priority": "CREATE_REAL_BRAND_FILM_VIA_EXISTING_RENDERER",
+  "sound_studio": {
+    "state": "DEFERRED_BY_OWNER",
+    "required_for_mvp": false,
+    "code_recovery_required": false,
+    "owner_direction": "Use existing Montage or Motion Master audio/video capabilities through supported API, CLI or MCP when needed; do not build another sound stack."
+  }
 }
