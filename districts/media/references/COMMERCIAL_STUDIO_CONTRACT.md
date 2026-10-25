@@ -1,43 +1,43 @@
-# Commercial Studio — owner-approved integration contract
-Status: **DRAFT / SOURCE NOT IMPORTED**. Canonical production owner: `districts/media`. Source reconciliation and merge gates: `../../../_system/references/CROWN_CORE_CONSOLIDATION_2026-10-24.md`.
+# Commercial Production — External-Renderer Contract
+Status: **DRAFT / EXTERNAL WORKER NOT CONNECTED**. Owner: `districts/media`.
+Decision: **2026-10-24 — DO NOT BUILD OR RECOVER THE STANDALONE SOUND STUDIO IN THIS MILESTONE.** Crown & Core already has video/audio-capable applications. Delegate media jobs over their supported API, CLI, or MCP interfaces instead of duplicating sound tools or importing Claude's uncommitted sound application.
 
 ## One job
-Turn verified Crown & Core source material into a human-approved commercial brief, exact cue sheet, legally usable media ledger and inspectable renderer job. Do not confuse a storyboard, a test render and a public-facing commercial. Do not produce patient outcomes or invented proof.
+Produce a source-verified, rights-aware commercial brief and a human-approved production job for an existing renderer. Preserve client truth and creative approval. No direct publishing or clinical claims without named authorization. Prefer delivery of the first real approved film over building a new editing dashboard.
 
-## Source / provider selection
-- **HyperFrames or Montage:** deterministic composition/rendering, final MP4/thumbnail/audio track. Prefer the existing licensed project and original shot list; never alter another project's production files.
-- **Remotion:** optional alternative composition engine after confirming agency licensing.
-- **Synthia W7:** nine-stage direction and independent critique; not a competing client orchestrator.
-- **Clipwing Real SFX:** guideline for precise human-readable cue timing. A skill document alone is not a library of verified real recordings.
-- **Earshot:** optional audio analysis; use only when installed, tested and authorized; AI audio descriptions are not human listening approvals.
-- **Openverse:** source discovery; license permission must be verified on the original item page. Store original author, canonical URL, version/license URL, checked date, restrictions and proof. No automatic use of an unverified item.
-- **fal.ai:** opt-in abstract asset creation with clear cost approval. Never synthesize a real provider, room, treatment result or testimonial and portray it as documentation.
+## Canonical ownership and providers
+1. **Crown & Core STARNet**: brief, owner/clinical review, approvals, budget, job routing, immutable receipts, published-content decisions. No local rendering/audio workstation inside STARNet.
+2. **Motion Master** (`https://github.com/executiveusa/motionmaster`): motion direction, storyboarding and code-built compositions. Its repository describes an MCP service with `plan_video`, `build_composition`, `build_hyperframes_composition`, and `mix_footage`; and a HyperFrames generator CLI with `generator/render.sh`. These are documented interfaces, not a live connection yet. Its plugins/MCP/generator are proprietary owner code; the separate Montage bridge is AGPL-3.0.
+3. **Montage (currently branded YAPPY-CLIPZ in repo)** (`https://github.com/executiveusa/pauli-montage-video-agent`): footage ingestion, editing, audio/music/voice, render/export and QA. Its README advertises CLI/API/MCP surfaces. Treat future/planned command and API families as unverified for deployment until a smoke test on the actual running version succeeds.
+4. **Verified Motion Master → Montage bridge** (`https://github.com/executiveusa/motionmaster/blob/main/bridge/README.md`): an existing TypeScript client over Montage public HTTP/MCP. Documented reads include `GET /api/health`, `GET /api/projects`, `GET /api/project/{id}/state`; timeline operations `timeline_get`, `timeline_replace`, `project_validate`. The bridge itself does not render. Its `buildExplainerTimeline` prepares footage+graphic composition. The bridge is separately AGPL-3.0; do not vendor it into STARNet.
+5. **Synthia W7**: governed commercial workflow, creative critique and explicit cost authorization, not another video renderer.
+6. **fal.ai**: optional paid generation for a shot, only on per-job explicit budget/owner approval. Do not generate footage that falsely represents a patient, provider, facility, treatment, or outcome.
+7. **Openverse, Clipwing, Earshot**: **NOT CURRENT MILESTONE DEPENDENCIES**. Only use through an already licensed/operational external service when necessary, with asset provenance preserved. Do not build a catalog, sonic-logo editor, SFX review UI or independent audio mixer now.
 
-## Human-facing controls (planned, not live)
-Brief · Sources and Rights · Cue Timeline · Listen & Compare · Render Draft · QC & Approval. All connected actions require business and account permissions. No inference of login from a shared URL or existing account.
+## MVP user experience
+An authorized owner asks STARNet to create a commercial. STARNet presents:
+- A one-screen creative brief (audience, placement, story, duration, claims status).
+- Real approved image/video selections and license provenance (no fabricated people/proof).
+- Motion Master or Montage as the rendering destination, with a reason, estimated external cost and exact chosen engine.
+- A reviewable draft via a link or stored result returned by the provider. Never invent a render URL or job completion.
+- Explicit owner approval before publication and an audit trail of exactly which version was released.
 
-## Inputs
-1. Service or brand brief, business owner, platform and desired clip length (default ≤30 seconds).
-2. Actual footage/photo consent and exact claim ledger references, or mark missing.
-3. Audio cue intent: at most one deliberate effect per on-screen event; restraint warning for stacked moments.
-4. Individual audio asset rights evidence, actual audio bytes, and any requested music/dialogue mix.
-5. A budget ceiling for any chargeable generator and explicit approval before invocation.
+**No Sound Studio buttons, sample picker, audio-catalog import or internal audio render stage.** An external worker may include audio if it is already capable. Accept optional licensed soundtrack or SFX references in job specs but do not make them prerequisites for a claim-free first video.
 
-## Output contract
-- A2A-style brief with exact input refs and business owner.
-- 9:16 and/or 16:9 storyboard/timing plan plus 15-second cut where justified.
-- Machine-readable cue sheet with timestamp, source ID, effect role, gain and reason.
-- Rights ledger with per-asset verification state (VERIFIED / UNVERIFIED / REJECTED); published use blocked unless each used asset is VERIFIED.
-- Render job with renderer, version, source hashes, output hashes and safe rollback.
-- Sound QA: cue alignment checks, integrated LUFS, true peak, restraint/overlap warnings, plus at least one human listening pass.
-- Clinical, brand and publication signoffs as independent approvals; a QA pass never supplies a clinical approval.
-- Performance record links content ID to consent-safe aggregate booking observations; unknown attribution remains UNKNOWN.
+## Minimum future adapter contract (design only; not deployed)
+Request: `{job_id, tenant_id, destination, renderer_version, brief_ref, asset_refs, rights_refs, approved_claim_refs, dimensions, duration_seconds, max_cost_usd, callback_ref}`.
+Response: `{job_id, provider_job_id, status, artifact_refs, artifact_hashes, cost_actual, qa_receipts, error}`.
+Statuses: `DRAFT | WAITING_FOR_APPROVAL | QUEUED | RUNNING | RENDERED | VERIFIED | FAILED`.
+- Tokens/keys live only in destination-specific server secrets. STARNet stores no vendor credentials in repo, text briefs, or public URLs.
+- Cross-business source media never crosses business tenants without explicit authorization.
+- A plan/queue acknowledgement is not a render. A render is not an approved advertisement.
+- No retry that risks duplicate paid generation without idempotency proof.
 
-## First delivery
-The claim-free internal **“One place”** Crown & Core 30-second brand demo and 15-second cut, with a restrained recognizable sonic logo if the owner actually approves it. Authentic storefront/emblem sources; educational T-Shape 2 voiceover only in a later separately approved film.
+## First outcome
+Finish the genuine Crown & Core **“One place”** 30-second private film and its 15-second cut, using the real storefront/official emblem, existing script and footage where verified. Audio is optional for the first render. Then do Lethia's real founder video. The T-Shape 2 explainer remains blocked pending clinician-approved claims and verified booking details. Tangles & Locs requires separate brand and access controls.
 
-## Fail closed
-If studio code, sound file, matching source license, true footage consent, title/credits, account permission, human listening check, approved claims or release authorization is absent, generate a **draft/needs-input** receipt and do not publish. Unknown is not an allowed rights status.
+## Verification before claiming live integration
+Inspect actual Motion Master and Montage deployed versions; confirm API/MCP/CLI authentication and callable operations with a read-only health/metadata smoke test; run one synthetic nonclinical test job with budget cap and receipts; verify exported MP4, playable duration/orientation, typography/readability, rights, provenance and approval. Do not change Montage's split video hero or take over its existing editor.
 
-## Pending source handoff
-Claude shared a local, uncommitted work-in-progress with its own 65-entry catalog and browser UI. The linked conversation confirms it is not pushed to GitHub. This contract is a bridge, **not the imported implementation**. Recovery and full test evidence must be attached before claiming the studio works.
+## Historical note
+Prior merged PR #22 documented Claude's *uncommitted* Sound Studio implementation and missing source. That was an accurate record as of the audit; **source recovery is no longer on the critical path**. Preserve it only as historical context. The decision above supersedes any earlier request to build/recover the standalone SFX system.
