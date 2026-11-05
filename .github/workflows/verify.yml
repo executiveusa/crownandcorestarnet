@@ -24,6 +24,9 @@ jobs:
         with:
           node-version: '22'
 
+      - name: Verify knowledge/MCP interface
+        run: npm run knowledge:test
+
       - name: Verify
         run: npm run verify
 

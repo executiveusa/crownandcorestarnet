@@ -1,0 +1,197 @@
+{
+  "schema_version": 1,
+  "repository": "executiveusa/crownandcorestarnet",
+  "classification": "public_repo_only",
+  "search_mode": "bounded_keyword",
+  "sources": [
+    {
+      "id": "business-facts",
+      "title": "Crown & Core working facts",
+      "path": "_shared/client/FACTS.md",
+      "group": "business",
+      "status": "working-verified-within-snapshot"
+    },
+    {
+      "id": "public-truth",
+      "title": "Crown & Core public truth Sep 2026",
+      "path": "_shared/client/PUBLIC_TRUTH.md",
+      "group": "business",
+      "status": "historical-public-evidence"
+    },
+    {
+      "id": "business-model",
+      "title": "Business model working map",
+      "path": "_shared/client/BUSINESS_MODEL.md",
+      "group": "business",
+      "status": "working-model"
+    },
+    {
+      "id": "customer-journey",
+      "title": "Customer journey and booking sequence",
+      "path": "_shared/client/CUSTOMER_JOURNEY.md",
+      "group": "conversion",
+      "status": "working-model"
+    },
+    {
+      "id": "business-context",
+      "title": "Summary with evidence boundaries",
+      "path": "knowledge/BUSINESS_CONTEXT.md",
+      "group": "business",
+      "status": "derived-summary"
+    },
+    {
+      "id": "source-register",
+      "title": "Source register and private gap ledger",
+      "path": "knowledge/SOURCE_REGISTER.md",
+      "group": "governance",
+      "status": "source-map"
+    },
+    {
+      "id": "access-and-approvals",
+      "title": "Agent data access and approvals",
+      "path": "knowledge/ACCESS_AND_APPROVALS.md",
+      "group": "governance",
+      "status": "policy"
+    },
+    {
+      "id": "values",
+      "title": "Heart and Soul priorities",
+      "path": "_shared/policy/HEART_AND_SOUL.md",
+      "group": "governance",
+      "status": "working-policy"
+    },
+    {
+      "id": "metrics-state",
+      "title": "Known and unknown business metrics",
+      "path": "_shared/state/current-state.json",
+      "group": "performance",
+      "status": "historical-baseline"
+    },
+    {
+      "id": "public-web-evidence",
+      "title": "Public site evidence Sep 2026",
+      "path": "_shared/evidence/public-web-2026-09-28.json",
+      "group": "evidence",
+      "status": "historical-public-evidence"
+    },
+    {
+      "id": "booking-evidence",
+      "title": "Public booking path evidence Sep 2026",
+      "path": "_shared/evidence/public-booking-path-2026-09-28.json",
+      "group": "evidence",
+      "status": "historical-public-evidence"
+    },
+    {
+      "id": "client-prd",
+      "title": "Client-specific business operations plan",
+      "path": "_system/references/PRD.md",
+      "group": "operations",
+      "status": "plan-not-live-proof"
+    },
+    {
+      "id": "consolidation",
+      "title": "Previous architecture and approval constraints",
+      "path": "_system/references/CROWN_CORE_CONSOLIDATION_2026-10-24.md",
+      "group": "operations",
+      "status": "historical-decision-log"
+    },
+    {
+      "id": "integrations",
+      "title": "Planned data integrations",
+      "path": "_system/integrations/manifest.json",
+      "group": "integrations",
+      "status": "planned-not-live"
+    },
+    {
+      "id": "access-handoff",
+      "title": "Read-only account handoff contract",
+      "path": "_system/references/ACCESS_HANDOFF.md",
+      "group": "integrations",
+      "status": "policy"
+    },
+    {
+      "id": "permission-policy",
+      "title": "Machine-readable approvals policy",
+      "path": "_system/policy/permissions.json",
+      "group": "governance",
+      "status": "policy"
+    },
+    {
+      "id": "conversion",
+      "title": "Conversion and booking district",
+      "path": "districts/conversion/CONTEXT.md",
+      "group": "district",
+      "status": "plan"
+    },
+    {
+      "id": "management",
+      "title": "Management district",
+      "path": "districts/management/CONTEXT.md",
+      "group": "district",
+      "status": "plan"
+    },
+    {
+      "id": "return",
+      "title": "Customer return district",
+      "path": "districts/return/CONTEXT.md",
+      "group": "district",
+      "status": "plan"
+    },
+    {
+      "id": "trust",
+      "title": "Reputation and review district",
+      "path": "districts/trust/CONTEXT.md",
+      "group": "district",
+      "status": "plan"
+    },
+    {
+      "id": "nurture",
+      "title": "Lead follow-up district",
+      "path": "districts/nurture/CONTEXT.md",
+      "group": "district",
+      "status": "plan"
+    },
+    {
+      "id": "reception",
+      "title": "Reception and missed calls district",
+      "path": "districts/reception/CONTEXT.md",
+      "group": "district",
+      "status": "plan"
+    },
+    {
+      "id": "media",
+      "title": "Founder media and content district",
+      "path": "districts/media/CONTEXT.md",
+      "group": "district",
+      "status": "plan"
+    },
+    {
+      "id": "performance",
+      "title": "Measurement and attribution district",
+      "path": "districts/performance/CONTEXT.md",
+      "group": "district",
+      "status": "plan"
+    },
+    {
+      "id": "middleton",
+      "title": "Local methodology and experiments",
+      "path": "districts/middleton/CONTEXT.md",
+      "group": "district",
+      "status": "plan"
+    },
+    {
+      "id": "paperclip",
+      "title": "Paperclip binding guide",
+      "path": ".paperclip/README.md",
+      "group": "agent-integration",
+      "status": "not-bound"
+    },
+    {
+      "id": "instinct",
+      "title": "Instinct instructions",
+      "path": ".paperclip/INSTINCT.md",
+      "group": "agent-integration",
+      "status": "instructions-only"
+    }
+  ]
+}
