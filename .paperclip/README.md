@@ -23,3 +23,19 @@ Paperclip docs: `https://github.com/paperclipai/paperclip-docs/blob/main/docs/gu
 - Not a copy of the full client's private business database.
 - Not permission to use customer data or execute marketing.
 - Not a replacement for Lethia's existing Instinct identity.
+
+## Live binding preflight (GET-only)
+
+Run this **on the existing authenticated Paperclip agent/host**, with values from the private runtime or secret manager (never add tokens to GitHub or chat):
+
+- `PAPERCLIP_API_URL`: existing HTTPS Paperclip base URL, or operator-controlled localhost tunnel.
+- `PAPERCLIP_API_KEY`: existing authorized agent token, held privately.
+- `PAPERCLIP_COMPANY_ID`: existing company; never create a duplicate.
+- `PAPERCLIP_INSTINCT_AGENT_ID`: existing Lethia/Instinct (Alex) agent.
+- `PAPERCLIP_PROJECT_ID`: existing Crown & Core project (optional only when unambiguous).
+
+Then run `npm run paperclip:preflight`. It performs only GETs for the exact agent, company project listing and project workspaces. It verifies the canonical repo and this review branch, returning an explicit BLOCKED reason or READY_FOR_RUNTIME_WALK_TEST. READY **does not prove** that a model ran, MCP has been registered, or the private DB is connected.
+
+This uses Paperclip routes actually present in the installed fork: `GET /api/agents/:id`, `GET /api/companies/:companyId/projects` and `GET /api/projects/:id/workspaces`. No scheduler, credential, company, project or workspace is created or changed.
+
+If the workspace still points to main, the new code cannot be regarded as deployed: it exists only in a draft PR pending independent review. Before production, obtain owner approval and configure the approved ref through an authorized Paperclip operator.

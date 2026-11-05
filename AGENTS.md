@@ -47,3 +47,5 @@ The MCP stdio server exposes `crown_knowledge_list`, `crown_knowledge_search`, a
 ## First useful task for Instinct
 
 Answer: "What is verified about the Crown & Core booking journey, what is unknown, and what approval is required for the next test?" Use the knowledge tool and return citations; do not book an appointment or contact a customer.
+
+An existing authorized Paperclip deployment can be checked with `npm run paperclip:preflight`. It performs GET-only identity and workspace verification; it does not start an agent or a new scheduler.

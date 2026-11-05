@@ -41,6 +41,7 @@
     "knowledge:search": "node _system/knowledge/cli.mjs search",
     "knowledge:get": "node _system/knowledge/cli.mjs get",
     "knowledge:mcp": "node _system/knowledge/mcp-stdio.mjs",
-    "knowledge:test": "node --test _system/tests/knowledge-interface.mjs"
+    "knowledge:test": "node --test _system/tests/knowledge-interface.mjs _system/tests/paperclip-preflight.mjs",
+    "paperclip:preflight": "node _system/knowledge/paperclip-preflight.mjs"
   }
 }
