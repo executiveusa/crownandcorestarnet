@@ -36,6 +36,12 @@
     "context:isolation:test": "node _system/tests/agent-context-isolation.mjs",
     "runtime:mission:phased": "node _system/runtime/phased-orchestrator.mjs --backend=local-process --mission=_system/runtime/missions/phased-proof.json",
     "runtime:mission:phased:docker": "node _system/runtime/phased-orchestrator.mjs --backend=docker --mission=_system/runtime/missions/phased-proof.json",
-    "mission:graph:test": "node _system/tests/phased-mission-contract.mjs"
+    "mission:graph:test": "node _system/tests/phased-mission-contract.mjs",
+    "knowledge:list": "node _system/knowledge/cli.mjs list",
+    "knowledge:search": "node _system/knowledge/cli.mjs search",
+    "knowledge:get": "node _system/knowledge/cli.mjs get",
+    "knowledge:mcp": "node _system/knowledge/mcp-stdio.mjs",
+    "knowledge:test": "node --test _system/tests/knowledge-interface.mjs _system/tests/paperclip-preflight.mjs",
+    "paperclip:preflight": "node _system/knowledge/paperclip-preflight.mjs"
   }
 }

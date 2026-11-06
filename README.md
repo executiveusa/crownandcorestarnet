@@ -60,3 +60,9 @@ No autonomous:
 5. Stop at the human gate.
 6. Execute only after approval.
 7. Save receipts and measured results.
+
+## Instinct / Paperclip knowledge entrypoint (new, staging)
+
+Start with [AGENTS.md](AGENTS.md), [the source register](knowledge/SOURCE_REGISTER.md), and [Paperclip binding instructions](.paperclip/README.md). Node 22 agents can use `npm run knowledge:mcp` to start a read-only source-cited MCP knowledge tool, or `npm run knowledge:search -- "Square booking"` to query the bounded catalog. Run `npm run knowledge:test` for the regression suite.
+
+**Control-plane clarification:** Paperclip is intended to replace active StarNet task scheduling. Existing `_system/runtime/` is retained as tested historical agent-execution reference, not an authorized parallel scheduler. This public repo is NOT a private client database; private agreements, Square customer records and health information are excluded until a verified authorized, tenant-isolated connector is configured. No live Paperclip/Instinct/Supabase connection is claimed.

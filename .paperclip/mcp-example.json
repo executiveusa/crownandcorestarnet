@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "crown-core-knowledge": {
+      "command": "node",
+      "args": [
+        "/absolute/path/to/crownandcorestarnet/_system/knowledge/mcp-stdio.mjs"
+      ]
+    }
+  }
+}
