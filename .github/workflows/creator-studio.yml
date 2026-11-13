@@ -28,5 +28,13 @@ jobs:
           node --check districts/media/creator-studio/src/domain.mjs
           node --check districts/media/creator-studio/src/api.mjs
           node --check districts/media/creator-studio/src/mcp.mjs
+          node --check districts/media/creator-studio/src/pipeline.mjs
+          node --check districts/media/creator-studio/src/sqlite-store.mjs
+          node --check districts/media/creator-studio/src/identity.mjs
+          node --check districts/media/creator-studio/src/qa.mjs
+          node --check districts/media/creator-studio/src/adapters.mjs
+          node --check districts/media/creator-studio/src/worker.mjs
+          node --check districts/media/creator-studio/src/creators.mjs
+          node --check districts/media/creator-studio/src/webhooks.mjs
       - name: Exercise authorization, idempotency, state and MCP contracts
         run: node --test districts/media/creator-studio/tests/*.test.mjs
