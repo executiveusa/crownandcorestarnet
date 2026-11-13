@@ -66,7 +66,7 @@ export function sqliteStore(filename){
         for(const item of snapshot){
           verifyChain(item);
           const known=counts.get(item.id)??0;
-          const row=db.prepare('SELECT receipt_count FROM outcomes WHERE id=?').get(item.id);
+          const row=db.prepare('SELECT receipt_count,body FROM outcomes WHERE id=?').get(item.id);
           if((row?.receipt_count??0)!==known||item.receipts.length<known)
             invalid('Concurrent or non-append-only state update.');
           if(row && item.receipts.length===known){
