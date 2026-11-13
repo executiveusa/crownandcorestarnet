@@ -4,7 +4,7 @@ import {mkdtempSync,rmSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {createServer} from 'node:http';
-import {generateKeyPairSync,sign} from 'node:crypto';
+import {generateKeyPairSync,sign,createHmac} from 'node:crypto';
 import {openStore,parseReply,verifyPushJwt,parsePushEnvelope} from '../src/core.mjs';
 import {createBridge} from '../src/server.mjs';
 import {gmailClient} from '../src/gmail.mjs';
@@ -137,4 +137,35 @@ test('authenticated push creates one read-only result and duplicate delivery can
   assert.equal(data.results[0].mission_id,mission);
   assert.equal(data.results[0].reply.includes('STATUS: COMPLETED'),true);
   assert.equal((await fetch(base+'/health')).status,200);
+});
+
+test('signed notification outbox retries failed delivery without leaking email content',async t=>{
+  const store=fixture(t);
+  const secret='z'.repeat(40);
+  const secretBody='The private received message MUST NOT go to notification hooks';
+  store.saveReply({gmailId,missionId:mission,threadId:thread,body:secretBody});
+  let calls=0;
+  const observed=[];
+  const bridge=createBridge({
+    store,gmail:{},
+    config:{...config,notificationUrl:'https://owner-callback.example.test/events',
+      notificationSecret:secret},
+    fetchFn:async(url,opts)=>{
+      calls++;
+      observed.push({url,...opts});
+      return {ok:calls>1,status:calls>1?200:503};
+    }
+  });
+  await assert.rejects(bridge.flushNotifications(),/NOTIFICATION_RETRY_REQUIRED/);
+  assert.equal(store.pendingNotifications().length,1);
+  await bridge.flushNotifications();
+  assert.equal(store.pendingNotifications().length,0);
+  await bridge.flushNotifications();
+  assert.equal(calls,2);
+  const delivered=observed[1];
+  assert.equal(delivered.url,'https://owner-callback.example.test/events');
+  assert.equal(delivered.body.includes(secretBody),false);
+  const expected='sha256='+createHmac('sha256',secret).update(delivered.body).digest('hex');
+  assert.equal(delivered.headers['x-cc-signature'],expected);
+  assert.equal(delivered.headers['x-cc-event-id'],gmailId);
 });
