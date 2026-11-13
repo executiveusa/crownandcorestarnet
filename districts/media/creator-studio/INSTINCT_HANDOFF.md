@@ -1,150 +1,129 @@
-# Instinct / Paperclip / Hermes — Creator Studio server handoff
+# CC-CREATOR-SERVER — final Instinct / Paperclip / Hermes connection handoff
 
-**Mission ID:** `CC-CREATOR-P1`. **Target:** existing owner-controlled Crown & Core StarNet deployment. **Code:** draft PR #26, `districts/media/creator-studio/`. **Precondition:** issue #25 identifies the existing authenticated Paperclip server/company/project/Instinct agent. **Mode:** read-only discovery and isolated local proof first; no production release or spending.
+**Owner:** Crown & Core. **Code PR:** #26 (`feat/crown-creator-studio-mvp`). **Related:** existing Paperclip identity issue #25, existing knowledge MCP PR #24, server mission issue #27. **State:** code-side implementation with 37 automated contract tests passing; **not deployed**. This handoff is intentionally issued **after** code-side implementation and tests.
 
-## 0. Operator contract
+**Read first:** [OPERATIONS.md](./OPERATIONS.md), [PRD.md](./PRD.md), [ARCHITECTURE.md](./ARCHITECTURE.md), [agent-workflow.json](./agent-workflow.json), [openapi.yaml](./openapi.yaml), canonical `districts/media/references/COMMERCIAL_STUDIO_CONTRACT.md` and `_shared/policy/HEART_AND_SOUL.md`.
 
-- Existing **Instinct** is the owner-facing agent. Existing **Paperclip** is the sole authoritative task orchestrator. **Hermes** may coordinate scoped specialists as one Paperclip worker only if the deployed runtime supports that pattern.
-- Do not create duplicate Paperclip companies, agents, queues, databases or hosting projects.
-- Do not touch Tangles & Locs or any unrelated Supabase/other business project.
-- Do not copy PHI, patient media, signed releases, credentials, private agreements or customer contact information into this public GitHub repository, agent prompts or issue comments.
-- Do not give Instinct/Hermes the owner or clinical reviewer credentials.
-- The Creator Studio API and MCP are **loopback-only local proof**; they cannot be safely exposed publicly as written.
-- No public posting, paid ads, creator outreach, booking changes, external rendering or customer messages are authorized by this mission.
+## A. Operator mission
 
-## 1. Preflight — evidence, not assumptions
+**Mode:** existing-infrastructure connection only; no new product code or duplicate services without explicit owner approval.
 
-1. Confirm exact reviewed PR #26 commit and CI workflow `creator-studio.yml` result; record SHA and run URL.
-2. Run `node --test districts/media/creator-studio/tests/*.test.mjs` and existing `npm run verify`. Capture outputs and failures without secrets.
-3. Confirm existing Paperclip URL, company ID, project ID, agent ID and deployed version through authenticated read-only calls. See issue #25. Do not create missing identities as a shortcut.
-4. Confirm the existing Instinct runtime supports stdio MCP registration or an approved adapter. The PR #24 knowledge MCP is separate and unmerged; do not assume its tools are registered.
-5. Inventory existing Motion Master/Montage deployments. Validate only their real health/auth/version/API or MCP tool list; documentation is not a live API receipt.
-6. Confirm the correct Crown & Core private data/media vault, ownership, tenant, consent and access policy. If unknown, **STOP**.
+**Measurable target:** one authenticated, **model-originated** Instinct → MCP → Creator Studio outcome and status receipt; one isolated approved 30s+15s real MP4 render from the existing renderer; independent SHA-256/ffprobe QA; owner-reviewed exact film hashes; no unauthorized contact/post/spend. Report what actually works and what remains blocked.
 
-## 2. Local proof startup — no live business data
+**Constraints:** no PHI/customer identifiers in GitHub, logs, model prompts or demo; no unrelated tenant; no extra Paperclip company, agent, scheduler, DB or hosting project; no unapproved changes to existing Motion Master/Montage; no paid ads; no publication without a separate owner approval.
 
-Use secure environment injection from the owner-controlled secret store. Example shell commands use placeholders, not real credentials:
+## B. Code-side inventory — DO NOT rebuild
+
+- `src/domain.mjs`: Crown & Core-only outcome, storyboard, revision and owner/clinical review.
+- `src/pipeline.mjs`: rights verification → owner render budget → reserved dispatch → provider result → independent QA → final film approval → separate organic publication → attribution; rights revocation and takedown.
+- `src/creators.mjs`: creator shortlist, unsent outreach, owner exact-message approval, reserved contact, verified release.
+- `src/api.mjs`: role-protected loopback REST and HMAC callback endpoints, optional OIDC reviewer identity.
+- `src/mcp.mjs`: **nine agent-only stdio MCP tools**. No owner/clinical approval, outreach send, render execute, publication or spend tool.
+- `src/sqlite-store.mjs`: private single-host transactional SQLite WAL, append-only receipt table; Node 22 experimental API.
+- `src/identity.mjs`: pinned RS256 OIDC MFA JWT verifier; verified actor IDs in approval receipts.
+- `src/adapters.mjs`: exact-URL HTTPS renderer, organic publisher and creator contact adapters. Endpoints **must be verified**, not guessed.
+- `src/worker.mjs`: explicit `inspect`, `dispatch`, `qa`, `outreach`, `publish` commands; outbound side effects reserve state first and never auto-retry.
+- `src/qa.mjs`: independent private H.264 1080×1920 30s/15s ffprobe and SHA-256 checks.
+- `src/webhooks.mjs`: signed, timestamp-bound provider and attribution callbacks.
+- `tests/*.test.mjs`: domain, REST, MCP stdio, SQLite restart, provider adapters, OIDC, rights, revocation, creator outreach, signed callbacks and QA.
+
+**Code gate at handoff preparation:** 37/37 Creator Studio tests passed in GitHub Actions run `43358082939`. Resolve and record **the exact final PR head SHA and both CI runs** before operating.
+
+## C. Step 1 — discover existing server, read-only
+
+1. Resolve issue #25: confirm existing Paperclip URL/version, Crown & Core company/project IDs, Lethia's existing Instinct agent identity, and supported MCP registration. Do not create substitutes.
+2. Inspect the actual deployed Motion Master and Montage (YAPPY-CLIPZ) read-only health/auth/API/MCP/CLI surface and the existing Motion Master → Montage bridge. Confirm which supports the adapter contract in `OPERATIONS.md`; if neither does, report a **bridge contract blocker**, do not invent an endpoint.
+3. Confirm owner-controlled Crown & Core private media vault, encrypted persistent volume, backup/restore, trusted TLS gateway, OIDC issuer/JWKS, secret manager and network policy. No unrelated Supabase or business tenant.
+4. Confirm `node --version` is 22.23+ and `ffprobe -version` works on the trusted QA host. Node 22 SQLite is experimental; approve single-host use or request an explicit existing-DB decision.
+5. Read and independently review PR #26 security/clinical/privacy/brand boundaries. **Do not merge** until owner and independent review approve.
+
+## D. Step 2 — isolated local API and MCP proof
+
+Inject distinct 24+ character tokens from the private secret manager; never commit, paste or expose values. Start on loopback:
 
 ```bash
-# Execute from the repository root, in an isolated local/staging environment.
-export CREATOR_STUDIO_AGENT_TOKEN="<24+ random chars from private secret manager>"
-export CREATOR_STUDIO_OWNER_TOKEN="<DIFFERENT 24+ random chars from private secret manager>"
-# Optional, separate and NEVER passed to the Instinct/Hermes process:
-# export CREATOR_STUDIO_CLINICAL_TOKEN="<separate clinician secret>"
-# Optional local proof persistence outside the public repository:
-# export CREATOR_STUDIO_STATE_FILE="/var/lib/crown-core/creator-studio/state.json"
+# From repository root on an isolated staging host.
+export CREATOR_STUDIO_AGENT_TOKEN="<private-agent-token>"
+export CREATOR_STUDIO_OWNER_TOKEN="<different-local-proof-token>"
+export CREATOR_STUDIO_DB_FILE="/var/lib/crown-core/creator-studio/studio.sqlite"
 node districts/media/creator-studio/src/api.mjs
 ```
 
-API binds `127.0.0.1:8787` by default. State is **in memory** unless `CREATOR_STUDIO_STATE_FILE` is explicitly set. File mode is 0600 and path must be absolute and outside repo. This is not a production database, encrypted vault, HIPAA solution, signed approval system or distributed queue.
+The DB file path is illustrative; choose the actual owner-approved private encrypted volume outside repo. For real reviewer identity, configure `CREATOR_OIDC_ISSUER`, `CREATOR_OIDC_AUDIENCE`, `CREATOR_OIDC_JWKS_JSON` from the verified IdP and do **not** rely on local owner proof tokens. Configure separate rights/operator/QA/publisher credentials only in their respective trusted services.
 
-Run the MCP adapter in the **same local trust boundary** as the API, with only the agent token:
+MCP on the **same trust boundary**, with agent token only:
 
 ```bash
 export CREATOR_STUDIO_API_URL="http://127.0.0.1:8787"
 node districts/media/creator-studio/src/mcp.mjs
 ```
 
-MCP uses line-delimited JSON-RPC over stdio; do not expose its stdin/stdout as a public socket. For initial local smoke:
+MCP handshake must list nine `creator_*` tools: outcome create/status/get, source register, storyboard propose, review request, render plan prepare, creator candidate propose and outreach prepare. **No agent approval or outbound action tools.**
 
-```bash
-printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}' \
- '{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}' \
- | node districts/media/creator-studio/src/mcp.mjs
-```
+Register this actual stdio MCP bridge in the existing Instinct runtime, using its supported registration method. Prove **real model-originated** `creator_outcome_create` and `creator_outcome_status` tool calls and receipts. A curl script, unit test or fixture alone does not count.
 
-Expected: server info `crown-core-creator-studio`, seven `creator_*` tools, **no approval/publish/spend tools**.
+## E. Step 3 — configure owner/rights/clinical review
 
-## 3. Agent-originated acceptance
+- Owner and clinical decisions require verified **separate** reviewer identity; in OIDC mode the server requires pinned RS256 JWT, correct issuer/audience/tenant, MFA and short lifetime. Do not give these tokens to Instinct, Paperclip or Hermes.
+- Real voice “yes” is not sufficient by itself. Existing voice channel must authenticate the actor and bind the action to the exact revision and, for finished films, both SHA-256 hashes. A short authenticated mobile review is an allowed fallback.
+- Rights officer must independently inspect actual release/contract, source asset hash, scope, expiry and revocation before `rights-verify`. A supplied `rights_ref` alone is not evidence.
+- Clinical reviewer must approve any treatment claim. FTC material-connection/synthetic disclosures and current platform policies require qualified review.
 
-After existing Instinct MCP registration is verified, issue a real owner-safe instruction (no PHI):
+## F. Step 4 — one approved real renderer smoke
 
-> “Create a Crown & Core owned-media outcome for a 30-second ‘One place’ film and a 15-second cut using authorized real facility footage. Do not claim anything was rendered or published.”
+1. Confirm provider's **actual** health URL/version and supported submit operation; configure exact HTTPS `CREATOR_RENDER_HEALTH_URL`, `CREATOR_RENDER_SUBMIT_URL`, `CREATOR_RENDER_TOKEN` privately.
+2. Test `node districts/media/creator-studio/src/worker.mjs inspect`; record provider version. If the deployed provider does not match the bridge contract, **STOP** and report the minimal adaptation required for owner approval.
+3. With authorized **nonclinical, non-patient** source media, record source and storyboard via MCP; obtain separate owner/clinical (if applicable), rights and capped render authorizations. Prepare a plan with a stable idempotency key.
+4. Operator runs `node districts/media/creator-studio/src/worker.mjs dispatch <outcome-id>`. This reserves once, submits once, then records the real provider job ID. If ambiguous, reconcile provider-side; never auto-retry.
+5. Receive a valid HMAC-signed `/v1/webhooks/provider/:id` callback or reconcile via authenticated operator `provider-result`. A provider acknowledgement is **not** a rendered film.
+6. Deposit both actual MP4s in the private vault, with a private manifest. Run `node districts/media/creator-studio/src/worker.mjs qa <outcome-id> <private-manifest.json>`. This must independently prove 30s+15s, H.264, 1080×1920, SHA-256 matching provider receipt, playable assets and basic media checks.
+7. Show the owner the real approved preview through the existing authenticated channel. Record exact-hash `film-approve` decision. **Do not publish yet.**
 
-Capture **actual model-originated** `creator_outcome_create` and `creator_outcome_status` calls, with request/response IDs, authenticated agent identity, timestamp, tenant, returned outcome ID and status `DRAFT`. Do not substitute scripted curl calls or local fixtures as evidence of agent integration.
+No model-generated patient, invented real facility imagery, synthetic testimonials, or unapproved clinical claims.
 
-Then exercise agent tools with **synthetic opaque source and rights references** and a claim-free storyboard; `creator_review_request` should yield `REVIEW_PENDING`. Demonstrate that:
-- agent cannot approve via MCP or REST;
-- wrong tenant and stale version are denied;
-- synthetic fake testimonial is denied;
-- clinical claim cannot bypass clinical approval;
-- render plan cannot be prepared before approval;
-- even after local owner proof approval, render plan is `PLANNED_NOT_SUBMITTED` and never calls a provider.
+## G. Step 5 — optional contact, publication and attribution (separate owner approval)
 
-Never put a real owner token in a model's context. For a production owner approval, build an authenticated owner challenge channel binding identity, asset/version hash, scope, expiry and replay prevention; the P0 bearer demo is **not** a voice approval system.
+- **Creator contact:** only after actual permission and exact message/terms/fee approval. Configure verified private contact service and `CREATOR_STUDIO_ENABLE_CREATOR_OUTREACH=yes` **only for the approved scoped test**; run worker `outreach`. Never expose raw contact details in StarNet.
+- **Organic publication:** only after verified booking path, clinical/brand checks and a **separate** owner `publish-authorize` decision. Configure actual platform bridge and `CREATOR_STUDIO_ENABLE_ORGANIC_PUBLISH=yes` **only for the approved scoped test**; run worker `publish`. No paid Meta ads.
+- **Attribution:** only signed source-backed aggregate events; verify actual booking/payment source and reconciliation. If absent, keep bookings/revenue `null`, not zero or fabricated.
+- **Revocation:** a rights revocation after publication yields `TAKEDOWN_REQUIRED`; obtain and record real platform takedown receipt before reporting removal.
 
-## 4. Hermes task graph — proposal for existing Paperclip
+## H. Paperclip/Hermes mission contract
 
-```text
-PAPERCLIP MISSION: CC-CREATOR-P1
-  tenant: crown-and-core
-  budget_usd: 0 (proof)
-  deadline: bounded
-  authority: draft/read only
-  entry: existing Instinct
-  worker: Hermes (only if supported in deployed runtime)
-  specialists:
-    - brand-truth: read allowlisted verified knowledge
-    - rights: validate opaque refs against approved vault
-    - creative: propose script/shot list and 30s/15s cutdowns
-    - safety: check rights/disclosures/clinical-claim flags; escalate
-    - provider-inspection: read-only health/capabilities
-  output:
-    - outcome_id, exact version, rights status, storyboard
-    - task receipts, blocked reasons, next approval
-  prohibited:
-    - uncontrolled subagent creation
-    - customer outreach, posting, bookings, spend, external rendering
-```
+Read `agent-workflow.json`. **Paperclip is the only scheduler**. Hermes is a bounded specialist coordinator **inside one existing Paperclip job**, if supported; no persistent independent swarm. Allowed agent tools are exactly the nine MCP tools. Specialists can research approved brand truth, inspect opaque rights refs, propose scripts, check claims/disclosures and prepare plans; no agent can self-approve, contact, spend or publish. If the actual runtime lacks Hermes support, use the existing supported worker pattern and report the difference.
 
-If Hermes cannot be invoked as a scoped worker by the existing Paperclip deployment, **report the actual supported interface** and use the current Paperclip worker pattern. Do not create a competing orchestrator.
-
-## 5. Future renderer integration gate — separate approval
-
-Only after the existing renderer endpoint/version is proven and the owner authorizes a **capped test**:
-1. Read-only provider health and supported API/MCP operations.
-2. Verify asset rights, private vault access, allowed channel and consent.
-3. Verify approved exact storyboard/claim revision and signed production budget.
-4. Send one nonclinical synthetic test job with stable idempotency key and capped cost.
-5. Capture provider job ID, response status, callback signature, output hash, playable MP4 duration/9:16 orientation, typography and audio license QA.
-6. For real “One place” 30s+15s film, use only approved real Crown & Core media and repeat QA.
-7. Present preview via authenticated owner channel. **Rendering approval ≠ publishing approval.**
-8. Do not enable Meta/paid media until booking/lead-response/attribution gates pass.
-
-This PR contains **no renderer adapter**; do not invent `MotionMaster.generateVideo` or `Publisher.launchAd` as deployed endpoints.
-
-## 6. Deliverables to report on GitHub
-
-Report on the designated server issue (no secrets):
+## I. Required evidence report to issue #27 (no secrets)
 
 ```text
-CC-CREATOR-P1
-repo_sha:
-CI_run:
-node_tests:
-paperclip_url_redacted:
-paperclip_company/project/agent_ids: verified privately (yes/no)
-instinct_mcp_registration: verified / blocked
-model_originated_creator_outcome_create: receipt ID or blocked
-model_originated_creator_outcome_status: receipt ID or blocked
-wrong_tenant_denied: pass/fail
-agent_approval_denied: pass/fail
-provider_health: actual deployed version + read-only receipt / blocked
-private_crown_core_vault: verified / blocked (no identifying data)
-rendered_mp4: none until separate approved test
-publication: none
-spend_usd: 0
-rollback_test:
+CC-CREATOR-SERVER
+exact_pr_sha:
+creator_studio_CI_url: pass/fail
+StarNet_verify_url: pass/fail
+independent_security_review: approved / blocked
+owner_visual_approval: approved / blocked
+existing_paperclip_company_project_instinct_ids: verified privately / blocked
+actual_instinct_mcp_tool_call_receipts: IDs / blocked
+nine_agent_tools_no_approval: verified / blocked
+tenant_and_wrong_role_denials: pass / fail
+OIDC_MFA_reviewer_identity: verified / blocked
+rights_release_and_asset_hash: verified / blocked
+private_SQLite_or_existing_DB_backup_restore: verified / blocked
+renderer_health_and_version: actual receipt / blocked
+provider_job_id: actual receipt / not attempted
+real_30s_15s_MP4_hashes_ffprobe_QA: actual receipts / not attempted
+owner_final_hash_approval: verified / blocked
+creator_contact: none unless separately authorized
+organic_publication: none unless separately authorized
+paid_meta_ads: NOT IMPLEMENTED
+attributed_bookings_and_revenue: actual verified / unknown
+actual_spend_usd: 0 unless separately approved and evidenced
+rollback_exercise: pass / blocked
 remaining_blockers:
-human_approval_needed:
+next_owner_decision:
 ```
 
-## 7. Release decision and rollback
+## J. Release and rollback
 
-**Do not merge PR #26 or deploy to production** until independent security/clinical/privacy review, owner design approval, correct tenant and secrets, verified real agent call, and direct staging verification. PR #24 and issue #25 remain separate dependencies.
+**Do not merge/deploy on code tests alone.** Independent code/security review, owner brand approval, real Instinct MCP receipt, verified provider, correct Crown & Core private vault and direct staging proof are required. Stop/revoke outbound workers first on rollback, preserve audit and external publication receipts, restore prior approved deployment, and report any still-live content honestly.
 
-Rollback local proof: stop `src/api.mjs`, stop `src/mcp.mjs`, revoke proof credentials, remove private local proof state according to retention policy, close PR #26 if rejected. No customer-facing action should have occurred.
-
-## 8. Next exact task
-
-Resolve issue #25's existing Paperclip identity/runtime first; then run the above **agent-originated** Creator Studio proof. Report a blocked gate as blocked. The owner may approve the next production connector only after reviewing real evidence.
+**No server connection or deployment is claimed by this handoff.** Assignment to issue #27 is a work request, not evidence that Instinct accepted or executed it.
