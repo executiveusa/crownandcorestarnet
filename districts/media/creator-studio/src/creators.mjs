@@ -81,11 +81,22 @@ export function createCreatorWorkflow(studio,{now=()=>new Date().toISOString()}=
       return 'creator_outreach_exact_message_authorized';
     });
   }
-  function recordSent(id,role,input={}){
+  function reserveOutreach(id,role,input={}){
     return mutate(id,role,'operator',item=>{
       const draft=item.creator_campaign?.outreach.find(x=>x.outreach_id===input.outreach_id);
       if(!draft||draft.status!=='OUTREACH_AUTHORIZED_UNSENT')
-        deny('NOT_AUTHORIZED','Current approved outreach required.');
+        deny('NOT_AUTHORIZED','Only authorized unsent outreach can be reserved.');
+      if(draft.version!==item.version||Date.parse(draft.authorization.expires_at)<=Date.parse(now()))
+        deny('AUTH_EXPIRED','Outreach approval expired or creative changed.');
+      draft.status='OUTREACH_RESERVED';
+      return 'creator_outreach_reserved_no_retry';
+    });
+  }
+  function recordSent(id,role,input={}){
+    return mutate(id,role,'operator',item=>{
+      const draft=item.creator_campaign?.outreach.find(x=>x.outreach_id===input.outreach_id);
+      if(!draft||draft.status!=='OUTREACH_RESERVED')
+        deny('NOT_AUTHORIZED','Reserved approved outreach required.');
       if(draft.version!==item.version||Date.parse(draft.authorization.expires_at)<=Date.parse(now()))
         deny('AUTH_EXPIRED','Outreach approval expired or revision changed.');
       const delivery_receipt_ref=ref(input.delivery_receipt_ref,'delivery_receipt_ref');
@@ -116,5 +127,5 @@ export function createCreatorWorkflow(studio,{now=()=>new Date().toISOString()}=
       return 'creator_release_verified';
     });
   }
-  return {proposeCandidate,prepareOutreach,authorizeOutreach,recordSent,recordRelease};
+  return {proposeCandidate,prepareOutreach,authorizeOutreach,reserveOutreach,recordSent,recordRelease};
 }
