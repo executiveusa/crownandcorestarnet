@@ -35,6 +35,7 @@ test('agent can shortlist and draft but cannot send creator outreach',()=>{
     message_sha256:draft.message_sha256,permission_ref:'permission:one',
     decision_ref:'decision:one',expires_at:expires,max_fee_usd:200});
   assert.equal(studio.get(id).creator_campaign.outreach[0].status,'OUTREACH_AUTHORIZED_UNSENT');
+  creators.reserveOutreach(id,'operator',{outreach_id:draft.outreach_id});
   creators.recordSent(id,'operator',{outreach_id:draft.outreach_id,
     delivery_receipt_ref:'receipt:one',external_message_ref:'message:one'});
   assert.equal(studio.get(id).creator_campaign.outreach[0].status,'SENT_VERIFIED');
@@ -89,6 +90,7 @@ test('outreach adapter only sends exact owner-approved message to opaque creator
       return {ok:true,headers:{get:()=>null},text:async()=>JSON.stringify(
         {delivered:true,charged_usd:0,external_message_ref:'message:one',delivery_receipt_ref:'receipt:one'})};
     }});
+  creators.reserveOutreach(id,'operator',{outreach_id:draft.outreach_id});
   const receipt=await adapter.send(studio.get(id),draft.outreach_id);
   assert.equal(receipt.delivery_receipt_ref,'receipt:one');
   assert.equal(posted.creator_ref,'creator:one');
