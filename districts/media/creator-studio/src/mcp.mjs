@@ -1,6 +1,8 @@
 // MCP stdio bridge for the local Creator Studio API. Agent-scoped tools only.
 // Instinct must use its own verified runtime and agent token; no approval tool is exposed.
 import { createInterface } from 'node:readline';
+import { resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const field = (type, description, more = {}) => ({ type, description, ...more });
 const object = (properties, required = []) => ({ type: 'object', properties, required, additionalProperties: false });
@@ -108,4 +110,4 @@ export function startMcp(env = process.env) {
     }
   });
 }
-if (process.argv[1] && process.argv[1].endsWith('/mcp.mjs')) startMcp();
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) startMcp();
