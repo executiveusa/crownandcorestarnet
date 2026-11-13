@@ -231,3 +231,24 @@ test('HTTP production-stage actions are distinct-role gated and never available 
     decision_ref:'decision:one',expires_at:until})).status,200);
   assert.equal((await post('dispatch-reserve','agent',{version,job_id:studio.get(id).render_plan.job_id})).status,403);
 });
+
+test('revoked rights after publication require verified takedown and block silent edits',()=>{
+  const f=verified();
+  f.pipeline.decideFinal(f.id,'owner',{version:f.version,decision:'approve',hash_30:a,hash_15:b,decision_ref:'decision:film'});
+  f.pipeline.authorizePublish(f.id,'owner',{version:f.version,channel:'instagram_reel',
+    booking_path_verified:true,claim_policy_verified:true,decision_ref:'decision:post',expires_at:until});
+  f.pipeline.published(f.id,'publisher',{version:f.version,channel:'instagram_reel',
+    published_hash:a,external_post_ref:'post:one',publication_receipt_ref:'receipt:post'});
+  f.pipeline.revokeRights(f.id,'rights',{version:f.version,rights_ref:'rights:one',
+    revocation_ref:'revocation:one'});
+  assert.equal(f.studio.get(f.id).status,'TAKEDOWN_REQUIRED');
+  assert.equal(f.studio.summary(f.id).published,true);
+  rejected(()=>f.studio.proposeStoryboard(f.id,{hook:'Different',story:'Different',
+    cta:'Explore',claims_present:false,disclosure_present:false}),'PUBLISHED_IMMUTABLE');
+  rejected(()=>f.pipeline.recordTakedown(f.id,'agent',{version:f.version,
+    external_post_ref:'post:one',takedown_receipt_ref:'receipt:remove'}),'FORBIDDEN');
+  f.pipeline.recordTakedown(f.id,'publisher',{version:f.version,
+    external_post_ref:'post:one',takedown_receipt_ref:'receipt:remove'});
+  assert.equal(f.studio.summary(f.id).published,false);
+  assert.equal(f.studio.get(f.id).status,'TAKEN_DOWN');
+});
