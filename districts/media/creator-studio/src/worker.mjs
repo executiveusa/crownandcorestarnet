@@ -75,8 +75,10 @@ export async function publishApprovedOrganic(id,env=process.env,fetchFn=fetch){
   if(item.status!=='PUBLISH_AUTHORIZED')throw new Error('No exact-version publication authorization.');
   const adapter=createOrganicPublisher({publishUrl:getEnv(env,'CREATOR_PUBLISH_URL'),
     token:getEnv(env,'CREATOR_PUBLISH_TOKEN'),fetchFn});
-  // Never retry a network-ambiguous publication automatically.
-  const receipt=await adapter.publish(item);
+  const reserved=(await api(env,'publisher','POST',outcomePath(id)+'/publish-reserve',
+    {version:item.version,decision_ref:item.publication_authorization.decision_ref})).outcome;
+  // A lost acknowledgement leaves PUBLISH_RESERVED: reconcile provider-side, never auto-retry.
+  const receipt=await adapter.publish(reserved);
   return (await api(env,'publisher','POST',outcomePath(id)+'/publish-receipt',receipt)).outcome;
 }
 export async function sendApprovedCreatorOutreach(id,outreach_id,env=process.env,fetchFn=fetch){
