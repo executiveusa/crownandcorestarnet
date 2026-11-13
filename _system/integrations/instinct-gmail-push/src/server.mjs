@@ -55,7 +55,14 @@ export function createBridge({
     let accepted=0;
     for(const id of changes.ids){
       if(store.hasMessage(id))continue;
-      const msg=await gmail.message(id);
+      let msg;
+      try { msg=await gmail.message(id); }
+      catch(error) {
+        // A permanently deleted unrelated message must not poison the history
+        // cursor and prevent later valid Instinct replies being processed.
+        if(error?.code==='GMAIL_MESSAGE_GONE')continue;
+        throw error;
+      }
       const parsed=parseReply(msg,{sender:config.sender,recipient:config.mailbox});
       if(!parsed || !store.getMission(parsed.missionId))continue;
       const mission=store.getMission(parsed.missionId);
