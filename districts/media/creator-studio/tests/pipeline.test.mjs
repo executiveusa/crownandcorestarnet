@@ -280,3 +280,48 @@ test('unflagged medspa treatment claim cannot be rendered without clinical scree
     max_cost_usd:5,decision_ref:'decision:render',expires_at:until});
   assert.equal(studio.get(id).status,'RENDER_AUTHORIZED');
 });
+
+test('revocation during reserved publication preserves actual receipt and requires takedown',()=>{
+  const f=verified();
+  f.pipeline.decideFinal(f.id,'owner',{version:f.version,decision:'approve',hash_30:a,
+    hash_15:b,decision_ref:'decision:film'});
+  f.pipeline.authorizePublish(f.id,'owner',{version:f.version,channel:'instagram_reel',
+    booking_path_verified:true,claim_policy_verified:true,decision_ref:'decision:post',
+    expires_at:until});
+  f.pipeline.reservePublication(f.id,'publisher',{version:f.version,
+    decision_ref:'decision:post'});
+  f.pipeline.revokeRights(f.id,'rights',{version:f.version,rights_ref:'rights:one',
+    revocation_ref:'revocation:during-post'});
+  assert.equal(f.studio.get(f.id).status,'PUBLISH_RECONCILIATION_REQUIRED');
+  rejected(()=>f.pipeline.reservePublication(f.id,'publisher',{version:f.version,
+    decision_ref:'decision:post'}),'INVALID_STATE');
+  f.pipeline.published(f.id,'publisher',{version:f.version,channel:'instagram_reel',
+    published_hash:a,external_post_ref:'post:late',publication_receipt_ref:'receipt:late'});
+  assert.equal(f.studio.get(f.id).status,'TAKEDOWN_REQUIRED');
+  assert.equal(f.studio.summary(f.id).published,true);
+  f.pipeline.recordTakedown(f.id,'publisher',{version:f.version,
+    external_post_ref:'post:late',takedown_receipt_ref:'receipt:removed'});
+  assert.equal(f.studio.summary(f.id).published,false);
+});
+test('late verified external publish receipt remains reconcilable after approval expiry',()=>{
+  let clock=at;
+  const studio=createStudio({now:()=>clock}),pipeline=createPipeline(studio,{now:()=>clock});
+  const f=verified();
+  // The trusted proof fixture already reserved an eligible publish action;
+  // apply expiration only at receipt reconciliation.
+  f.pipeline.decideFinal(f.id,'owner',{version:f.version,decision:'approve',hash_30:a,
+    hash_15:b,decision_ref:'decision:film'});
+  f.pipeline.authorizePublish(f.id,'owner',{version:f.version,channel:'instagram_reel',
+    booking_path_verified:true,claim_policy_verified:true,decision_ref:'decision:post',
+    expires_at:until});
+  f.pipeline.reservePublication(f.id,'publisher',{version:f.version,
+    decision_ref:'decision:post'});
+  // Simulate expiry in stored authorization; this cannot authorize a new send.
+  f.studio.applyTrusted(f.id,(item,receipt)=>{
+    item.publication_authorization.expires_at='2026-11-11T00:00:00Z';
+    receipt('proof_expiry_advanced','operator');
+  });
+  f.pipeline.published(f.id,'publisher',{version:f.version,channel:'instagram_reel',
+    published_hash:a,external_post_ref:'post:late',publication_receipt_ref:'receipt:late'});
+  assert.equal(f.studio.get(f.id).status,'TAKEDOWN_REQUIRED');
+});
