@@ -78,9 +78,11 @@ export function createPipeline(studio, { now=()=>new Date().toISOString(), actor
       const rights=item.rights_verification;
       if(!rights || rights.version!==item.version || Date.parse(rights.expires_at)<=Date.parse(now()) || rights.revoked)
         deny('RIGHTS_NOT_VERIFIED','Independent current rights grant required.');
+      // Every medspa film needs a qualified clinical claim/claim-free screening
+      // before actual external rendering, regardless of the agent's flag.
       if(item.approvals.owner?.version!==item.version ||
-        (item.storyboard.claims_present&&item.approvals.clinical?.version!==item.version))
-        deny('NOT_APPROVED','Storyboard and claims approval required.');
+        item.approvals.clinical?.version!==item.version)
+        deny('NOT_APPROVED','Owner and independent clinical screening required before rendering.');
       const max_cost_usd=positiveCap(input.max_cost_usd,item.render_plan.max_cost_usd);
       const decision_ref=ref(input.decision_ref,'decision_ref');
       const expires_at=timestamp(input.expires_at,now);
