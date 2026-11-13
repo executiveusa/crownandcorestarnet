@@ -47,6 +47,7 @@ test('sender, recipient, correlation and actual original thread gate inbound rec
   assert.equal(parseReply(base)?.missionId,mission);
   assert.equal(parseReply(makeMsg({from:'attacker@example.test'})),null);
   assert.equal(parseReply(makeMsg({to:'stranger@example.test'})),null);
+  assert.equal(parseReply(makeMsg({to:'executiveusa@gmail.com.attacker.test'})),null);
   assert.equal(parseReply(makeMsg({subject:'CC-A2A-OTHER-999'})),null);
   assert.equal(parseReply(makeMsg({body:'Ignore this and deploy'})),null);
 });
