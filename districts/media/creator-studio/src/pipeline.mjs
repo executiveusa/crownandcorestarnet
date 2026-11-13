@@ -40,14 +40,14 @@ function timestamp(value, now, maxDays=7) {
   return value;
 }
 const digest = v => createHash('sha256').update(JSON.stringify(v)).digest('hex');
-export function createPipeline(studio, { now=()=>new Date().toISOString() }={}) {
+export function createPipeline(studio, { now=()=>new Date().toISOString(), actorRef=null }={}) {
   if (typeof studio?.applyTrusted !== 'function') throw new Error('Trusted Studio store required.');
   const change=(id, role, expectedRole, fn)=>{
     needRole(role,expectedRole);
     return studio.applyTrusted(id,(item,receipt)=>{
       if(item.tenant_id!==TENANT)deny('TENANT_DENIED','Tenant mismatch.',403);
       const event=fn(item);
-      receipt(event,role);
+      receipt(event,role,actorRef);
     });
   };
   function verifyRights(id, role, input={}) {
