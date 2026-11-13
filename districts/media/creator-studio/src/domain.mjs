@@ -36,9 +36,10 @@ function choice(value, allowed, name) {
 function ensureTenant(input) {
   if (input?.tenant_id != null && input.tenant_id !== TENANT) fail('TENANT_DENIED', 'Crown & Core tenant only.', 403);
 }
-function receipt(item, action, role, at) {
+function receipt(item, action, role, at, actor_ref = null) {
   const previous_hash = item.receipts.at(-1)?.hash ?? null;
   const event = { action, role, at, version: item.version, previous_hash };
+  if (actor_ref) event.actor_ref = actor_ref;
   event.hash = createHash('sha256').update(JSON.stringify(event)).digest('hex');
   item.receipts.push(event);
 }
@@ -161,7 +162,7 @@ export function createStudio({ initial = [], persist = () => {}, now = () => new
     receipt(item, 'review_requested', 'agent', now());
     return save(item);
   }
-  function decide(id, role, input = {}) {
+  function decide(id, role, input = {}, actorRef = null) {
     const item = read(id);
     if (!['owner', 'clinical'].includes(role)) fail('FORBIDDEN', 'Only authenticated reviewers may decide.', 403);
     if (item.status !== 'REVIEW_PENDING') fail('NOT_READY', 'No pending review.', 409);
@@ -170,7 +171,7 @@ export function createStudio({ initial = [], persist = () => {}, now = () => new
     if (role === 'clinical' && !item.storyboard.claims_present) fail('NOT_REQUIRED', 'Clinical review is not requested for this draft.', 409);
     if (input.decision === 'request_changes') {
       reset(item);
-      receipt(item, 'changes_requested', role, now());
+      receipt(item, 'changes_requested', role, now(), actorRef);
       return save(item);
     }
     if (item.approvals[role]?.version === item.version)
@@ -186,7 +187,7 @@ export function createStudio({ initial = [], persist = () => {}, now = () => new
         (!item.storyboard.claims_present || item.approvals.clinical?.version === item.version)) {
       item.status = 'READY_FOR_RENDER_PLAN';
     }
-    receipt(item, role + '_approved_version', role, now());
+    receipt(item, role + '_approved_version', role, now(), actorRef);
     return save(item);
   }
   function prepareRenderPlan(id, input = {}) {
@@ -218,7 +219,7 @@ export function createStudio({ initial = [], persist = () => {}, now = () => new
   // Trusted in-process transitions only. Never expose this function over HTTP/MCP.
   function applyTrusted(id, update) {
     const item = read(id);
-    update(item, (action, role) => receipt(item, action, role, now()));
+    update(item, (action, role, actorRef) => receipt(item, action, role, now(), actorRef));
     return save(item);
   }
   return {
