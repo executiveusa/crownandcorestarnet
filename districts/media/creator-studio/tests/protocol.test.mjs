@@ -18,7 +18,7 @@ test('MCP stdio completes initialize before tools/list and exposes no owner acti
   child.stdout.on('data', chunk => {
     buffer += chunk.toString('utf8');
     let end;
-    while ((end = buffer.indexOf('\\n')) >= 0) {
+    while ((end = buffer.indexOf('\n')) >= 0) {
       const line = buffer.slice(0,end);
       buffer = buffer.slice(end+1);
       if (!line) continue;
@@ -27,15 +27,15 @@ test('MCP stdio completes initialize before tools/list and exposes no owner acti
       if (response.id === 1 && !initialized) {
         initialized = true;
         child.stdin.end(
-          JSON.stringify({jsonrpc:'2.0',method:'notifications/initialized',params:{}})+'\\n'+
-          JSON.stringify({jsonrpc:'2.0',id:2,method:'tools/list',params:{}})+'\\n'
+          JSON.stringify({jsonrpc:'2.0',method:'notifications/initialized',params:{}})+'\n'+
+          JSON.stringify({jsonrpc:'2.0',id:2,method:'tools/list',params:{}})+'\n'
         );
       }
     }
   });
   child.stdin.write(JSON.stringify({jsonrpc:'2.0',id:1,method:'initialize',
     params:{protocolVersion:'2024-11-05',capabilities:{},
-      clientInfo:{name:'creator-contract-test',version:'1.0.0'}}})+'\\n');
+      clientInfo:{name:'creator-contract-test',version:'1.0.0'}}})+'\n');
   const code = await new Promise((resolve, reject) => {
     child.on('error', reject);
     child.on('close', resolve);
