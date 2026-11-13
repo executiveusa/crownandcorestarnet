@@ -111,18 +111,6 @@
       "evidence": "exact-version owner and mandatory qualified clinical screening, independently verified rights grant and source SHA; no agent-supplied consent"
     },
     {
-      "id": "plan",
-      "worker": "hermes:production-planner",
-      "depends_on": [
-        "rights-and-approval"
-      ],
-      "tools": [
-        "creator_render_plan_prepare",
-        "creator_buffer_plan_sync"
-      ],
-      "evidence": "PLANNED_NOT_SUBMITTED; not a video; authenticated Buffer workspace plan UUID + GET readback, zero spend only"
-    },
-    {
       "id": "buffer-source-bind",
       "worker": "trusted-rights",
       "depends_on": [
@@ -131,6 +119,18 @@
       "tools": [],
       "evidence": "Server-only Buffer workspace UUID and exact source reference readback, bound to StarNet verified asset SHA; cannot be authorized by agent",
       "notes": "Must complete before creator_buffer_plan_sync even though plan state is later."
+    },
+    {
+      "id": "plan",
+      "worker": "hermes:production-planner",
+      "depends_on": [
+        "buffer-source-bind"
+      ],
+      "tools": [
+        "creator_render_plan_prepare",
+        "creator_buffer_plan_sync"
+      ],
+      "evidence": "PLANNED_NOT_SUBMITTED; not a video; authenticated Buffer workspace plan UUID + GET readback, zero spend only"
     },
     {
       "id": "render",
