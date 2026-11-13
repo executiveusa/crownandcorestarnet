@@ -30,7 +30,7 @@ test('unauthenticated provider webhook is rejected before state changes',async t
   await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
   t.after(()=>new Promise(resolve=>server.close(resolve)));
   const base='http://127.0.0.1:'+server.address().port+'/v1/webhooks/provider/'+item.id;
-  const payload={event_ref:'event:one',version:item.version};
+  const payload={event_ref:'event:one',outcome_id:item.id,version:item.version};
   const unsigned=await fetch(base,{method:'POST',
     headers:{'content-type':'application/json'},body:JSON.stringify(payload)});
   assert.equal(unsigned.status,401);
