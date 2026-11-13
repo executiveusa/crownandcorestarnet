@@ -134,11 +134,17 @@ footer{max-width:1280px;margin:auto;padding:24px clamp(20px,4vw,56px) 45px;borde
   let brief = null;
   const outcome = $('outcome');
   const feedback = $('feedback');
+  const invalidate = () => { brief = null; $('result').classList.remove('show'); };
+  document.querySelectorAll('textarea,input,select').forEach(el => {
+    el.addEventListener('input', invalidate);
+    el.addEventListener('change', invalidate);
+  });
   document.querySelectorAll('[data-prompt]').forEach(button => button.addEventListener('click', () => {
-    outcome.value = button.dataset.prompt; outcome.focus(); feedback.textContent = '';
+    invalidate(); outcome.value = button.dataset.prompt; outcome.focus(); feedback.textContent = '';
   }));
   function checkText(v) { return /[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}|(?:\+?\d[\d\s().-]{8,}\d)/i.test(v); }
   function draft() {
+    invalidate();
     const statement = outcome.value.trim();
     if (statement.length < 12) { feedback.textContent = 'Describe the outcome in at least one sentence.'; outcome.focus(); return null; }
     if (checkText(statement)) { feedback.textContent = 'Remove customer contact details or other personal information.'; return null; }
@@ -146,7 +152,7 @@ footer{max-width:1280px;margin:auto;padding:24px clamp(20px,4vw,56px) 45px;borde
     const validRef = v => !v || /^[a-z][a-z0-9._:-]{2,119}$/i.test(v);
     if (!validRef(sourceRef) || !validRef(rightsRef)) { feedback.textContent = 'Use opaque source and rights IDs, not links or names.'; return null; }
     const sourceType = $('sourceType').value;
-    if (sourceType === 'synthetic' && /testimonial|real customer|my treatment|my results/i.test(statement)) {
+    if (sourceType === 'synthetic' && /testimonial|real customer|my treatment|my results|i visited|i tried|i loved|my experience/i.test(statement)) {
       feedback.textContent = 'Synthetic creative cannot represent a real customer experience.'; return null;
     }
     const claims = $('claims').value, disclosure = $('disclosure').value;
@@ -166,7 +172,7 @@ footer{max-width:1280px;margin:auto;padding:24px clamp(20px,4vw,56px) 45px;borde
       missing_evidence: missing, verified_video: false, published: false,
       attributed_bookings: null, attributed_revenue: null,
       execution_enabled: false, publish_enabled: false, paid_spend_enabled: false,
-      owner_approval_required: true, clinical_approval_required: claims !== 'none'
+      owner_approval_required: true, clinical_approval_required: true
     };
     $('next').textContent = missing.length ?
       'Next: ' + missing.join(', ') + '. Instinct can coordinate the work; this local preview cannot send tasks.' :
@@ -180,6 +186,7 @@ footer{max-width:1280px;margin:auto;padding:24px clamp(20px,4vw,56px) 45px;borde
   $('copy').addEventListener('click', async () => {
     const statement = outcome.value.trim();
     if (!statement) { feedback.textContent = 'Choose or state an outcome first.'; return; }
+    if (checkText(statement)) { feedback.textContent = 'Remove personal contact details before copying for Instinct.'; return; }
     const message = 'Instinct: Please create a Crown & Core Creator Studio outcome: ' + statement +
       ' Use authorized real sources and the existing StarNet/Paperclip workflow. Do not render, publish, contact customers or spend without required approvals.';
     try { if (!navigator.clipboard?.writeText) throw new Error('Unavailable'); await navigator.clipboard.writeText(message);
