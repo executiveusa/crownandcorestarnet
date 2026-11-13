@@ -226,13 +226,13 @@ test('HTTP production-stage actions are distinct-role gated and never available 
     headers:{authorization:'Bearer '+tokens[role],'content-type':'application/json'},
     body:JSON.stringify(body)});
   const rights={version,rights_ref:'rights:one',grant_ref:'grant:one',
-    grant_sha256:c,asset_sha256:a,scope:'both',revoked:false,expires_at:until};
+    grant_sha256:c,asset_sha256:a,scope:'both',revoked:false,expires_at:future()};
   assert.equal((await post('rights-verify','agent',rights)).status,403);
   assert.equal((await post('rights-verify','rights',rights)).status,200);
   assert.equal((await post('render-authorize','agent',{version,max_cost_usd:1,
-    decision_ref:'decision:one',expires_at:until})).status,403);
+    decision_ref:'decision:one',expires_at:future()})).status,403);
   assert.equal((await post('render-authorize','owner',{version,max_cost_usd:1,
-    decision_ref:'decision:one',expires_at:until})).status,200);
+    decision_ref:'decision:one',expires_at:future()})).status,200);
   assert.equal((await post('dispatch-reserve','agent',{version,job_id:studio.get(id).render_plan.job_id})).status,403);
 });
 
