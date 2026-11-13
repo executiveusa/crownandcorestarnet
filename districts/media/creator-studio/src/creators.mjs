@@ -98,8 +98,8 @@ export function createCreatorWorkflow(studio,{now=()=>new Date().toISOString(),a
       const draft=item.creator_campaign?.outreach.find(x=>x.outreach_id===input.outreach_id);
       if(!draft||draft.status!=='OUTREACH_RESERVED')
         deny('NOT_AUTHORIZED','Reserved approved outreach required.');
-      if(draft.version!==item.version||Date.parse(draft.authorization.expires_at)<=Date.parse(now()))
-        deny('AUTH_EXPIRED','Outreach approval expired or revision changed.');
+      if(draft.version!==item.version)
+        deny('STALE_VERSION','Outreach revision changed; reconcile prior delivery.');
       const delivery_receipt_ref=ref(input.delivery_receipt_ref,'delivery_receipt_ref');
       const external_message_ref=ref(input.external_message_ref,'external_message_ref');
       draft.delivery={delivery_receipt_ref,external_message_ref,at:now()};
