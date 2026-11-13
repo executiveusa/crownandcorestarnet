@@ -9,6 +9,7 @@ import { createPipeline } from './pipeline.mjs';
 import { sqliteStore } from './sqlite-store.mjs';
 import { createIdentityVerifier } from './identity.mjs';
 import { createCreatorWorkflow } from './creators.mjs';
+import { verifySignedEvent } from './webhooks.mjs';
 
 const json = (res, status, body) => {
   res.writeHead(status, { 'content-type': 'application/json; charset=utf-8',
@@ -41,7 +42,7 @@ async function readBody(req) {
     return body;
   } catch { throw new StudioError('INVALID_JSON', 'A JSON object is required.', 400); }
 }
-export function createApiServer({ studio, tokens, identity = null }) {
+export function createApiServer({ studio, tokens, identity = null, webhookSecrets = {} }) {
   if (!studio) throw new Error('studio required');
   if (!tokens?.agent || (!tokens?.owner && !identity))
     throw new Error('Agent credential and owner identity provider or local proof credential required.');
@@ -55,6 +56,25 @@ export function createApiServer({ studio, tokens, identity = null }) {
       if (req.method === 'GET' && pathname === '/health')
         return json(res, 200, { service: 'crown-core-creator-studio', mode: 'LOCAL_PROOF',
           live_renderer: false, publication_enabled: false, paid_spend_enabled: false });
+      // Authenticated machine-to-machine callbacks, no owner/agent credentials.
+      const webhookMatch = pathname.match(/^\/v1\/webhooks\/(provider|attribution)\/([^/]+)$/);
+      if (webhookMatch && req.method === 'POST') {
+        const [,kind,id] = webhookMatch;
+        const secret = webhookSecrets[kind];
+        if (!secret) return json(res, 404, { error: 'NOT_CONFIGURED' });
+        if (!String(req.headers['content-type']??'').toLowerCase().startsWith('application/json'))
+          throw new StudioError('CONTENT_TYPE','JSON required.',415);
+        let raw = '';
+        for await (const chunk of req) {
+          raw += chunk.toString('utf8');
+          if (raw.length > 16384) throw new StudioError('TOO_LARGE','Webhook exceeds 16 KB.',413);
+        }
+        const body = verifySignedEvent({raw,headers:req.headers,secret});
+        const outcome = kind === 'provider' ?
+          pipeline.providerResult(id,'operator',body) :
+          pipeline.attribute(id,'operator',{...body,verified_source:true});
+        return json(res, 200, { outcome });
+      }
       const authorization = req.headers.authorization;
       let role = null;
       if (identity && typeof authorization === 'string' && authorization.startsWith('Bearer ') &&
@@ -164,7 +184,10 @@ export function startLocalServer(env = process.env) {
   const store = env.CREATOR_STUDIO_DB_FILE ? sqliteStore(env.CREATOR_STUDIO_DB_FILE) :
     localStore(env.CREATOR_STUDIO_STATE_FILE);
   const studio = createStudio(store);
-  const server = createApiServer({ studio, identity, tokens: {
+  const server = createApiServer({ studio, identity, webhookSecrets: {
+    provider: env.CREATOR_PROVIDER_WEBHOOK_SECRET,
+    attribution: env.CREATOR_ATTRIBUTION_WEBHOOK_SECRET
+  }, tokens: {
     agent, owner, clinical: env.CREATOR_STUDIO_CLINICAL_TOKEN,
     rights: env.CREATOR_STUDIO_RIGHTS_TOKEN,
     operator: env.CREATOR_STUDIO_OPERATOR_TOKEN,
