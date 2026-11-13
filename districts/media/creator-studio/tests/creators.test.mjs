@@ -7,10 +7,10 @@ import { tools } from '../src/mcp.mjs';
 import { createCreatorOutreachAdapter } from '../src/adapters.mjs';
 const at='2026-11-12T20:00:00Z',expires='2026-11-13T20:00:00Z';
 const code=(fn,c)=>assert.throws(fn,e=>e.code===c);
-function fixture(){
-  const studio=createStudio({now:()=>at});
+function fixture(clock=()=>at){
+  const studio=createStudio({now:clock});
   const id=studio.create({outcome:'Create an authorized local creator story'}).id;
-  return {studio,id,creators:createCreatorWorkflow(studio,{now:()=>at})};
+  return {studio,id,creators:createCreatorWorkflow(studio,{now:clock})};
 }
 test('agent can shortlist and draft but cannot send creator outreach',()=>{
   const {studio,id,creators}=fixture();
@@ -73,7 +73,7 @@ test('creator API denies agent authorizing outreach',async t=>{
 });
 
 test('outreach adapter only sends exact owner-approved message to opaque creator reference',async()=>{
-  const {studio,id,creators}=fixture();
+  const {studio,id,creators}=fixture(()=>new Date().toISOString());
   creators.proposeCandidate(id,'agent',{creator_ref:'creator:one',profile_ref:'profile:one',
     fit_reason:'Local relevant public profile'});
   creators.prepareOutreach(id,'agent',{creator_ref:'creator:one',
