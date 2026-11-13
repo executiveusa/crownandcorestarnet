@@ -78,7 +78,8 @@ export function parseReply(message,{sender='cityops@mail.instinct.com',recipient
   // No forged From/subject may elevate access. Even a matching sender is informational only.
   if(email(h.from)!==sender.toLowerCase()) return null;
   const destinations=[h.to,h['delivered-to'],h['x-original-to']].filter(Boolean).join(',');
-  if(!destinations.toLowerCase().includes(recipient.toLowerCase())) return null;
+  const destinationAddresses=destinations.match(/[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/ig)??[];
+  if(!destinationAddresses.some(address=>address.toLowerCase()===recipient.toLowerCase())) return null;
   const text=extractPlainText(message.payload);
   if(!text || text.length>12000) return null;
   const missionId=h.subject?.match(/CC-A2A-[A-Z0-9-]{3,70}/)?.[0];
