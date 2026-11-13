@@ -238,9 +238,17 @@ export function createPipeline(studio, { now=()=>new Date().toISOString() }={}) 
         deny('INVALID_METRIC','Invalid aggregate bookings.',400);
       const revenue_usd=positiveCap(input.revenue_usd,10000000);
       const event_ref=ref(input.event_ref,'event_ref');
-      if(item.attribution?.event_ref===event_ref)return 'attribution_duplicate_ignored';
+      item.attribution_events??=[];
+      if(item.attribution_events.some(e=>e.event_ref===event_ref))
+        deny('DUPLICATE_EVENT','Event already recorded.');
+      if(item.attribution_events.length>=1000)
+        deny('EVENT_LIMIT','Attribution history requires archival before further ingestion.');
+      item.attribution_events.push({event_ref,source_ref,bookings:input.bookings,
+        revenue_usd,verified_at:now()});
       item.attribution={version:item.version,event_ref,source_ref,
-        bookings:input.bookings,revenue_usd,verified_at:now()};
+        bookings:item.attribution_events.reduce((sum,e)=>sum+e.bookings,0),
+        revenue_usd:item.attribution_events.reduce((sum,e)=>sum+e.revenue_usd,0),
+        verified_at:now()};
       return 'verified_aggregate_attribution_recorded';
     });
   }
