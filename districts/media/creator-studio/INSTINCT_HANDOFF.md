@@ -27,7 +27,7 @@
 - `src/webhooks.mjs`: signed, timestamp-bound provider and attribution callbacks.
 - `tests/*.test.mjs`: domain, REST, MCP stdio, SQLite restart, provider adapters, OIDC, rights, revocation, creator outreach, signed callbacks and QA.
 
-**Code gate at handoff preparation:** 37/37 Creator Studio tests passed in GitHub Actions run `43358082939`. Resolve and record **the exact final PR head SHA and both CI runs** before operating.
+**Code gate after independent review fixes:** 43/43 Creator Studio tests passed in GitHub Actions run `43358748343` (reviewed code head `2c68d1757dcf40ee9ada65ff646e277738edf698`). Resolve and record **the exact final PR head SHA and both CI runs** before operating.
 
 ## C. Step 1 — discover existing server, read-only
 
@@ -71,7 +71,7 @@ Register this actual stdio MCP bridge in the existing Instinct runtime, using it
 - Owner and clinical decisions require verified **separate** reviewer identity; in OIDC mode the server requires pinned RS256 JWT, correct issuer/audience/tenant, MFA and short lifetime. Do not give these tokens to Instinct, Paperclip or Hermes.
 - Real voice “yes” is not sufficient by itself. Existing voice channel must authenticate the actor and bind the action to the exact revision and, for finished films, both SHA-256 hashes. A short authenticated mobile review is an allowed fallback.
 - Rights officer must independently inspect actual release/contract, source asset hash, scope, expiry and revocation before `rights-verify`. A supplied `rights_ref` alone is not evidence.
-- Clinical reviewer must approve any treatment claim. FTC material-connection/synthetic disclosures and current platform policies require qualified review.
+- Clinical reviewer must screen every medspa film before external rendering, even if the agent marks it claim-free, and approve any treatment claim. FTC material-connection/synthetic disclosures and current platform policies require qualified review.
 
 ## F. Step 4 — one approved real renderer smoke
 
