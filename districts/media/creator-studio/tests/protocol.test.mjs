@@ -29,7 +29,7 @@ test('MCP stdio initialize and tools/list respond with valid JSON-RPC and no own
   const listed = responses.find(r => r.id === 2);
   assert.equal(initialized.result.serverInfo.name, 'crown-core-creator-studio');
   assert.equal(initialized.result.protocolVersion, '2024-11-05');
-  assert.equal(listed.result.tools.length, 7);
+  assert.equal(listed.result.tools.length, 9);
   assert.ok(!listed.result.tools.some(t => /approve|publish|spend|render_execute/.test(t.name)));
 });
 test('MCP bridge rejects non-loopback or credential-bearing endpoint URLs', async () => {
