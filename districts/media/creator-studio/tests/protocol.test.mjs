@@ -57,5 +57,5 @@ test('optional local proof state persists outside repo with private file mode', 
 });
 test('local proof state refuses repository-relative persistence', () => {
   assert.throws(() => localStore('outbox/creator-state.json'), /absolute/);
-  assert.throws(() => localStore(join(process.cwd(), 'outbox', 'creator-state.json')), /outside/);
+  assert.throws(() => localStore(join(process.cwd(), 'outbox', 'creator-state.json')), /inside this public repository/);
 });
