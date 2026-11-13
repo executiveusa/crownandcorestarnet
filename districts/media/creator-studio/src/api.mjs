@@ -77,15 +77,20 @@ export function createApiServer({ studio, tokens, identity = null, webhookSecret
       }
       const authorization = req.headers.authorization;
       let role = null;
+      let actorRef = null;
       if (identity && typeof authorization === 'string' && authorization.startsWith('Bearer ') &&
           authorization.slice(7).split('.').length === 3) {
-        role = identity.verify(authorization.slice(7)).role;
+        const verifiedActor = identity.verify(authorization.slice(7));
+        role = verifiedActor.role;
+        actorRef = verifiedActor.actor_ref;
       } else {
         role = roleFor(authorization, tokens);
         // In identity mode, static owner/clinical proof credentials are never accepted.
         if (identity && ['owner','clinical'].includes(role)) role = null;
       }
       if (!role) return json(res, 401, { error: 'UNAUTHORIZED', message: 'Valid bearer token required.' });
+      const actorPipeline = actorRef ? createPipeline(studio,{actorRef}) : pipeline;
+      const actorCreators = actorRef ? createCreatorWorkflow(studio,{actorRef}) : creators;
       const agentOnly = () => {
         if (role !== 'agent') throw new StudioError('FORBIDDEN', 'Agent role required.', 403);
       };
@@ -114,7 +119,7 @@ export function createApiServer({ studio, tokens, identity = null, webhookSecret
       if (creatorRoutes[action]) {
         const [requiredRole, method] = creatorRoutes[action];
         if (role !== requiredRole) throw new StudioError('FORBIDDEN', requiredRole + ' role required.', 403);
-        return json(res, 200, { outcome: creators[method](id, role, await readBody(req)) });
+        return json(res, 200, { outcome: actorCreators[method](id, role, await readBody(req)) });
       }
       const pipelineRoutes = {
         'rights-verify': ['rights','verifyRights'],
@@ -135,11 +140,11 @@ export function createApiServer({ studio, tokens, identity = null, webhookSecret
       if (pipelineRoutes[action]) {
         const [requiredRole, method] = pipelineRoutes[action];
         if (role !== requiredRole) throw new StudioError('FORBIDDEN', requiredRole + ' role required.', 403);
-        return json(res, 200, { outcome: pipeline[method](id, role, await readBody(req)) });
+        return json(res, 200, { outcome: actorPipeline[method](id, role, await readBody(req)) });
       }
       if (action === 'approvals') {
         if (!['owner', 'clinical'].includes(role)) throw new StudioError('FORBIDDEN', 'Reviewer role required.', 403);
-        return json(res, 200, { outcome: studio.decide(id, role, await readBody(req)) });
+        return json(res, 200, { outcome: studio.decide(id, role, await readBody(req), actorRef) });
       }
       agentOnly();
       const body = action === 'review-request' ? {} : await readBody(req);
