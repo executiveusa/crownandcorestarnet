@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { createStudio, StudioError } from './domain.mjs';
 import { createPipeline } from './pipeline.mjs';
 import { sqliteStore } from './sqlite-store.mjs';
+import { createIdentityVerifier } from './identity.mjs';
 
 const json = (res, status, body) => {
   res.writeHead(status, { 'content-type': 'application/json; charset=utf-8',
@@ -39,9 +40,10 @@ async function readBody(req) {
     return body;
   } catch { throw new StudioError('INVALID_JSON', 'A JSON object is required.', 400); }
 }
-export function createApiServer({ studio, tokens }) {
+export function createApiServer({ studio, tokens, identity = null }) {
   if (!studio) throw new Error('studio required');
-  if (!tokens?.agent || !tokens?.owner) throw new Error('Separate agent and owner credentials required.');
+  if (!tokens?.agent || (!tokens?.owner && !identity))
+    throw new Error('Agent credential and owner identity provider or local proof credential required.');
   const secrets = Object.values(tokens).filter(Boolean);
   if (new Set(secrets).size !== secrets.length) throw new Error('All configured role credentials must be distinct.');
   const pipeline = createPipeline(studio);
@@ -51,7 +53,16 @@ export function createApiServer({ studio, tokens }) {
       if (req.method === 'GET' && pathname === '/health')
         return json(res, 200, { service: 'crown-core-creator-studio', mode: 'LOCAL_PROOF',
           live_renderer: false, publication_enabled: false, paid_spend_enabled: false });
-      const role = roleFor(req.headers.authorization, tokens);
+      const authorization = req.headers.authorization;
+      let role = null;
+      if (identity && typeof authorization === 'string' && authorization.startsWith('Bearer ') &&
+          authorization.slice(7).split('.').length === 3) {
+        role = identity.verify(authorization.slice(7)).role;
+      } else {
+        role = roleFor(authorization, tokens);
+        // In identity mode, static owner/clinical proof credentials are never accepted.
+        if (identity && ['owner','clinical'].includes(role)) role = null;
+      }
       if (!role) return json(res, 401, { error: 'UNAUTHORIZED', message: 'Valid bearer token required.' });
       const agentOnly = () => {
         if (role !== 'agent') throw new StudioError('FORBIDDEN', 'Agent role required.', 403);
@@ -128,11 +139,16 @@ export function localStore(filename) {
 }
 export function startLocalServer(env = process.env) {
   const agent = env.CREATOR_STUDIO_AGENT_TOKEN, owner = env.CREATOR_STUDIO_OWNER_TOKEN;
-  if (!agent || !owner || agent.length < 24 || owner.length < 24) throw new Error('Set distinct 24+ character local proof tokens.');
+  const identity = env.CREATOR_OIDC_JWKS_JSON ? createIdentityVerifier({
+    issuer: env.CREATOR_OIDC_ISSUER, audience: env.CREATOR_OIDC_AUDIENCE,
+    jwks: JSON.parse(env.CREATOR_OIDC_JWKS_JSON)
+  }) : null;
+  if (!agent || agent.length < 24 || (!identity && (!owner || owner.length < 24)))
+    throw new Error('Agent token and separate owner credential or configured OIDC required.');
   const store = env.CREATOR_STUDIO_DB_FILE ? sqliteStore(env.CREATOR_STUDIO_DB_FILE) :
     localStore(env.CREATOR_STUDIO_STATE_FILE);
   const studio = createStudio(store);
-  const server = createApiServer({ studio, tokens: {
+  const server = createApiServer({ studio, identity, tokens: {
     agent, owner, clinical: env.CREATOR_STUDIO_CLINICAL_TOKEN,
     rights: env.CREATOR_STUDIO_RIGHTS_TOKEN,
     operator: env.CREATOR_STUDIO_OPERATOR_TOKEN,
