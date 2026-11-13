@@ -95,7 +95,7 @@ export function createApiServer({ studio, tokens, identity = null, webhookSecret
         agentOnly();
         return json(res, 201, { outcome: studio.create(await readBody(req)) });
       }
-      const match = pathname.match(/^\/v1\/outcomes\/([^/]+)(?:\/(source|storyboard|review-request|approvals|render-plan|summary|rights-verify|render-authorize|dispatch-reserve|provider-ack|provider-result|qa-verify|film-approve|publish-authorize|publish-reserve|publish-receipt|attribution|job-fail|rights-revoke|takedown-receipt|creator-candidate|creator-outreach|creator-outreach-authorize|creator-outreach-sent|creator-release))?$/);
+      const match = pathname.match(/^\/v1\/outcomes\/([^/]+)(?:\/(source|storyboard|review-request|approvals|render-plan|summary|rights-verify|render-authorize|dispatch-reserve|provider-ack|provider-result|qa-verify|film-approve|publish-authorize|publish-reserve|publish-receipt|attribution|job-fail|rights-revoke|takedown-receipt|creator-candidate|creator-outreach|creator-outreach-authorize|creator-outreach-reserve|creator-outreach-sent|creator-release))?$/);
       if (!match) return json(res, 404, { error: 'NOT_FOUND' });
       const [, id, action] = match;
       if (req.method === 'GET' && !action) return json(res, 200, { outcome: studio.get(id) });
@@ -107,6 +107,7 @@ export function createApiServer({ studio, tokens, identity = null, webhookSecret
         'creator-candidate': ['agent','proposeCandidate'],
         'creator-outreach': ['agent','prepareOutreach'],
         'creator-outreach-authorize': ['owner','authorizeOutreach'],
+        'creator-outreach-reserve': ['operator','reserveOutreach'],
         'creator-outreach-sent': ['operator','recordSent'],
         'creator-release': ['rights','recordRelease']
       };
