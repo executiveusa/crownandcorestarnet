@@ -132,7 +132,7 @@ test('API denies unauthenticated requests and agent cannot approve', async t => 
   assert.equal(viaMcp.summary.status, 'DRAFT');
 });
 test('MCP tool list is agent-scoped and cannot authorize publication', () => {
-  assert.equal(tools.length, 9);
+  assert.equal(tools.length, 11);
   assert.ok(tools.every(tool => tool.name.startsWith('creator_')));
   assert.ok(!tools.some(tool => /approve|publish|spend|launch/i.test(tool.name)));
 });
