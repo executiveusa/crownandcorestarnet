@@ -131,6 +131,7 @@ export function createStudio({ initial = [], persist = () => {}, now = () => new
     const rights_ref = ref(input.rights_ref, 'rights_ref');
     const usage_scope = choice(input.usage_scope, scopes, 'usage_scope');
     reset(item);
+    item.storyboard = null; // A different source invalidates the old story and claim review.
     item.source = { source_type, source_ref, rights_ref, usage_scope,
       verified: false, note: 'Reference supplied by agent; human rights attestation required.' };
     receipt(item, 'source_registered_unverified', 'agent', now());
@@ -144,7 +145,7 @@ export function createStudio({ initial = [], persist = () => {}, now = () => new
     const story = text(input.story, 'story', 900);
     const cta = text(input.cta, 'cta', 280);
     if (item.source?.source_type === 'synthetic' &&
-        /testimonial|patient review|real customer|my treatment|my results/i.test(hook + ' ' + story + ' ' + cta)) {
+        /testimonial|patient review|real customer|my treatment|my results|\bi (visited|tried|loved|received|experienced|felt|got|had)\b|\bmy (visit|experience|skin|face|body|results)\b/i.test(hook + ' ' + story + ' ' + cta)) {
       fail('SYNTHETIC_TESTIMONIAL', 'Synthetic footage cannot impersonate a customer or treatment experience.');
     }
     if (input.claims_present === false &&
@@ -174,12 +175,16 @@ export function createStudio({ initial = [], persist = () => {}, now = () => new
     return save(item);
   }
   function decide(id, role, input = {}, actorRef = null) {
+    ensureTenant(input);
     const item = read(id);
     if (!['owner', 'clinical'].includes(role)) fail('FORBIDDEN', 'Only authenticated reviewers may decide.', 403);
-    if (item.status !== 'REVIEW_PENDING') fail('NOT_READY', 'No pending review.', 409);
+    if (item.status !== 'REVIEW_PENDING' &&
+        !(role === 'clinical' && item.status === 'READY_FOR_RENDER_PLAN'))
+      fail('NOT_READY', 'No pending review.', 409);
     if (!Number.isInteger(input.version) || input.version !== item.version) fail('STALE_VERSION', 'Approval must match the current exact version.', 409);
     if (!['approve', 'request_changes'].includes(input.decision)) fail('INVALID_INPUT', 'Invalid decision.');
-    if (role === 'clinical' && !item.storyboard.claims_present) fail('NOT_REQUIRED', 'Clinical review is not requested for this draft.', 409);
+    // Even claim-free medspa content may contain an unflagged treatment claim.
+    // Qualified clinical reviewers may attest to a claim-free revision.
     if (input.decision === 'request_changes') {
       reset(item);
       receipt(item, 'changes_requested', role, now(), actorRef);
@@ -202,10 +207,13 @@ export function createStudio({ initial = [], persist = () => {}, now = () => new
     return save(item);
   }
   function prepareRenderPlan(id, input = {}) {
+    ensureTenant(input);
     const item = read(id);
     if (item.render_plan) {
-      if (input.idempotency_key === item.render_plan.idempotency_key) return item;
-      fail('DUPLICATE_PLAN', 'A plan already exists for this version.', 409);
+      if (input.idempotency_key === item.render_plan.idempotency_key &&
+          input.provider === item.render_plan.provider &&
+          input.max_cost_usd === item.render_plan.max_cost_usd) return item;
+      fail('DUPLICATE_PLAN', 'Existing plan differs from retry payload.', 409);
     }
     if (item.status !== 'READY_FOR_RENDER_PLAN') fail('NOT_APPROVED', 'Exact-version rights, owner and applicable clinical approvals are required.', 409);
     const provider = choice(input.provider, providers, 'provider');
