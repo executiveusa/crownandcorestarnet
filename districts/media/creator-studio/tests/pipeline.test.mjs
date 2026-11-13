@@ -167,7 +167,9 @@ test('renderer adapter checks real health and submits exact authorized payload o
   const result=await adapter.submit(plan,auth,rights);
   assert.equal(result.provider_job_id,'provider:one');
   assert.equal(calls.length,2);
-  assert.equal(calls[1].opts.headers['idempotency-key'],'key:one');
+  assert.match(calls[1].opts.headers['idempotency-key'],/^cc:[0-9a-f]{64}$/);
+  assert.equal(JSON.parse(calls[1].opts.body).idempotency_key,
+    calls[1].opts.headers['idempotency-key']);
   assert.equal(JSON.parse(calls[1].opts.body).max_cost_usd,3);
   assert.throws(()=>createRendererAdapter({healthUrl:'http://evil.example/health',
     submitUrl:'http://evil.example/jobs',token:'x'.repeat(30)}),/HTTPS/);
