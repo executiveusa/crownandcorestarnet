@@ -1,6 +1,6 @@
 # Crown & Core Creator Studio — standalone product inside StarNet
 
-Status: **P0 local-proof API/MCP + outcome-first UI; no live connectors / no render claim**. Owner: Crown & Core. Product classification: **USE** (client-specific owned capability). Current workstream: bounded media experiment, not a fourth running controller.
+Status: **v0.3 code-side pipeline and provider adapters; no live connectors, MP4 or render claim**. Owner: Crown & Core. Product classification: **USE** (client-specific owned capability). Current workstream: bounded media experiment, not a fourth running controller.
 
 ## Decision
 The Creator Studio belongs in `executiveusa/crownandcorestarnet` under `districts/media/creator-studio/`. It is a standalone **Crown & Core application surface**, not a separate repository, not BufferBlaster, not MACS, and not a duplicate StarNet scheduler. Its business objects use StarNet's existing policies and approval/receipt contracts. It does not import Tangles & Locs data.
@@ -48,3 +48,9 @@ Pilot: one truthful, rights-cleared Crown & Core brand film/creator cut, ideally
 
 ## Conflicts and boundaries
 Do not recreate the sound editor: the 2026-10-24 `COMMERCIAL_STUDIO_CONTRACT.md` prohibits this in the current milestone. Keep media rendering external. Do not merge this branch with the unreviewed knowledge integration PR #24. After PR #24 is independently reviewed/merged, rebase this feature branch and revalidate paths and tests.
+
+## v0.3 code-side completion boundary (2026-11-12)
+
+The implementation now includes `src/pipeline.mjs` (independent rights, capped render authorization, dispatch reservation, provider receipt, 30s+15s QA, exact-hash final approval, separate organic publication reservation, revocation/takedown and verified aggregate attribution); `src/creators.mjs` (creator candidates, unsent outreach, exact-message approval, reservation and release); `src/adapters.mjs` and `src/worker.mjs` (real HTTP clients using **configured** endpoints, no invented provider APIs); `src/qa.mjs` (real private MP4 inspection with ffprobe/SHA-256); `src/sqlite-store.mjs` (private single-host persistence); `src/identity.mjs` (pinned OIDC MFA JWTs); `src/webhooks.mjs` (HMAC callbacks); nine agent-only MCP tools, a machine-readable mission contract, and automated tests.
+
+**Important:** all adapters are code, not verified connections. Motion Master/Montage endpoints, live Instinct/Paperclip/Hermes runtime, private vault, owner IdP, actual playable video, organic posting and bookings are still **unverified**. Paid Meta ads are deliberately not implemented. Read `OPERATIONS.md` and `INSTINCT_HANDOFF.md` before any server work.
