@@ -1,133 +1,136 @@
-# CC-CREATOR-SERVER — final Instinct / Paperclip / Hermes connection handoff
+# CC-CREATOR-SERVER — final Instinct + Paperclip + Hermes + Buffer Blaster handoff
 
-**Owner:** Crown & Core. **Code PR:** #26 (`feat/crown-creator-studio-mvp`). **Related:** existing Paperclip identity issue #25, existing knowledge MCP PR #24, server mission issue #27. **State:** code-side implementation with 37 automated contract tests passing; **not deployed**. This handoff is intentionally issued **after** code-side implementation and tests.
+**Mission:** `CC-CREATOR-SERVER-2`. **Owner:** Crown & Core. **Status:** source/API/MCP/CLI code tested with mocks; **no live server wiring, video render, source-asset upload, customer data or production deployment proven**.
 
-**Read first:** [OPERATIONS.md](./OPERATIONS.md), [PRD.md](./PRD.md), [ARCHITECTURE.md](./ARCHITECTURE.md), [agent-workflow.json](./agent-workflow.json), [openapi.yaml](./openapi.yaml), canonical `districts/media/references/COMMERCIAL_STUDIO_CONTRACT.md` and `_shared/policy/HEART_AND_SOUL.md`.
+**Code chain (do not merge out of order):** [Buffer Blaster security PR #119](https://github.com/executiveusa/buffer-blaster-/pull/119) → [Crown & Core Creator Studio PR #26](https://github.com/executiveusa/crownandcorestarnet/pull/26) → [Creator-to-Buffer bridge PR #28](https://github.com/executiveusa/crownandcorestarnet/pull/28) (currently stacked on #26). **Paperclip/Instinct identity blocker:** [StarNet issue #25](https://github.com/executiveusa/crownandcorestarnet/issues/25). **Human review:** [Issue #27](https://github.com/executiveusa/crownandcorestarnet/issues/27). No MACS or other business identity or data may be merged into Crown & Core.
 
-## A. Operator mission
+**Read FIRST:** [full-stack audit](./FULL_STACK_WIRING_AUDIT_2026-11-12.md) (uploaded Full Stack Wiring Audit v2 methodology), [OPERATIONS.md](./OPERATIONS.md), [PRD.md](./PRD.md), [agent-workflow.json](./agent-workflow.json), canonical StarNet `districts/media/references/COMMERCIAL_STUDIO_CONTRACT.md` and `_shared/policy/HEART_AND_SOUL.md`.
 
-**Mode:** existing-infrastructure connection only; no new product code or duplicate services without explicit owner approval.
+## Target and definition of done
 
-**Measurable target:** one authenticated, **model-originated** Instinct → MCP → Creator Studio outcome and status receipt; one isolated approved 30s+15s real MP4 render from the existing renderer; independent SHA-256/ffprobe QA; owner-reviewed exact film hashes; no unauthorized contact/post/spend. Report what actually works and what remains blocked.
+Lethia tells **existing Instinct**: “Make a truthful, warm 30-second video introducing Crown & Core, and a separate 15-second cut, using our licensed, real footage.” Instinct calls the **eleven agent-only Creator Studio MCP tools** via existing authenticated Paperclip task scheduling; Hermes can coordinate only bounded existing Paperclip jobs. StarNet validates rights, version, clinical screening and owner decisions. **Buffer Blaster** is the separately owned media-plan/asset engine, accessed with a **server-only scoped integration**, not by giving Buffer's operator token to Instinct. The final human-approved deliverables are *actual* 30-second + 15-second, 1080×1920 H.264 MP4 files with independent ffprobe and SHA-256 receipts.
 
-**Constraints:** no PHI/customer identifiers in GitHub, logs, model prompts or demo; no unrelated tenant; no extra Paperclip company, agent, scheduler, DB or hosting project; no unapproved changes to existing Motion Master/Montage; no paid ads; no publication without a separate owner approval.
+**Do NOT claim target achieved** until a real, approved source is ingested, both distinct MP4s exist, exact file QA passes, owner reviews, and the provider job receipt is reconciled. The current Buffer factory does **NOT** meet this contract: it makes 10s+10s synthetic first-person UGC and requires a wallet. No paid ads, creator outreach or public publishing is authorized by this handoff.
 
-## B. Code-side inventory — DO NOT rebuild
+## Task 0 — independent review and merge gates (BLOCKING)
 
-- `src/domain.mjs`: Crown & Core-only outcome, storyboard, revision and owner/clinical review.
-- `src/pipeline.mjs`: rights verification → owner render budget → reserved dispatch → provider result → independent QA → final film approval → separate organic publication → attribution; rights revocation and takedown.
-- `src/creators.mjs`: creator shortlist, unsent outreach, owner exact-message approval, reserved contact, verified release.
-- `src/api.mjs`: role-protected loopback REST and HMAC callback endpoints, optional OIDC reviewer identity.
-- `src/mcp.mjs`: **nine agent-only stdio MCP tools**. No owner/clinical approval, outreach send, render execute, publication or spend tool.
-- `src/sqlite-store.mjs`: private single-host transactional SQLite WAL, append-only receipt table; Node 22 experimental API.
-- `src/identity.mjs`: pinned RS256 OIDC MFA JWT verifier; verified actor IDs in approval receipts.
-- `src/adapters.mjs`: exact-URL HTTPS renderer, organic publisher and creator contact adapters. Endpoints **must be verified**, not guessed.
-- `src/worker.mjs`: explicit `inspect`, `dispatch`, `qa`, `outreach`, `publish` commands; outbound side effects reserve state first and never auto-retry.
-- `src/qa.mjs`: independent private H.264 1080×1920 30s/15s ffprobe and SHA-256 checks.
-- `src/webhooks.mjs`: signed, timestamp-bound provider and attribution callbacks.
-- `tests/*.test.mjs`: domain, REST, MCP stdio, SQLite restart, provider adapters, OIDC, rights, revocation, creator outreach, signed callbacks and QA.
+1. Inspect exact current PR heads for **#119, #26, #28**. Buffer #119 must pass Python API, frontend/route, Postgres migration, container/Compose and independent security review. Crown #26 and #28 need Node Creator Studio tests and the existing full StarNet `npm run verify`; #28's stacked base must be reconciled after #26 is approved/merged. Do not merge conflicts or rewrite other branches blindly.
+2. **OpenCodeReview**: repo `executiveusa/open-code-review`; its standard workflow is pinned as `c8e4c02b6f0e9467b755fc7e24b2619f6854a6a4` in Buffer. **The review run #43372852877 FAILED** (2 of 2 reviewed files failed in the LLM provider/subtask; not a clean review). Verify model credentials/availability, retry through the existing authorized GitHub workflow, or get a separate qualified independent reviewer. Do not claim an OCR pass.
+3. Examine flagged security/race/version issues, particularly broad Buffer operator token, Buffer workspace-scoped assets/consent, local SQLite durability, agent claim flags, owner/clinical identity binding, no blind provider retries, and external asset hash provenance. Fix only verified findings, one reversible PR at a time.
+4. Obtain owner approval of brand/visual design and explicit approval to merge. Do NOT merge or deploy merely because tests pass.
 
-**Code gate after independent review fixes:** 43/43 Creator Studio tests passed in GitHub Actions run `43358748343` (reviewed code head `2c68d1757dcf40ee9ada65ff646e277738edf698`). Resolve and record **the exact final PR head SHA and both CI runs** before operating.
+## Task 1 — existing services READ ONLY
 
-## C. Step 1 — discover existing server, read-only
+1. Resolve issue #25: inspect exact existing Paperclip URL/tenant/company/project and existing Lethia Instinct agent ID and supported MCP command registration. Do NOT create a new scheduler, company, agent or competing Hermes control plane. Confirm the agent actually accepts a task before claiming handoff.
+2. Confirm actual **Buffer Blaster API** URL/version and deployed commit behind `GET /api/health`, authenticated `GET /api/studio/status` and `POST /api/mcp` (`initialize` and `tools/list`). Version string alone is insufficient: confirm the deployed build includes **workspace-scoped `GET /api/studio/references/{uuid}` from PR #119**.
+3. Confirm Buffer's **real** `BUFFER_BLASTER_WORKSPACE_ID` equals the Crown & Core **authorized** workspace. Verify no unrelated clients, Tangles & Locs, MACS or another tenant shares the configured source list. Buffer owns its private Supabase schema `buffer_blaster` and wallet; StarNet does **not** read service-role keys, copy the DB or override provider costs.
+4. Inventory existing owner-controlled private video vault and file ingest path, the actual **Motion Master / Montage / Buffer** backend capabilities, ffmpeg/ffprobe availability, source media policy/streaming limits, secrets manager, TLS gateway, JWT IdP, private SQLite/Postgres placement and rollback. The Buffer `POST /api/studio/references/upload` endpoint currently accepts only **images** (JPEG/PNG/WebP, max 25 MB) and is **not** a video import interface.
 
-1. Resolve issue #25: confirm existing Paperclip URL/version, Crown & Core company/project IDs, Lethia's existing Instinct agent identity, and supported MCP registration. Do not create substitutes.
-2. Inspect the actual deployed Motion Master and Montage (YAPPY-CLIPZ) read-only health/auth/API/MCP/CLI surface and the existing Motion Master → Montage bridge. Confirm which supports the adapter contract in `OPERATIONS.md`; if neither does, report a **bridge contract blocker**, do not invent an endpoint.
-3. Confirm owner-controlled Crown & Core private media vault, encrypted persistent volume, backup/restore, trusted TLS gateway, OIDC issuer/JWKS, secret manager and network policy. No unrelated Supabase or business tenant.
-4. Confirm `node --version` is 22.23+ and `ffprobe -version` works on the trusted QA host. Node 22 SQLite is experimental; approve single-host use or request an explicit existing-DB decision.
-5. Read and independently review PR #26 security/clinical/privacy/brand boundaries. **Do not merge** until owner and independent review approve.
+## Task 2 — isolated StarNet API/MCP/CLI and governed Buffer bridge
 
-## D. Step 2 — isolated local API and MCP proof
+Use a reviewed checkout at the exact PR SHA and a separately approved **private encrypted** staging volume outside the repository. Node 22.23+; `node:sqlite` is experimental, single-host; verify backup/restore. StarNet API must stay bound to `127.0.0.1`, behind a reviewed authentication/TLS transport if accessed remotely.
 
-Inject distinct 24+ character tokens from the private secret manager; never commit, paste or expose values. Start on loopback:
+**Server-only environment** (read real values from existing secret manager; no secrets in GitHub/chat/PR/Instinct prompts):
 
 ```bash
-# From repository root on an isolated staging host.
-export CREATOR_STUDIO_AGENT_TOKEN="<private-agent-token>"
-export CREATOR_STUDIO_OWNER_TOKEN="<different-local-proof-token>"
-export CREATOR_STUDIO_DB_FILE="/var/lib/crown-core/creator-studio/studio.sqlite"
-node districts/media/creator-studio/src/api.mjs
+CREATOR_STUDIO_AGENT_TOKEN=<agent-only-secret>
+CREATOR_STUDIO_OWNER_TOKEN=<local-proof-owner-secret>   # staging only, not for live MFA approval
+CREATOR_STUDIO_RIGHTS_TOKEN=<independent-rights-secret>
+CREATOR_STUDIO_OPERATOR_TOKEN=<trusted-operator-secret>
+CREATOR_STUDIO_DB_FILE=<approved-absolute-private-state-path>
+CROWN_BUFFER_API_URL=<verified-Buffer-FastAPI-HTTPS-origin>
+CROWN_BUFFER_API_KEY=<private-Buffer-operator-API-token>
+CROWN_BUFFER_WORKSPACE_ID=<actual-Crown-allowed-Buffer-workspace-UUID>
 ```
 
-The DB file path is illustrative; choose the actual owner-approved private encrypted volume outside repo. For real reviewer identity, configure `CREATOR_OIDC_ISSUER`, `CREATOR_OIDC_AUDIENCE`, `CREATOR_OIDC_JWKS_JSON` from the verified IdP and do **not** rely on local owner proof tokens. Configure separate rights/operator/QA/publisher credentials only in their respective trusted services.
-
-MCP on the **same trust boundary**, with agent token only:
+Configure all `CROWN_BUFFER_*` values together. The server will fail on a partially configured trio. The **Buffer operator credential belongs ONLY to the StarNet API process** (or a narrowly scoped service bridge), never to Instinct, Hermes, browser, MCP stdio process or CLI client.
 
 ```bash
-export CREATOR_STUDIO_API_URL="http://127.0.0.1:8787"
-# Start from a separate agent-only environment; strip reviewer/service credentials.
-env -u CREATOR_STUDIO_OWNER_TOKEN -u CREATOR_STUDIO_CLINICAL_TOKEN \
-    -u CREATOR_STUDIO_RIGHTS_TOKEN -u CREATOR_STUDIO_OPERATOR_TOKEN \
-    -u CREATOR_STUDIO_QA_TOKEN -u CREATOR_STUDIO_PUBLISHER_TOKEN \
+# From the reviewed repo root after private environment injection:
+node districts/media/creator-studio/src/api.mjs
+
+# In a SEPARATE agent-only process environment, with reviewer/Buffer keys REMOVED:
+env -u CROWN_BUFFER_API_KEY -u CREATOR_STUDIO_OWNER_TOKEN \
+    -u CREATOR_STUDIO_CLINICAL_TOKEN -u CREATOR_STUDIO_RIGHTS_TOKEN \
+    -u CREATOR_STUDIO_OPERATOR_TOKEN -u CREATOR_STUDIO_QA_TOKEN \
+    -u CREATOR_STUDIO_PUBLISHER_TOKEN \
     node districts/media/creator-studio/src/mcp.mjs
 ```
 
-MCP handshake must list nine `creator_*` tools: outcome create/status/get, source register, storyboard propose, review request, render plan prepare, creator candidate propose and outreach prepare. **No agent approval or outbound action tools.**
+In the reviewed local staging role process:
+```bash
+node districts/media/creator-studio/src/buffer-cli.mjs status
+node districts/media/creator-studio/src/buffer-cli.mjs tools
+```
 
-Register this actual stdio MCP bridge in the existing Instinct runtime, using its supported registration method. Prove **real model-originated** `creator_outcome_create` and `creator_outcome_status` tool calls and receipts. A curl script, unit test or fixture alone does not count.
+These use StarNet's own loopback API with its **agent** credential and call only authenticated Buffer `GET /api/health`, `GET /api/studio/status`, or `POST /api/mcp` `tools/list`. The CLI does not accept the Buffer API key and cannot execute paid generation.
 
-## E. Step 3 — configure owner/rights/clinical review
+**Actual agent MCP catalog** must contain **11** tools, including `creator_buffer_status` and `creator_buffer_plan_sync`, and must NOT expose `execute_ugc_ad_factory`, Buffer generic `tools/call`, owner/clinical approval, creator outreach send, publication, render execute, wallet or spend tools.
 
-- Owner and clinical decisions require verified **separate** reviewer identity; in OIDC mode the server requires pinned RS256 JWT, correct issuer/audience/tenant, MFA and short lifetime. Do not give these tokens to Instinct, Paperclip or Hermes.
-- Real voice “yes” is not sufficient by itself. Existing voice channel must authenticate the actor and bind the action to the exact revision and, for finished films, both SHA-256 hashes. A short authenticated mobile review is an allowed fallback.
-- Rights officer must independently inspect actual release/contract, source asset hash, scope, expiry and revocation before `rights-verify`. A supplied `rights_ref` alone is not evidence.
-- Clinical reviewer must screen every medspa film before external rendering, even if the agent marks it claim-free, and approve any treatment claim. FTC material-connection/synthetic disclosures and current platform policies require qualified review.
+## Task 3 — prove one source-backed zero-spend Crown & Core plan
 
-## F. Step 4 — one approved real renderer smoke
+1. Instinct, from a **real authenticated model-originated tool call**, creates a **Crown & Core-only** outcome (capture `creator_outcome_create`, ID, revision, timestamp and `creator_outcome_status` receipts).
+2. Agents propose genuine approved facility footage (not a generated customer testimonial) and a claim-free storyboard. Independently validate source SHA, rights contract/channel/expiry, and a clinician screens **every** medspa film. Record actual owner/clinical exact-version approvals.
+3. Trusted operator prepares a **no-execution** Crown render plan. Independent rights role verifies the grant and source hash. The existing source MUST already have an actual Buffer UUID within the approved workspace.
+4. **Rights role only** binds the actual Buffer reference to that StarNet version, after live readback of `GET /api/studio/references/{uuid}`:
+```bash
+node districts/media/creator-studio/src/buffer-cli.mjs bind <outcome-id> <version> <verified-buffer-source-uuid>
+```
+5. The agent invokes `creator_buffer_plan_sync` or:
+```bash
+node districts/media/creator-studio/src/buffer-cli.mjs plan <outcome-id>
+```
+This calls **only** `POST /api/studio/ugc/plans` then `GET /api/studio/ugc/plans/{plan_id}`; requires response `backend:supabase`, exact workspace, version, source UUID, no-spend `approval_state:draft`, `duration_seconds:30`, `estimated_cost_ceiling_cents:0`, and metadata `requested_cuts_seconds:[30,15]`. Capture the real durable Buffer plan UUID and StarNet audit receipt. Verify replay with the same idempotency key creates no duplicate plan.
 
-1. Confirm provider's **actual** health URL/version and supported submit operation; configure exact HTTPS `CREATOR_RENDER_HEALTH_URL`, `CREATOR_RENDER_SUBMIT_URL`, `CREATOR_RENDER_TOKEN` privately.
-2. Test `node districts/media/creator-studio/src/worker.mjs inspect`; record provider version. If the deployed provider does not match the bridge contract, **STOP** and report the minimal adaptation required for owner approval.
-3. With authorized **nonclinical, non-patient** source media, record source and storyboard via MCP; obtain separate owner/clinical (if applicable), rights and capped render authorizations. Prepare a plan with a stable idempotency key.
-4. Operator runs `node districts/media/creator-studio/src/worker.mjs dispatch <outcome-id>`. This reserves once, submits once, then records the real provider job ID. If ambiguous, reconcile provider-side; never auto-retry.
-5. Receive a valid HMAC-signed `/v1/webhooks/provider/:id` callback or reconcile via authenticated operator `provider-result`. A provider acknowledgement is **not** a rendered film.
-6. Deposit both actual MP4s in the private vault, with a private manifest. Run `node districts/media/creator-studio/src/worker.mjs qa <outcome-id> <private-manifest.json>`. This must independently prove 30s+15s, H.264, 1080×1920, SHA-256 matching provider receipt, playable assets and basic media checks.
-7. Show the owner the real approved preview through the existing authenticated channel. Record exact-hash `film-approve` decision. **Do not publish yet.**
+**This is a plan, not a rendered video. Stop if the Buffer backend returns Redis degraded mode, foreign workspace, mismatched UUID, missing rights/clinician, or an unsupported source reference. Do not use `/api/studio/ugc/factory/execute`.**
 
-No model-generated patient, invented real facility imagery, synthetic testimonials, or unapproved clinical claims.
+## Task 4 — compatible renderer capability (new reviewed bridge only if needed)
 
-## G. Step 5 — optional contact, publication and attribution (separate owner approval)
+Before attempting paid media, show an **actual existing** supported Motion Master/Montage/Buffer footage-edit endpoint/CLI/worker that:
+- ingests a real **private licensed source-video** via verified, size-bounded streaming/object-vault path, with hash and consent checks;
+- returns **two different final MP4 files, 30s and 15s**, H.264 1080×1920, with authorized soundtrack/typography and no fabricated patient;
+- respects a distinct owner-approved render budget and Buffer's own active wallet/spend gate if any external provider cost is required;
+- emits unique provider job and asset receipt IDs, hashes, status, failure and idempotent reconciliation;
+- can put actual files in the authorized private vault for independent StarNet QA.
 
-- **Creator contact:** only after actual permission and exact message/terms/fee approval. Configure verified private contact service and `CREATOR_STUDIO_ENABLE_CREATOR_OUTREACH=yes` **only for the approved scoped test**; run worker `outreach`. Never expose raw contact details in StarNet.
-- **Organic publication:** only after verified booking path, clinical/brand checks and a **separate** owner `publish-authorize` decision. Configure actual platform bridge and `CREATOR_STUDIO_ENABLE_ORGANIC_PUBLISH=yes` **only for the approved scoped test**; run worker `publish`. No paid Meta ads.
-- **Attribution:** only signed source-backed aggregate events; verify actual booking/payment source and reconciliation. If absent, keep bookings/revenue `null`, not zero or fabricated.
-- **Revocation:** a rights revocation after publication yields `TAKEDOWN_REQUIRED`; obtain and record real platform takedown receipt before reporting removal.
+If the existing engine has **no compatible render contract**, create a *separate bounded reviewed engineering patch* on the **existing Buffer/media provider**, implementing footage-based editing/clip extraction, streaming upload and signed receipts. Keep the code in the proper owner repository; **do not smuggle a new renderer into StarNet or bypass Buffer's spend wallet**. No unverified route name, fake job ID, mocked MP4 or 10s+10s testimonial substitution is acceptable. Owner must authorize even a small paid smoke test.
 
-## H. Paperclip/Hermes mission contract
+Run the scoped approved render using StarNet's existing `worker.mjs dispatch`, reconcile the actual provider job, and run `worker.mjs qa` on genuine private 30s+15s files; capture ffprobe/SHA-256 evidence. Then show the owner the real video and obtain exact-hash authenticated `film-approve`. Publishing/creator outreach/ads require **different** approvals and are not requested.
 
-Read `agent-workflow.json`. **Paperclip is the only scheduler**. Hermes is a bounded specialist coordinator **inside one existing Paperclip job**, if supported; no persistent independent swarm. Allowed agent tools are exactly the nine MCP tools. Specialists can research approved brand truth, inspect opaque rights refs, propose scripts, check claims/disclosures and prepare plans; no agent can self-approve, contact, spend or publish. If the actual runtime lacks Hermes support, use the existing supported worker pattern and report the difference.
+## Task 5 — independent operational proof, rollback and report
 
-## I. Required evidence report to issue #27 (no secrets)
+Verify source/rights/clinical rejection, Buffer missing credentials, foreign workspace ID, altered or stale source revision, mismatched plan, provider unavailable, duplicate idempotency key, incomplete video, revoked rights and simulated rollback. Prove SQLite restart and vault restore if approved. All tests must run on the actual reviewed and deployed SHA.
+
+Report to issue #27 (no secrets or patient data):
 
 ```text
-CC-CREATOR-SERVER
-exact_pr_sha:
-creator_studio_CI_url: pass/fail
-StarNet_verify_url: pass/fail
-independent_security_review: approved / blocked
-owner_visual_approval: approved / blocked
-existing_paperclip_company_project_instinct_ids: verified privately / blocked
-actual_instinct_mcp_tool_call_receipts: IDs / blocked
-nine_agent_tools_no_approval: verified / blocked
-tenant_and_wrong_role_denials: pass / fail
-OIDC_MFA_reviewer_identity: verified / blocked
-rights_release_and_asset_hash: verified / blocked
-private_SQLite_or_existing_DB_backup_restore: verified / blocked
-renderer_health_and_version: actual receipt / blocked
-provider_job_id: actual receipt / not attempted
-real_30s_15s_MP4_hashes_ffprobe_QA: actual receipts / not attempted
-owner_final_hash_approval: verified / blocked
-creator_contact: none unless separately authorized
-organic_publication: none unless separately authorized
-paid_meta_ads: NOT IMPLEMENTED
-attributed_bookings_and_revenue: actual verified / unknown
-actual_spend_usd: 0 unless separately approved and evidenced
-rollback_exercise: pass / blocked
-remaining_blockers:
+CC-CREATOR-SERVER-2
+Crown_PR26_sha_ci_review:
+Crown_PR28_sha_ci_review:
+Buffer_PR119_sha_ci_review:
+OpenCodeReview_run: provider failure / PASS with actual review receipt
+live_Instinct_and_Paperclip_ids: verified privately / BLOCKED
+real_model_originated_creator_tool_receipts:
+Creator_MCP_tool_count: 11 / mismatch
+Buffer_health_version_deploy_sha:
+Buffer_MCP_tools_list_receipt:
+Buffer_workspace_id_verified_privately: yes/no
+Buffer_exact_reference_route_exists_live: yes/no
+source_asset_hash_grant_scope_and_clinical_screening: verified / BLOCKED
+Bufffer_canonical_plan_id_and_readback: real UUID / BLOCKED
+duplicate_plan_prevented: PASS/FAIL
+actual_30s_mp4_ref_sha_duration:
+actual_15s_mp4_ref_sha_duration:
+real_provider_job_receipt_or_render_contract_blocker:
+final_owner_hash_approval: yes/no
+published: no unless separately authorized
+creator_outreach: no unless separately authorized
+paid_media: not implemented
+actual_provider_spend_usd: 0 unless separately authorized
+private_storage_backup_restore: PASS/FAIL/BLOCKED
+rollback_and_credential_revocation: PASS/FAIL/BLOCKED
+unresolved_material_findings:
 next_owner_decision:
 ```
 
-## J. Release and rollback
-
-**Do not merge/deploy on code tests alone.** Independent code/security review, owner brand approval, real Instinct MCP receipt, verified provider, correct Crown & Core private vault and direct staging proof are required. Stop/revoke outbound workers first on rollback, preserve audit and external publication receipts, restore prior approved deployment, and report any still-live content honestly.
-
-**No server connection or deployment is claimed by this handoff.** Assignment to issue #27 is a work request, not evidence that Instinct accepted or executed it.
+**Release judgment:** **NOT READY** until independent review of all three PRs, actual server and workspace proof, one authentic 30s+15s video, separate approvals and rollback. Current client/operator authority is read-only/no-spend planning by default. A posted GitHub issue is **not** evidence Instinct received or accepted this mission.
