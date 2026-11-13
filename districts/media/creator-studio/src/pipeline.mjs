@@ -33,9 +33,9 @@ function positiveCap(value, max=1000) {
     deny('INVALID_BUDGET','Invalid capped USD amount.',400);
   return value;
 }
-function timestamp(value, now) {
+function timestamp(value, now, maxDays=7) {
   const t=Date.parse(value);
-  if (typeof value!=='string' || !Number.isFinite(t) || t<=Date.parse(now()) || t>Date.parse(now())+7*86400000)
+  if (typeof value!=='string' || !Number.isFinite(t) || t<=Date.parse(now()) || t>Date.parse(now())+maxDays*86400000)
     deny('INVALID_EXPIRY','Expiry must be in the next seven days.',400);
   return value;
 }
@@ -65,7 +65,7 @@ export function createPipeline(studio, { now=()=>new Date().toISOString() }={}) 
       if(item.source.usage_scope==='paid'&&scope==='organic')deny('RIGHTS_SCOPE','Paid scope not verified.');
       if(item.source.usage_scope==='organic'&&scope==='paid')deny('RIGHTS_SCOPE','Organic scope not verified.');
       if(input.revoked!==false)deny('RIGHTS_REVOKED','Revoked or unknown grant cannot be used.');
-      const expires_at=timestamp(input.expires_at,now);
+      const expires_at=timestamp(input.expires_at,now,365);
       item.rights_verification={version:item.version,grant_ref,grant_sha256,asset_sha256,
         rights_ref:input.rights_ref,scope,expires_at,verified_at:now(),revoked:false};
       return 'rights_grant_verified';
@@ -210,9 +210,24 @@ export function createPipeline(studio, { now=()=>new Date().toISOString() }={}) 
       return 'organic_publication_separately_authorized';
     });
   }
-  function published(id,role,input={}) {
+  function reservePublication(id,role,input={}) {
     return change(id,role,'publisher',item=>{
       inState(item,'PUBLISH_AUTHORIZED');
+      exact(item,input.version);
+      if(input.decision_ref!==item.publication_authorization?.decision_ref)
+        deny('DECISION_MISMATCH','Publication authorization mismatch.');
+      if(Date.parse(item.publication_authorization.expires_at)<=Date.parse(now()))
+        deny('AUTH_EXPIRED','Publication authorization expired.');
+      if(!item.rights_verification || item.rights_verification.revoked ||
+        Date.parse(item.rights_verification.expires_at)<=Date.parse(now()))
+        deny('RIGHTS_EXPIRED','Rights expired or revoked.');
+      item.status='PUBLISH_RESERVED';
+      return 'organic_publication_reserved_no_retry';
+    });
+  }
+  function published(id,role,input={}) {
+    return change(id,role,'publisher',item=>{
+      inState(item,'PUBLISH_RESERVED');
       exact(item,input.version);
       const auth=item.publication_authorization;
       if(Date.parse(auth.expires_at)<=Date.parse(now()))deny('AUTH_EXPIRED','Publication approval expired.');
@@ -291,6 +306,6 @@ export function createPipeline(studio, { now=()=>new Date().toISOString() }={}) 
     });
   }
   return {verifyRights,authorizeRender,reserveDispatch,acknowledgeProvider,
-    providerResult,verifyQa,decideFinal,authorizePublish,published,attribute,failJob,
+    providerResult,verifyQa,decideFinal,authorizePublish,reservePublication,published,attribute,failJob,
     revokeRights,recordTakedown};
 }
