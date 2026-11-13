@@ -1,0 +1,264 @@
+openapi: 3.1.0
+info:
+  title: Crown & Core Creator Studio — Local Proof API
+  version: 0.2.0
+  description: >
+    Local loopback-only, no external side effects. This contract does not represent
+    a deployed production service, real video rendering, owner voice authentication,
+    publication, paid advertising, or booking attribution.
+servers:
+  - url: http://127.0.0.1:8787
+    description: Loopback local proof only
+security:
+  - bearerAuth: []
+paths:
+  /health:
+    get:
+      summary: Proof mode and execution-disabled status
+      security: []
+      responses:
+        '200':
+          description: Proof mode
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  service: { type: string }
+                  mode: { const: LOCAL_PROOF }
+                  live_renderer: { const: false }
+                  publication_enabled: { const: false }
+                  paid_spend_enabled: { const: false }
+  /v1/outcomes:
+    get:
+      summary: Bounded Crown & Core outcome summaries
+      x-required-role: authenticated
+      responses:
+        '200':
+          description: Last 25 outcome summaries
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  outcomes:
+                    type: array
+                    items: { $ref: '#/components/schemas/Summary' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      summary: Create a draft outcome, no production action
+      x-required-role: agent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateOutcome' }
+      responses:
+        '201':
+          description: Draft created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OutcomeEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /v1/outcomes/{id}:
+    parameters:
+      - $ref: '#/components/parameters/OutcomeId'
+    get:
+      summary: Read exact current outcome revision
+      x-required-role: authenticated
+      responses:
+        '200':
+          description: Current outcome and receipts
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OutcomeEnvelope' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /v1/outcomes/{id}/summary:
+    parameters:
+      - $ref: '#/components/parameters/OutcomeId'
+    get:
+      summary: Read concise status for Instinct
+      x-required-role: authenticated
+      responses:
+        '200':
+          description: Outcome summary
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  summary: { $ref: '#/components/schemas/Summary' }
+  /v1/outcomes/{id}/source:
+    parameters:
+      - $ref: '#/components/parameters/OutcomeId'
+    post:
+      summary: Record unverified source and rights references
+      x-required-role: agent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Source' }
+      responses:
+        '200':
+          description: Draft updated; prior approvals invalidated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OutcomeEnvelope' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+  /v1/outcomes/{id}/storyboard:
+    parameters:
+      - $ref: '#/components/parameters/OutcomeId'
+    post:
+      summary: Propose storyboard and explicit claim/disclosure flags
+      x-required-role: agent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Storyboard' }
+      responses:
+        '200':
+          description: Draft updated; prior approvals invalidated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OutcomeEnvelope' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+  /v1/outcomes/{id}/review-request:
+    parameters:
+      - $ref: '#/components/parameters/OutcomeId'
+    post:
+      summary: Request human review, no notification or approval
+      x-required-role: agent
+      responses:
+        '200':
+          description: Review pending
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OutcomeEnvelope' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /v1/outcomes/{id}/approvals:
+    parameters:
+      - $ref: '#/components/parameters/OutcomeId'
+    post:
+      summary: Exact-version local proof reviewer decision
+      description: >
+        Only owner/clinical bearer roles may call. A local bearer token is NOT a
+        production-grade voice authentication or legal consent mechanism.
+      x-required-role: owner-or-clinical
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Decision' }
+      responses:
+        '200':
+          description: Decision recorded
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OutcomeEnvelope' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /v1/outcomes/{id}/render-plan:
+    parameters:
+      - $ref: '#/components/parameters/OutcomeId'
+    post:
+      summary: Prepare a non-executing external render plan
+      x-required-role: agent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RenderPlanInput' }
+      responses:
+        '200':
+          description: PLANNED_NOT_SUBMITTED; no provider call or charge
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OutcomeEnvelope' }
+        '409': { $ref: '#/components/responses/Conflict' }
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: Distinct local agent/owner/clinical tokens. Never expose owner token to MCP.
+  parameters:
+    OutcomeId:
+      name: id
+      in: path
+      required: true
+      schema: { type: string }
+  schemas:
+    CreateOutcome:
+      type: object
+      required: [outcome]
+      properties:
+        tenant_id: { type: string, const: crown-and-core }
+        outcome: { type: string, minLength: 1, maxLength: 500 }
+        goal: { type: string, enum: [qualified_inquiries, booking_intent, owned_media], default: booking_intent }
+        placement: { type: string, enum: [instagram_reel, facebook_reel, youtube_short, organic_video], default: instagram_reel }
+        creative_direction: { type: string, maxLength: 600 }
+        service_ref: { type: string, maxLength: 120 }
+    Source:
+      type: object
+      required: [source_type, source_ref, rights_ref, usage_scope]
+      properties:
+        source_type: { type: string, enum: [facility, creator, staff, synthetic] }
+        source_ref: { type: string, description: Opaque ID, not private URL }
+        rights_ref: { type: string, description: Opaque unverified rights record ID }
+        usage_scope: { type: string, enum: [organic, paid, both] }
+    Storyboard:
+      type: object
+      required: [hook, story, cta, claims_present, disclosure_present]
+      properties:
+        hook: { type: string, maxLength: 280 }
+        story: { type: string, maxLength: 900 }
+        cta: { type: string, maxLength: 280 }
+        claims_present: { type: boolean }
+        disclosure_present: { type: boolean }
+    Decision:
+      type: object
+      required: [version, decision]
+      properties:
+        version: { type: integer, minimum: 1 }
+        decision: { type: string, enum: [approve, request_changes] }
+        rights_confirmed: { type: boolean, description: Owner attestation; actual rights verification remains external }
+        claim_ref: { type: string, description: Clinical reviewer approved claim reference }
+    RenderPlanInput:
+      type: object
+      required: [provider, idempotency_key, max_cost_usd]
+      properties:
+        provider: { type: string, enum: [motion-master, montage] }
+        idempotency_key: { type: string }
+        max_cost_usd: { type: number, minimum: 0, maximum: 1000, description: Planning cap, not spending approval }
+    Summary:
+      type: object
+      required: [id, tenant_id, version, status, outcome, next_action, verified_video, published]
+      properties:
+        id: { type: string }
+        tenant_id: { const: crown-and-core }
+        version: { type: integer }
+        status: { type: string, enum: [DRAFT, REVIEW_PENDING, READY_FOR_RENDER_PLAN, RENDER_PLAN_READY] }
+        outcome: { type: string }
+        next_action: { type: string }
+        verified_video: { const: false }
+        published: { const: false }
+        attributed_bookings: { type: 'null' }
+        attributed_revenue: { type: 'null' }
+    OutcomeEnvelope:
+      type: object
+      properties:
+        outcome: { type: object, description: Versioned outcome including source/storyboard/approvals/receipts }
+  responses:
+    Unauthorized:
+      description: Missing or invalid bearer credential
+    Forbidden:
+      description: Role or tenant not authorized
+    NotFound:
+      description: Outcome not found
+    BadRequest:
+      description: Invalid input or prohibited content
+    Conflict:
+      description: Missing evidence, stale approval, duplicate plan or forbidden transition
