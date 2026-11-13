@@ -179,7 +179,7 @@ export function createStudio({ initial = [], persist = () => {}, now = () => new
     const item = read(id);
     if (!['owner', 'clinical'].includes(role)) fail('FORBIDDEN', 'Only authenticated reviewers may decide.', 403);
     if (item.status !== 'REVIEW_PENDING' &&
-        !(role === 'clinical' && item.status === 'READY_FOR_RENDER_PLAN'))
+        !(role === 'clinical' && ['READY_FOR_RENDER_PLAN','RENDER_PLAN_READY'].includes(item.status)))
       fail('NOT_READY', 'No pending review.', 409);
     if (!Number.isInteger(input.version) || input.version !== item.version) fail('STALE_VERSION', 'Approval must match the current exact version.', 409);
     if (!['approve', 'request_changes'].includes(input.decision)) fail('INVALID_INPUT', 'Invalid decision.');
@@ -201,7 +201,7 @@ export function createStudio({ initial = [], persist = () => {}, now = () => new
     }
     if (item.approvals.owner?.version === item.version &&
         (!item.storyboard.claims_present || item.approvals.clinical?.version === item.version)) {
-      item.status = 'READY_FOR_RENDER_PLAN';
+      item.status = item.render_plan ? 'RENDER_PLAN_READY' : 'READY_FOR_RENDER_PLAN';
     }
     receipt(item, role + '_approved_version', role, now(), actorRef);
     return save(item);
