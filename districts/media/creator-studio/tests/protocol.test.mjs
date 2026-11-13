@@ -46,7 +46,7 @@ test('MCP stdio completes initialize before tools/list and exposes no owner acti
   const listed = responses.find(r => r.id === 2);
   assert.equal(init.result.serverInfo.name, 'crown-core-creator-studio');
   assert.equal(init.result.protocolVersion, '2024-11-05');
-  assert.equal(listed.result.tools.length, 9);
+  assert.equal(listed.result.tools.length, 11);
   assert.ok(!listed.result.tools.some(t => /approve|publish|spend|render_execute/.test(t.name)));
 });
 test('MCP bridge rejects non-loopback or credential-bearing endpoint URLs', async () => {
