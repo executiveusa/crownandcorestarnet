@@ -2,7 +2,7 @@
 // NOT an A2A server, Instinct API, or ChatGPT conversation wake API.
 import { createHash, createHmac, createPublicKey, timingSafeEqual, verify } from 'node:crypto';
 import { DatabaseSync } from 'node:sqlite';
-import { requireOutsideRepository } from '../../../districts/media/creator-studio/src/private-path.mjs';
+import { requireOutsideRepository } from '../../../../districts/media/creator-studio/src/private-path.mjs';
 
 export const MISSION_PATTERN = /^CC-A2A-[A-Z0-9-]{3,70}$/;
 const safeEq = (a,b) => {

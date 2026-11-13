@@ -52,13 +52,13 @@ Google Cloud setup is a separate owner/operator action:
 4. Store all secret values in the server's secrets manager; never place credentials into issue comments, code or this chat. Place `CC_BRIDGE_DB_FILE` outside the repository, on a private writable volume. Set token and notification keys to independently generated random values (at least 32 characters).
 5. Initialize the watch and approve mission mapping using the CLI:
    ```bash
-   node integrations/instinct-gmail-push/src/cli.mjs watch
-   node integrations/instinct-gmail-push/src/cli.mjs register CC-A2A-TEST-001 1a1d71f109f77f87
-   node integrations/instinct-gmail-push/src/cli.mjs bootstrap CC-A2A-TEST-001
-   node integrations/instinct-gmail-push/src/cli.mjs status
+   node _system/integrations/instinct-gmail-push/src/cli.mjs watch
+   node _system/integrations/instinct-gmail-push/src/cli.mjs register CC-A2A-TEST-001 1a1d71f109f77f87
+   node _system/integrations/instinct-gmail-push/src/cli.mjs bootstrap CC-A2A-TEST-001
+   node _system/integrations/instinct-gmail-push/src/cli.mjs status
    ```
    **Order matters:** issue `watch` before `bootstrap` so future changes are tracked; bootstrap fetches any reply already in the approved thread.
-6. Launch `node integrations/instinct-gmail-push/src/server.mjs`. Default host is `127.0.0.1`, port `8918`. For containers you may set `HOST=0.0.0.0` only inside a private container network behind the authenticated HTTPS proxy.
+6. Launch `node _system/integrations/instinct-gmail-push/src/server.mjs`. Default host is `127.0.0.1`, port `8918`. For containers you may set `HOST=0.0.0.0` only inside a private container network behind the authenticated HTTPS proxy.
 7. Run `watch` again daily to renew Gmail watch (watch expires within seven days). This is **renewal only**, not polling for email. Never reset an existing lower Gmail history cursor during renewal.
 8. Negative-test forged JWTs, wrong audience, wrong sender, wrong subscription, unknown threads, duplicate Pub/Sub notifications, a replayed Gmail message and duplicate mission registration. Do not enable notification delivery until the destination can verify the HMAC signature and deduplicate by `x-cc-event-id`.
 
