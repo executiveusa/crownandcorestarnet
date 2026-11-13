@@ -28,7 +28,12 @@ export function createBridge({
   let processing=Promise.resolve();
   async function flushNotifications(){
     if(!config.notificationUrl)return; // Persist; do not claim notification delivered.
-    for(const task of store.pendingNotifications()){
+    // Drain every persisted batch before acknowledging the Pub/Sub delivery.
+    // If a delivery fails, return a retryable error and retain the outbox record.
+    while(true){
+      const pending=store.pendingNotifications();
+      if(pending.length===0)break;
+      for(const task of pending){
       const body=JSON.stringify({event:'instinct.reply.received',mission_id:task.mission_id,
         gmail_id:task.gmail_id,received_at:task.received_at,
         receipt_sha256:task.content_sha256});
@@ -44,6 +49,7 @@ export function createBridge({
       }catch(e){
         store.notificationResult(task.gmail_id,{delivered:false,error:e.message});
         throw Error('NOTIFICATION_RETRY_REQUIRED');
+      }
       }
     }
   }
