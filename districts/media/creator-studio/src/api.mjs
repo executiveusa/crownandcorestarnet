@@ -64,11 +64,14 @@ export function createApiServer({ studio, tokens, identity = null, webhookSecret
         if (!secret) return json(res, 404, { error: 'NOT_CONFIGURED' });
         if (!String(req.headers['content-type']??'').toLowerCase().startsWith('application/json'))
           throw new StudioError('CONTENT_TYPE','JSON required.',415);
-        let raw = '';
+        const chunks = [];
+        let size = 0;
         for await (const chunk of req) {
-          raw += chunk.toString('utf8');
-          if (raw.length > 16384) throw new StudioError('TOO_LARGE','Webhook exceeds 16 KB.',413);
+          size += chunk.length;
+          if (size > 16384) throw new StudioError('TOO_LARGE','Webhook exceeds 16 KB.',413);
+          chunks.push(chunk);
         }
+        const raw = Buffer.concat(chunks).toString('utf8');
         const body = verifySignedEvent({raw,headers:req.headers,secret});
         const outcome = kind === 'provider' ?
           pipeline.providerResult(id,'operator',body) :
