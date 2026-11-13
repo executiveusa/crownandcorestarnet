@@ -1,6 +1,6 @@
 # Crown & Core Creator Studio — Product Requirements (v0.2)
 
-**Status:** implementation candidate in draft PR #26; not deployed. **Owner:** Crown & Core. **Product:** standalone Crown & Core experience within the existing StarNet repository, not a new company-wide SaaS, not MACS, not BufferBlaster.
+**Status:** code-side integration candidate in review-ready PR #26; not deployed or connected. **Owner:** Crown & Core. **Product:** standalone Crown & Core experience within the existing StarNet repository, not a new company-wide SaaS, not MACS, not BufferBlaster.
 
 ## 1. Decision and outcome
 
@@ -24,7 +24,7 @@ The system must be **API/MCP-first** and **voice/mobile-approval-first**. The ow
 ### Success measures
 - **Experience:** first request can be created by one spoken sentence and returned as a concise status without opening a form.
 - **MVP proof:** an agent-originated API/MCP request creates a draft and can query its status; an owner (separate authenticated role) can approve a specific version; unapproved or mismatched requests fail closed.
-- **Creative proof:** one 30s + 15s **playable, verified** external render using licensed/owner-owned media, with provider IDs, asset hashes and QA receipt. Not yet implemented.
+- **Creative proof:** one 30s + 15s **playable, verified** external render using licensed/owner-owned media, with provider IDs, asset hashes and QA receipt. **Adapter, signed callback, private-file QA and approval code implemented; actual provider/MP4 not yet connected or verified.**
 - **Commercial proof:** attribution event from an authorized live source, then qualified inquiry/booking/payment when available; until then metrics remain **unknown**, never sample values represented as real.
 - **Operations:** no external render, posting, spend, booking changes or customer outreach without distinct required authorization.
 
@@ -51,7 +51,7 @@ Fallback UI has three states: **Ask**, **Making**, **Review**. The review state 
 | F11 | Creator sourcing, opt-in outreach, license terms and revocation | P2 | Contact authorization and revocation denial tests |
 | F12 | Separate publish/paid-ad integration, conversion and reporting | P2 | Mobile booking, spend cap, attribution, platform permissions |
 
-**P0 delivered in this PR:** local proof API/MCP, domain gates, low-text wireframe and tests. **Not delivered:** real Instinct runtime, model-generated video, external adapters, production approvals, private storage or publishing.
+**Code-side implemented in this PR:** P0 API/MCP and outcome-first offline UI; single-host SQLite store and append-only receipt table; pinned OIDC MFA reviewer verification; nine agent-only MCP tools; creator shortlist, permission-bound outreach and release workflows; independently reviewed rights and capped render authorization; authenticated external renderer adapter and signed callbacks; ffprobe/sha256 real MP4 inspection; final film approval, organic publication reservation/adapter, rights revocation/takedown and source-backed aggregate attribution. **Not delivered:** real Instinct/Paperclip/Hermes connection, live Motion Master/Montage rendering, configured IdP/private vault, actual MP4, public posting or paid Meta ads. External integrations and real-world proofs remain P1/P2 acceptance gates.
 
 ## 5. Source and legal boundaries
 
@@ -67,13 +67,13 @@ Fallback UI has three states: **Ask**, **Making**, **Review**. The review state 
 
 Read [ARCHITECTURE.md](./ARCHITECTURE.md), [WIREFRAMES.md](./WIREFRAMES.md), and [INSTINCT_HANDOFF.md](./INSTINCT_HANDOFF.md). The existing `districts/media/references/COMMERCIAL_STUDIO_CONTRACT.md` governs external render ownership and supersedes any plan to recreate an editor/sound studio.
 
-**Technology choice:** Node 22 built-ins for zero-dependency local proof API, MCP stdio bridge and domain tests; plain responsive HTML for the review/ask wireframe. This minimizes duplicate frameworks and secrets. Future authenticated production hosting, private database, durable workflow state and renderer adapters require an explicit runtime decision after inspecting existing deployment.
+**Technology choice:** Node 22.23+ built-ins for REST/MCP, SQLite single-host persistence, HMAC callbacks, OIDC RS256 verifier, ffprobe-backed QA and external HTTP adapters; plain responsive HTML for offline owner UX. No extra framework or duplicate video editor. Node 22's SQLite API is experimental and requires an explicit single-host production decision; encrypted volume, IdP, media vault, actual provider endpoints and supported agent runtime must be verified on the owner's server. See [OPERATIONS.md](./OPERATIONS.md).
 
 ## 7. Delivery sequence
 
-1. **P0 / local proof (this PR):** outcome API, MCP tools, rights/storyboard/review/approval gates, render plan only, tests, mobile-first prototype and runbook.
-2. **P1 / authenticated infrastructure:** Instinct/Paperclip preflight from issue #25; identify correct Crown & Core private storage; implement scoped identity, signed approvals and encrypted asset storage; verify real Motion Master/Montage health and first MP4.
-3. **P2 / controlled campaign:** creator opt-in, approved publishing/Meta integrations, mobile booking/lead response and actual attribution; measure conversion to booked and paid.
+1. **Code-side (this PR):** outcome API, nine MCP tools, creator permission workflow, rights/claims gates, pinned reviewer identity, private single-host persistence, provider adapters, signed callbacks, independent video QA, final film approval, organic post controls, tests, offline mobile-first prototype and runbook.
+2. **P1 / authenticated server connection:** Instinct/Paperclip preflight from issue #25; configure correct Crown & Core encrypted private storage, IdP, media vault, renderer bridge and live agent-originated MCP call; verify first real MP4 and owner review. No duplicate scheduler.
+3. **P2 / controlled campaign:** connect opted-in creator contact and organic publication only with separate owner approval, mobile booking/lead response and real attribution. Paid Meta integration remains a separate unimplemented, unapproved feature.
 4. **P3 / repeatability:** campaign learning, creator renewal, quality/evaluation loops and bounded specialization, never uncontrolled bot proliferation.
 
 ### Non-goals
