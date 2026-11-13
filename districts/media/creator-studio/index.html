@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Crown & Core | Creator Studio — Draft</title>
+<style>
+:root{color-scheme:dark;--bg:#101516;--panel:#1b2424;--line:#354442;--ink:#f4f1e9;--muted:#aabbb5;--gold:#d7ba81}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font:15px/1.5 system-ui,sans-serif;color:var(--ink)}
+header{border-bottom:1px solid var(--line);padding:20px clamp(20px,4vw,56px);display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.brand{font:600 19px Georgia,serif;letter-spacing:.07em}.tag{font-size:11px;color:var(--gold);letter-spacing:.12em;text-transform:uppercase}
+main{max-width:1220px;margin:auto;padding:36px 22px 80px}.intro{max-width:780px;margin-bottom:32px}
+h1{font:normal clamp(36px,5vw,60px)/1.1 Georgia,serif;margin:6px 0 12px}h2{font:normal 24px Georgia,serif;margin:0 0 18px}
+p{color:var(--muted)}.layout{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(280px,.8fr);gap:20px}
+section,aside{border:1px solid var(--line);background:var(--panel);border-radius:12px;padding:25px;margin-bottom:18px}
+label{display:block;font-size:13px;color:var(--muted);margin:16px 0 6px}input,select,textarea{width:100%;min-height:43px;background:#121b1b;border:1px solid #52625d;color:var(--ink);padding:11px 12px;border-radius:7px;font:inherit}textarea{min-height:96px;resize:vertical}
+input:focus,textarea:focus,select:focus{outline:2px solid var(--gold);outline-offset:1px}
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}.help{font-size:12px;color:var(--muted)}.pill{display:inline-block;border:1px solid var(--line);border-radius:30px;padding:5px 12px;font-size:12px;color:var(--gold)}
+button{padding:13px 18px;background:var(--gold);border:0;border-radius:6px;color:#131717;font-weight:700;cursor:pointer}button:hover{filter:brightness(1.08)}
+button:focus-visible{outline:3px solid white;outline-offset:2px}button.secondary{background:none;border:1px solid var(--gold);color:var(--gold)}
+.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:18px}.warning{border-left:3px solid var(--gold);padding-left:12px}
+ul{padding-left:20px}li{margin:9px 0;color:var(--muted)}.status{white-space:pre-wrap;color:var(--ink);font-size:13px}
+footer{font-size:12px;color:var(--muted);max-width:1220px;margin:auto;padding:16px 22px 44px}
+@media(max-width:800px){.layout{grid-template-columns:1fr}section,aside{padding:18px}.fields{grid-template-columns:1fr}main{padding-top:24px}}
+</style>
+</head>
+<body>
+<header><div><div class="brand">CROWN & CORE</div><div class="tag">Creator Studio / StarNet</div></div><span class="pill">Prototype · No live actions</span></header>
+<main>
+<div class="intro"><div class="tag">Media district</div><h1>Campaigns with a source. Creative with a purpose.</h1><p>Develop Crown & Core creator and influencer-style video campaigns. Every brief must identify the source, rights and review requirements. Nothing here publishes, renders, books or spends money.</p></div>
+<div class="layout">
+<div>
+<section aria-labelledby="brief-heading"><h2 id="brief-heading">01 / The campaign</h2>
+<div class="fields"><div><label for="name">Campaign title *</label><input id="name" maxlength="100" placeholder="One place — social launch"></div><div><label for="placement">Format *</label><select id="placement"><option value="instagram-reel">Instagram Reel</option><option value="facebook-reel">Facebook Reel</option><option value="youtube-short">YouTube Short</option><option value="organic-video">Organic website/social video</option></select></div>
+<div><label for="duration">Length</label><select id="duration"><option value="15">15 seconds</option><option value="30" selected>30 seconds</option><option value="60">60 seconds</option></select></div><div><label for="goal">Primary goal</label><select id="goal"><option value="qualified-inquiry">Qualified inquiry</option><option value="booking-intent">Booking intent</option><option value="awareness">Brand familiarity</option></select></div></div>
+<label for="audience">Audience *</label><input id="audience" maxlength="160" placeholder="Local adults exploring verified wellness services">
+<label for="angle">Creative angle *</label><textarea id="angle" maxlength="600" placeholder="A welcoming look at the real studio and people behind the experience."></textarea>
+<label for="cta">Call to action</label><input id="cta" maxlength="160" placeholder="Explore services on the official Crown & Core site">
+</section>
+<section aria-labelledby="source-heading"><h2 id="source-heading">02 / Source and rights</h2>
+<label for="sourceType">Creative source *</label><select id="sourceType"><option value="real-facility">Real facility / owner-supplied footage</option><option value="authorized-creator">Creator footage with documented authorization</option><option value="staff-expert">Staff/expert footage with documented authorization</option><option value="synthetic">Synthetic disclosed creative (not customer testimony)</option></select>
+<label for="sourceRef">Asset or source reference *</label><input id="sourceRef" maxlength="240" placeholder="Private vault ID or owner-supplied source record; no customer information">
+<label for="rights">Usage rights status *</label><select id="rights"><option value="unverified">Unverified — block export</option><option value="documented">Documented for proposed draft use</option></select>
+<label for="rightsRef">Rights/release record reference *</label><input id="rightsRef" maxlength="240" placeholder="Approved rights ledger reference">
+<p class="help">Use a reference, not a customer name, private file URL, medical record or access token. Documented rights are a drafting assertion; independent review remains required.</p>
+</section>
+<section aria-labelledby="review-heading"><h2 id="review-heading">03 / Claims and review</h2>
+<label for="claims">Does this creative include a treatment/health claim?</label><select id="claims"><option value="none">No health or treatment claims</option><option value="proposed">Proposed health claim — requires clinical/legal review</option></select>
+<label for="claimRef">Approved clinical/legal claim reference (only if applicable)</label><input id="claimRef" maxlength="240" placeholder="Exact approved claim revision / review receipt">
+<label for="shots">Shot list / storyboard *</label><textarea id="shots" maxlength="1200" placeholder="0-4s: true-to-source hook; 4-20s: licensed footage; 20-30s: approved CTA."></textarea>
+</section>
+<div class="actions"><button type="button" id="export">Validate & export draft brief</button><button class="secondary" type="button" id="reset">Clear form</button></div>
+<p id="result" class="status" role="status" aria-live="polite"></p>
+</div>
+<div>
+<aside><h2>Production path</h2><span class="pill">Approval-gated</span>
+<ol><li>Build source-verified brief</li><li>Owner reviews story, positioning and creator rights</li><li>Clinical/legal review for regulated claims</li><li>Verify actual Motion Master or Montage renderer adapter</li><li>Authorize capped rendering job</li><li>Inspect playable video, provenance and quality</li><li>Approve exact publication revision</li><li>Measure qualified inquiries and bookings when attribution is connected</li></ol>
+<p class="warning">This prototype deliberately has no rendering provider API calls, analytics claims, customer records, ad spend, or publication action.</p></aside>
+<aside><h2>Planned Creator Studio rooms</h2><ul><li>Campaign desk</li><li>Creator & rights ledger</li><li>Storyboards and cutdowns</li><li>Renderer job tracking</li><li>Approval inbox</li><li>Performance and bookings</li></ul><p>Only the local draft campaign brief is implemented. The other rooms are roadmap items, not live features.</p></aside>
+</div>
+</div>
+</main>
+<footer>© Crown & Core · Owned production brief prototype. No customer data should be entered into this public-repository demo.</footer>
+<script>
+const ids=['name','placement','duration','goal','audience','angle','cta','sourceType','sourceRef','rights','rightsRef','claims','claimRef','shots'];
+const field=id=>document.getElementById(id).value.trim();
+const result=document.getElementById('result');
+function safe(v){return v.replace(/[<>]/g,'');}
+document.getElementById('reset').addEventListener('click',()=>{for(const id of ids){const e=document.getElementById(id);if(e.tagName==='SELECT')e.selectedIndex=0;else e.value='';}result.textContent='Draft fields cleared.';});
+document.getElementById('export').addEventListener('click',()=>{
+ const required=['name','audience','angle','sourceRef','rightsRef','shots'];
+ const missing=required.filter(id=>!field(id));
+ if(field('rights')!=='documented')missing.push('documented usage rights');
+ if(field('claims')==='proposed'&&!field('claimRef'))missing.push('clinical/legal claim approval reference');
+ if(field('sourceType')==='synthetic'&&/testimonial|real customer|patient review/i.test(field('angle')+' '+field('shots')))missing.push('synthetic content must not portray a real customer testimonial');
+ if(missing.length){result.textContent='Export blocked: '+missing.join('; ')+'.';return;}
+ const values=Object.fromEntries(ids.map(id=>[id,safe(field(id))]));
+ const brief={schema_version:1,tenant:'crown-and-core',product:'creator-studio',status:'DRAFT_NOT_APPROVED',created_at:new Date().toISOString(),...values,synthetic_disclosure_required:field('sourceType')==='synthetic',owner_review_required:true,clinical_legal_review_required:field('claims')==='proposed',rights_review_required:true,execution_enabled:false,publish_enabled:false,paid_spend_enabled:false,renderer_connected:false,performance_metrics:null};
+ const blob=new Blob([JSON.stringify(brief,null,2)],{type:'application/json'});
+ const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='crown-core-creator-brief.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+ result.textContent='Draft exported locally. Approval and production have NOT occurred.';
+});
+</script>
+</body></html>
