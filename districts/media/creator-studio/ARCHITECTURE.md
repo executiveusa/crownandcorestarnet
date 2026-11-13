@@ -1,6 +1,6 @@
 # Creator Studio — Agent-first architecture and interface contracts
 
-**Status:** design + local proof implementation in draft PR #26; not a production deployment. The canonical rendering boundary is `districts/media/references/COMMERCIAL_STUDIO_CONTRACT.md`. The canonical approval and commercial policy is `_shared/policy/HEART_AND_SOUL.md`.
+**Status:** v0.3 code-side implementation in review-ready PR #26; not a production deployment. See [OPERATIONS.md](./OPERATIONS.md) for the authoritative executable adapter and server contracts. The canonical rendering boundary is `districts/media/references/COMMERCIAL_STUDIO_CONTRACT.md`. The canonical approval and commercial policy is `_shared/policy/HEART_AND_SOUL.md`.
 
 ## A. System map
 
@@ -52,18 +52,18 @@
 | Component | Implementation / proposal | Status |
 | --- | --- | --- |
 | Repository | `executiveusa/crownandcorestarnet` / `districts/media/creator-studio` | Verified |
-| Local API | Node 22 built-in `node:http`, loopback-only, separate bearer roles | **Implemented local proof** |
-| Local agent adapter | MCP stdio JSON-RPC, agent-only seven tools, calls API | **Implemented local proof** |
+| Local API | Node 22 built-in `node:http`, loopback-only, separate bearer roles, optional OIDC reviewer identity | **Implemented; not publicly exposed** |
+| Local agent adapter | MCP stdio JSON-RPC, agent-only **nine** tools, calls API | **Implemented; Instinct runtime unconnected** |
 | Domain | Source → storyboard → review → owner/clinical approval → non-executing render plan | **Implemented local proof** |
-| Local state | Memory; optional atomic JSON file outside repo, mode 0600 | **Proof only**, not production durable storage |
+| Local state | Memory/JSON proof; private single-host transactional SQLite WAL and append-only audit table | **Implemented; encrypted volume and deployment pending** |
 | Interface | Responsive minimal outcome/review prototype, no direct credential entry | **Design prototype** |
-| Owner conversation | Existing Instinct | Identity/runtime connection **unverified** (PR #24 / issue #25) |
+| Owner conversation | Existing Instinct + pinned RS256 OIDC MFA reviewer verifier | **Identity verifier implemented; voice/client/runtime unverified** (PR #24 / issue #25) |
 | Queue and agent tasks | Existing Paperclip | Runtime **unverified** |
 | Specialist delegation | Hermes as scoped task worker | **Proposed** until tested against Paperclip capabilities |
-| Production database | Existing owner-controlled Crown & Core DB if verified; otherwise approved tenant-isolated Postgres with RLS | **Not selected / not connected** |
-| Media vault | Private object store with scoped time-limited asset access | **Not connected** |
-| Render provider | Existing Motion Master / Montage supported API, CLI or MCP | **Documented only**, no live render receipt |
-| Attribution | Approved booking/lead/payment events with campaign ID and timestamps | **Not connected** |
+| Production database | Included single-host SQLite option; existing owner-controlled DB may be reused if required | **Code implemented; owner must approve runtime/backup and encryption** |
+| Media vault | Owner-controlled private vault; ffprobe/SHA-256 QA for real 30s+15s H.264 cuts | **QA code implemented; actual media vault not connected** |
+| Render provider | Exact-URL HTTPS bridge adapter, health, idempotent capped submit, signed result callback | **Adapter implemented; actual Motion Master/Montage endpoint unverified** |
+| Attribution | HMAC-signed aggregate event ingest, dedupe and receipt-backed totals | **Code implemented; actual source not connected** |
 | A2A | Optional agent-to-agent interoperability only where both endpoints are verified | **Not implemented** |
 
 No second database, framework, cloud account, agent manager or paid service should be introduced without an inventory and owner decision.
@@ -163,6 +163,8 @@ The proof receipt chain is SHA-256 linked **within the local record**; it is not
 **Core entities:** `outcome` (tenant, objective, goal, owner, status, version); `asset` (opaque ref, checksum, source type, private vault location, identity class); `rights_grant` (release/contract ID, signer, channel, paid scope, expiry, revocation); `storyboard_revision` (shots, claim refs, disclosures, revision hash); `approval` (actor verified, role, exact revision hash, decision, action scope, timestamp, expiry, channel, signature); `render_job` (idempotency key, provider, approved budget, version, provider receipt); `artifact` (MP4 ref, SHA-256, dimensions, duration, QA); `campaign` (channel, exact published revision, approval, external ID); `attribution_event` (campaign/source ID, event type, verified origin, timestamp, non-PHI aggregate). All are Crown & Core tenant-scoped.
 
 **Production API additions after security review:** `POST /v1/render-jobs` with explicit owner-approved cost, `GET /v1/render-jobs/:id`, signed callback endpoint, `POST /v1/review-challenges` and verified `POST /v1/review-decisions`, `POST /v1/publish-requests` (separate approval), `GET /v1/outcomes/:id/verified-metrics`. Never infer endpoint existence from provider README; prove deployed API versions.
+
+**Implementation note:** The P0-only diagram and state machine below show the first contract. The executable v0.3 state machine additionally includes `RENDER_AUTHORIZED → DISPATCH_RESERVED → RENDERING → RENDERED → READY_FOR_FINAL_REVIEW → FILM_APPROVED → PUBLISH_AUTHORIZED → PUBLISH_RESERVED → PUBLISHED_VERIFIED`, plus `RIGHTS_REVOKED / TAKEDOWN_REQUIRED / TAKEN_DOWN`, signed callbacks, and permission-gated creator outreach. See `src/pipeline.mjs`, `src/creators.mjs` and [OPERATIONS.md](./OPERATIONS.md). No automatic external execution is triggered by agent MCP.
 
 **Event envelope:** `{event_id, tenant_id, outcome_id, revision_hash, actor_id, actor_role, action, policy_version, source_refs, approval_refs, provider_receipt_ref, occurred_at, integrity_hash}`. Keep private identifiers in the private vault, not GitHub.
 
