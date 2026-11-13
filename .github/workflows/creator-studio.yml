@@ -1,0 +1,32 @@
+name: Crown & Core Creator Studio Contract Tests
+
+on:
+  pull_request:
+    paths:
+      - 'districts/media/creator-studio/**'
+      - '.github/workflows/creator-studio.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'districts/media/creator-studio/**'
+      - '.github/workflows/creator-studio.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  creator-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Parse agent API and MCP modules
+        run: |
+          node --check districts/media/creator-studio/src/domain.mjs
+          node --check districts/media/creator-studio/src/api.mjs
+          node --check districts/media/creator-studio/src/mcp.mjs
+      - name: Exercise authorization, idempotency, state and MCP contracts
+        run: node --test districts/media/creator-studio/tests/*.test.mjs
