@@ -28,6 +28,17 @@ export const tools = [
       ['id','hook','story','cta','claims_present','disclosure_present']) },
   { name: 'creator_review_request', description: 'Request owner/clinical review; does not approve or notify anyone.',
     inputSchema: object({ id }, ['id']) },
+  { name: 'creator_candidate_propose', description: 'Propose an opaque creator profile reference. No contact or outreach.',
+    inputSchema: object({ id, creator_ref: field('string','Opaque creator ID, not handle/contact'),
+      profile_ref: field('string','Opaque verified public profile source ID'),
+      fit_reason: field('string','Why this creator is appropriate, no personal data') },
+      ['id','creator_ref','profile_ref','fit_reason']) },
+  { name: 'creator_outreach_prepare', description: 'Draft opt-in creator outreach; requires separate owner authorization to send.',
+    inputSchema: object({ id, creator_ref: field('string','Opaque creator ID'),
+      message: field('string','Proposed exact message, no contact details'),
+      terms_ref: field('string','Opaque terms reference'),
+      max_fee_usd: field('number','Fee cap',{minimum:0,maximum:1000}) },
+      ['id','creator_ref','message','terms_ref','max_fee_usd']) },
   { name: 'creator_render_plan_prepare', description: 'Prepare an unsubmitted, non-billable 30s+15s external render plan after separate approval.',
     inputSchema: object({ id, provider: field('string','Candidate provider',{enum:['motion-master','montage']}),
       idempotency_key: field('string','Stable opaque job key'),
@@ -41,6 +52,8 @@ const operations = {
   creator_source_register: a => ['POST', '/v1/outcomes/' + encodeURIComponent(a.id) + '/source', withoutId(a)],
   creator_storyboard_propose: a => ['POST', '/v1/outcomes/' + encodeURIComponent(a.id) + '/storyboard', withoutId(a)],
   creator_review_request: a => ['POST', '/v1/outcomes/' + encodeURIComponent(a.id) + '/review-request', {}],
+  creator_candidate_propose: a => ['POST', '/v1/outcomes/' + encodeURIComponent(a.id) + '/creator-candidate', withoutId(a)],
+  creator_outreach_prepare: a => ['POST', '/v1/outcomes/' + encodeURIComponent(a.id) + '/creator-outreach', withoutId(a)],
   creator_render_plan_prepare: a => ['POST', '/v1/outcomes/' + encodeURIComponent(a.id) + '/render-plan', withoutId(a)]
 };
 function withoutId(a) { const { id: _id, ...rest } = a; return rest; }
@@ -77,7 +90,7 @@ export function startMcp(env = process.env) {
     try {
       let result;
       if (method === 'initialize') result = { protocolVersion: '2024-11-05',
-        capabilities: { tools: {} }, serverInfo: { name: 'crown-core-creator-studio', version: '0.2.0' } };
+        capabilities: { tools: {} }, serverInfo: { name: 'crown-core-creator-studio', version: '0.3.0' } };
       else if (method === 'ping') result = {};
       else if (method === 'tools/list') result = { tools };
       else if (method === 'tools/call') {
