@@ -108,35 +108,54 @@
         "review"
       ],
       "tools": [],
-      "evidence": "exact-version owner and mandatory qualified clinical screening, independently verified rights grant and source SHA; no agent-supplied consent"
+      "evidence": "Exact-version owner storyboard approval and mandatory qualified clinical screening; grant verification occurs after render plan via trusted rights service"
+    },
+    {
+      "id": "rights-verify",
+      "worker": "trusted-rights",
+      "depends_on": [
+        "starnet-render-plan"
+      ],
+      "tools": [],
+      "evidence": "rights-verify REST action establishes exact licensed rights_ref, source and grant SHA-256, scope, expiry, nonrevocation; authorized rights identity"
     },
     {
       "id": "buffer-source-bind",
       "worker": "trusted-rights",
       "depends_on": [
-        "rights-and-approval"
+        "rights-verify"
       ],
       "tools": [],
       "evidence": "Server-only Buffer workspace UUID and exact source reference readback, bound to StarNet verified asset SHA; cannot be authorized by agent",
       "notes": "Must complete before creator_buffer_plan_sync even though plan state is later."
     },
     {
-      "id": "plan",
+      "id": "starnet-render-plan",
+      "worker": "hermes:production-planner",
+      "depends_on": [
+        "rights-and-approval"
+      ],
+      "tools": [
+        "creator_render_plan_prepare"
+      ],
+      "evidence": "StarNet non-executing RENDER_PLAN_READY; the rights officer must verify grant in next task. No cost, no media."
+    },
+    {
+      "id": "buffer-plan-sync",
       "worker": "hermes:production-planner",
       "depends_on": [
         "buffer-source-bind"
       ],
       "tools": [
-        "creator_render_plan_prepare",
         "creator_buffer_plan_sync"
       ],
-      "evidence": "PLANNED_NOT_SUBMITTED; not a video; authenticated Buffer workspace plan UUID + GET readback, zero spend only"
+      "evidence": "Canonical Buffer Supabase no-spend draft read back with exact source/script/shot/rights/version; output Buffer plan UUID, NOT a video"
     },
     {
       "id": "render",
       "worker": "trusted-operator",
       "depends_on": [
-        "plan"
+        "buffer-plan-sync"
       ],
       "tools": [],
       "evidence": "BLOCKED on incompatible Buffer 10s+10s UGC factory; require verified authentic 30s+15s renderer, owner budget grant, actual provider job, no automatic retry"
