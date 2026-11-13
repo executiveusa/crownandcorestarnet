@@ -97,7 +97,7 @@ export function createCreatorOutreachAdapter({sendUrl,token,fetchFn=fetch,timeou
   return {
     send:async(item,outreach_id)=>{
       const draft=item?.creator_campaign?.outreach?.find(x=>x.outreach_id===outreach_id);
-      if(!draft||draft.status!=='OUTREACH_AUTHORIZED_UNSENT'||
+      if(!draft||draft.status!=='OUTREACH_RESERVED'||
         draft.version!==item.version||!draft.authorization||
         Date.parse(draft.authorization.expires_at)<=Date.now())
         fail('NOT_AUTHORIZED','Current owner-approved outreach message required.');
