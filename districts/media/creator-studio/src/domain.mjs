@@ -96,6 +96,17 @@ export function createStudio({ initial = [], persist = () => {}, now = () => new
     item.publication_authorization = null;
     item.publication_receipt = null;
     item.attribution = null;
+    if (item.creator_campaign) {
+      for (const draft of item.creator_campaign.outreach ?? []) {
+        if (draft.status !== 'SENT_VERIFIED') {
+          draft.status = 'INVALIDATED_REVISION';
+          draft.authorization = null;
+        }
+      }
+      for (const candidate of item.creator_campaign.candidates ?? []) {
+        if (candidate.status === 'OUTREACH_DRAFT') candidate.status = 'PROPOSED_UNCONTACTED';
+      }
+    }
   }
   function create(input = {}) {
     ensureTenant(input);
