@@ -21,6 +21,11 @@ export function gmailClient({clientId,clientSecret,refreshToken,fetchFn=fetch}={
         ...(body?{'content-type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{})
     });
     if(response.status===404 && path.startsWith('/history'))throw Error('HISTORY_EXPIRED: reinitialize with explicit recovery');
+    if((response.status===404 || response.status===410) && path.startsWith('/messages/')) {
+      const gone=new Error('GMAIL_MESSAGE_GONE');
+      gone.code='GMAIL_MESSAGE_GONE';
+      throw gone;
+    }
     if(!response.ok)throw Error('Gmail API failure: '+method+' '+path.split('?')[0]+' '+response.status);
     return response.json();
   }
