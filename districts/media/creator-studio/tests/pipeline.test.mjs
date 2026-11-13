@@ -117,16 +117,16 @@ test('provider job IDs, QA hashes, final approval and booking policy fail closed
   const booking=draft();
   assert.equal(booking.studio.get(booking.id).status,'RENDER_PLAN_READY');
 });
-test('creative revision invalidates verified rights, production authorization and results',()=>{
-  const f=ready();
-  f.studio.proposeStoryboard(f.id,{hook:'Different',story:'Revised approved footage',cta:'Explore',
-    claims_present:false,disclosure_present:false});
-  const item=f.studio.get(f.id);
-  assert.equal(item.rights_verification,null);
-  assert.equal(item.render_authorization,null);
-  assert.equal(item.render_plan,null);
-  assert.equal(item.status,'DRAFT');
+test('creative revision is blocked after render authorization to protect external receipts',()=>{
+  const f=verified();
+  assert.equal(f.studio.get(f.id).status,'RENDER_AUTHORIZED');
+  rejected(()=>f.studio.proposeStoryboard(f.id,{hook:'Another',story:'Revised',
+    cta:'Explore',claims_present:false,disclosure_present:false}),'EXTERNAL_OPERATION_PENDING');
+  rejected(()=>f.studio.registerSource(f.id,{source_type:'facility',source_ref:'asset:other',
+    rights_ref:'rights:other',usage_scope:'both'}),'EXTERNAL_OPERATION_PENDING');
+  assert.equal(f.studio.get(f.id).render_authorization.version,f.version);
 });
+
 test('SQLite survives restart, enforces append-only chain, and handles multiple outcomes',()=>{
   const dir=mkdtempSync(join(tmpdir(),'cc-studio-sqlite-'));
   try{
