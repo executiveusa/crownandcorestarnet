@@ -14,9 +14,14 @@ Lethia tells **existing Instinct**: “Make a truthful, warm 30-second video int
 
 ## Task 0 — independent review and merge gates (BLOCKING)
 
+**NEW verified security gate:** [Buffer Blaster issue #120](https://github.com/executiveusa/buffer-blaster-/issues/120) documents `frontend/next@16.4.0` and the critical `npm audit --omit=dev --audit-level=high` failure ([Actions #43372852531](https://github.com/executiveusa/buffer-blaster-/actions/runs/43372852531)). Review actual advisories, apply a **separate narrow dependency + lockfile fix**, test build/lint/route/security and confirm deployed exposure; do not run a blind forced upgrade. **No live Buffer release until this is resolved or independently approved with proven isolation/mitigation.**
+
+**Review findings already patched in the two unmerged PRs:** Codex found a Buffer Redis foreign-workspace pagination starvation issue, a StarNet creative/rights plan-readback validation gap, and a stale replay race after asynchronous readback. The fixes and regression tests are committed. **Re-review exact new heads**; earlier review comments are not an approval. Both OpenCodeReview GitHub Actions attempts failed (Buffer provider/subtask failure; Crown GitHub Models `text/plain` non-JSON response). An actual provider-configured OCR run or qualified human review is required. [Full audit and machine-readable ledger](./FULL_STACK_WIRING_AUDIT_2026-11-12.md).
+
+
 1. Inspect exact current PR heads for **#119, #26, #28**. Buffer #119 must pass Python API, frontend/route, Postgres migration, container/Compose and independent security review. Crown #26 and #28 need Node Creator Studio tests and the existing full StarNet `npm run verify`; #28's stacked base must be reconciled after #26 is approved/merged. Do not merge conflicts or rewrite other branches blindly.
 2. **OpenCodeReview**: repo `executiveusa/open-code-review`; its standard workflow is pinned as `c8e4c02b6f0e9467b755fc7e24b2619f6854a6a4` in Buffer. **The review run #43372852877 FAILED** (2 of 2 reviewed files failed in the LLM provider/subtask; not a clean review). Verify model credentials/availability, retry through the existing authorized GitHub workflow, or get a separate qualified independent reviewer. Do not claim an OCR pass.
-3. Examine flagged security/race/version issues, particularly broad Buffer operator token, Buffer workspace-scoped assets/consent, local SQLite durability, agent claim flags, owner/clinical identity binding, no blind provider retries, and external asset hash provenance. Fix only verified findings, one reversible PR at a time.
+3. Examine flagged security/race/version issues, particularly broad Buffer operator token, Buffer workspace-scoped assets/consent, local SQLite durability, agent claim flags, owner/clinical identity binding, no blind provider retries, external asset hash provenance **and Next.js critical runtime advisory #120**. Fix only verified findings, one reversible PR at a time.
 4. Obtain owner approval of brand/visual design and explicit approval to merge. Do NOT merge or deploy merely because tests pass.
 
 ## Task 1 — existing services READ ONLY
@@ -84,6 +89,8 @@ This calls **only** `POST /api/studio/ugc/plans` then `GET /api/studio/ugc/plans
 
 **This is a plan, not a rendered video. Stop if the Buffer backend returns Redis degraded mode, foreign workspace, mismatched UUID, missing rights/clinician, or an unsupported source reference. Do not use `/api/studio/ugc/factory/execute`.**
 
+**Stop conditions prior to footage test:** Buffer #119 must be merged/deployed with workspace-isolated source read; Buffer #120 critical Next security must be addressed; Crown PR #26/28 must be independently reviewed and merged in dependency order; real identities and private vault must be verified. A local CLI or dummy UUID is not sufficient.
+
 ## Task 4 — compatible renderer capability (new reviewed bridge only if needed)
 
 Before attempting paid media, show an **actual existing** supported Motion Master/Montage/Buffer footage-edit endpoint/CLI/worker that:
@@ -108,7 +115,8 @@ CC-CREATOR-SERVER-2
 Crown_PR26_sha_ci_review:
 Crown_PR28_sha_ci_review:
 Buffer_PR119_sha_ci_review:
-OpenCodeReview_run: provider failure / PASS with actual review receipt
+OpenCodeReview_run: FAILED until provider fixed / PASS with actual reviewed artifact
+Buffer_Next_16_4_0_security_issue_120: FIXED_AND_RETESTED / BLOCKED
 live_Instinct_and_Paperclip_ids: verified privately / BLOCKED
 real_model_originated_creator_tool_receipts:
 Creator_MCP_tool_count: 11 / mismatch
@@ -117,7 +125,7 @@ Buffer_MCP_tools_list_receipt:
 Buffer_workspace_id_verified_privately: yes/no
 Buffer_exact_reference_route_exists_live: yes/no
 source_asset_hash_grant_scope_and_clinical_screening: verified / BLOCKED
-Bufffer_canonical_plan_id_and_readback: real UUID / BLOCKED
+Buffer_canonical_plan_id_and_readback: real UUID / BLOCKED
 duplicate_plan_prevented: PASS/FAIL
 actual_30s_mp4_ref_sha_duration:
 actual_15s_mp4_ref_sha_duration:
