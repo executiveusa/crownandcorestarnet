@@ -8,6 +8,7 @@ import { createStudio, StudioError } from './domain.mjs';
 import { createPipeline } from './pipeline.mjs';
 import { sqliteStore } from './sqlite-store.mjs';
 import { createIdentityVerifier } from './identity.mjs';
+import { createCreatorWorkflow } from './creators.mjs';
 
 const json = (res, status, body) => {
   res.writeHead(status, { 'content-type': 'application/json; charset=utf-8',
@@ -47,6 +48,7 @@ export function createApiServer({ studio, tokens, identity = null }) {
   const secrets = Object.values(tokens).filter(Boolean);
   if (new Set(secrets).size !== secrets.length) throw new Error('All configured role credentials must be distinct.');
   const pipeline = createPipeline(studio);
+  const creators = createCreatorWorkflow(studio);
   return http.createServer(async (req, res) => {
     try {
       const pathname = new URL(req.url, 'http://127.0.0.1').pathname;
@@ -73,7 +75,7 @@ export function createApiServer({ studio, tokens, identity = null }) {
         agentOnly();
         return json(res, 201, { outcome: studio.create(await readBody(req)) });
       }
-      const match = pathname.match(/^\/v1\/outcomes\/([^/]+)(?:\/(source|storyboard|review-request|approvals|render-plan|summary|rights-verify|render-authorize|dispatch-reserve|provider-ack|provider-result|qa-verify|film-approve|publish-authorize|publish-receipt|attribution|job-fail|rights-revoke|takedown-receipt))?$/);
+      const match = pathname.match(/^\/v1\/outcomes\/([^/]+)(?:\/(source|storyboard|review-request|approvals|render-plan|summary|rights-verify|render-authorize|dispatch-reserve|provider-ack|provider-result|qa-verify|film-approve|publish-authorize|publish-receipt|attribution|job-fail|rights-revoke|takedown-receipt|creator-candidate|creator-outreach|creator-outreach-authorize|creator-outreach-sent|creator-release))?$/);
       if (!match) return json(res, 404, { error: 'NOT_FOUND' });
       const [, id, action] = match;
       if (req.method === 'GET' && !action) return json(res, 200, { outcome: studio.get(id) });
@@ -81,6 +83,18 @@ export function createApiServer({ studio, tokens, identity = null }) {
       if (req.method !== 'POST') return json(res, 405, { error: 'METHOD_NOT_ALLOWED' });
       // Privileged pipeline routes are NEVER available through agent MCP.
       // The operator/QA/publisher credentials belong to separate trusted services.
+      const creatorRoutes = {
+        'creator-candidate': ['agent','proposeCandidate'],
+        'creator-outreach': ['agent','prepareOutreach'],
+        'creator-outreach-authorize': ['owner','authorizeOutreach'],
+        'creator-outreach-sent': ['operator','recordSent'],
+        'creator-release': ['rights','recordRelease']
+      };
+      if (creatorRoutes[action]) {
+        const [requiredRole, method] = creatorRoutes[action];
+        if (role !== requiredRole) throw new StudioError('FORBIDDEN', requiredRole + ' role required.', 403);
+        return json(res, 200, { outcome: creators[method](id, role, await readBody(req)) });
+      }
       const pipelineRoutes = {
         'rights-verify': ['rights','verifyRights'],
         'render-authorize': ['owner','authorizeRender'],
