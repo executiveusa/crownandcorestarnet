@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Crown & Core Creator Studio — Local Proof API
-  version: 0.3.0
+  version: 0.4.0
   description: >
     Local loopback-only API with role-separated workflow, signed callbacks and
     optional OIDC reviewer identity. External provider adapters are coded but
@@ -685,6 +685,106 @@ paths:
         '200': { description: Verified signed event applied }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '409': { $ref: '#/components/responses/Conflict' }
+  /v1/buffer/status:
+    get:
+      summary: Read authenticated Buffer Blaster service status through StarNet
+      description: No credentials, wallets, media or patient data returned; no paid execution.
+      x-required-role: authenticated
+      responses:
+        '200':
+          description: Actual upstream health and approval gate state
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  buffer:
+                    type: object
+                    properties:
+                      connected: { type: boolean }
+                      version: { type: string }
+                      crown_30_15_render_supported: { const: false }
+                      paid_execution_enabled: { const: false }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '503': { description: Buffer bridge not configured }
+  /v1/buffer/mcp-tools:
+    get:
+      summary: Discover authenticated Buffer MCP tool NAMES only
+      x-required-role: authenticated
+      description: >
+        StarNet never provides an arbitrary Buffer MCP tools/call proxy to agents.
+        The returned names are read-only capability discovery, not authorization.
+      responses:
+        '200': { description: Tool catalog readback; no external tool executed }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '503': { description: Buffer bridge not configured }
+  /v1/outcomes/{id}/buffer-source-bind:
+    parameters:
+      - $ref: '#/components/parameters/OutcomeId'
+    post:
+      summary: Independently bind exactly one workspace-scoped Buffer media source
+      x-required-role: rights
+      description: >
+        Requires existing StarNet exact-version owner/clinical approval,
+        rights grant and asset hash. The rights worker validates Buffer's
+        GET /api/studio/references/{uuid} against server-authorized workspace.
+        Source membership is not itself rights/consent verification.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [version, source_uuid]
+              additionalProperties: false
+              properties:
+                version: { type: integer, minimum: 1 }
+                source_uuid: { type: string, format: uuid }
+      responses:
+        '200': { description: Trusted source projection and append-only receipt }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '503': { description: Buffer bridge not configured }
+  /v1/outcomes/{id}/buffer-plan:
+    parameters:
+      - $ref: '#/components/parameters/OutcomeId'
+    post:
+      summary: Sync approved creative into Buffer's zero-spend canonical plan ledger
+      x-required-role: agent
+      description: >
+        Request body must be an EMPTY JSON object. StarNet constructs approved
+        script and media references from canonical state and requires Buffer
+        Supabase backend, exact creative/rights/idempotency readback. A plan is
+        not video generation or an ad spending approval.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              maxProperties: 0
+              additionalProperties: false
+      responses:
+        '200':
+          description: A confirmed 0-cent DRAFT UGC plan with an external plan ID
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  outcome: { type: object }
+                  external:
+                    type: object
+                    properties:
+                      plan_id: { type: string, format: uuid }
+                      backend: { const: supabase }
+                      readback_verified: { const: true }
+                      paid_generation: { const: false }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '503': { description: Buffer bridge not configured }
 components:
   securitySchemes:
     bearerAuth:
