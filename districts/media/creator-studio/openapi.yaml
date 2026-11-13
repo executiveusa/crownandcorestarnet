@@ -727,6 +727,15 @@ components:
         disclosure_present: { type: boolean }
     Decision:
       type: object
+      description: >
+        Role-dependent approval: owner approve requires rights_confirmed=true;
+        clinical approve requires a nonempty opaque claim_ref even for a
+        claim-free screening. Clinical approval without claim_ref returns
+        HTTP 400 INVALID_REF. Every medspa render requires independent
+        clinical screening regardless of the agent's claims_present flag.
+      x-role-dependent-required:
+        owner_approve: [version, decision, rights_confirmed]
+        clinical_approve: [version, decision, claim_ref]
       required: [version, decision]
       properties:
         version: { type: integer, minimum: 1 }
