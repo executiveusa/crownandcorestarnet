@@ -5,6 +5,7 @@ import { createHash } from 'node:crypto';
 import { mkdirSync, chmodSync, existsSync, realpathSync } from 'node:fs';
 import { dirname, resolve, relative, isAbsolute } from 'node:path';
 import { TENANT, StudioError } from './domain.mjs';
+import { requireOutsideRepository } from './private-path.mjs';
 
 function invalid(message){throw new StudioError('STORAGE_INTEGRITY',message,500);}
 function digest(event){
@@ -22,9 +23,7 @@ function verifyChain(item){
   }
 }
 function filePath(filename){
-  if(typeof filename!=='string'||!isAbsolute(filename))throw new Error('Private SQLite path must be absolute.');
-  const target=resolve(filename),cwd=realpathSync(process.cwd()),rel=relative(cwd,target);
-  if(!rel.startsWith('..')&&rel!=='..')throw new Error('SQLite state must remain outside the public repository.');
+  const target=requireOutsideRepository(filename);
   mkdirSync(dirname(target),{recursive:true,mode:0o700});
   return target;
 }
