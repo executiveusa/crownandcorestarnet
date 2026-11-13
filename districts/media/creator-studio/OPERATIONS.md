@@ -48,7 +48,7 @@ Instinct voice/text intent
   → creator_candidate_propose / creator_outreach_prepare (optional; UNSENT)
   → creator_source_register + creator_storyboard_propose
   → creator_review_request
-  → owner/clinical storyboard approval (MFA OIDC or isolated proof token)
+  → owner storyboard approval and independent clinical screening for EVERY medspa render (MFA OIDC or isolated proof token)
   → creator_render_plan_prepare (NO EXECUTION)
   → rights-verify (rights officer, grant + asset hashes + expiry)
   → render-authorize (owner, exact revision + cost cap)
