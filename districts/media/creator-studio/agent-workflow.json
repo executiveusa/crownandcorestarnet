@@ -1,0 +1,199 @@
+{
+  "schema_version": "1.0",
+  "id": "crown-core-creator-studio",
+  "tenant_id": "crown-and-core",
+  "authority": "Existing Instinct interprets owner intent; existing Paperclip schedules one bounded mission; Hermes coordinates specialists only as supported within that mission. Creator Studio enforces policy.",
+  "mode": "agent-first-api-mcp",
+  "owner_interface": {
+    "primary": "existing-instinct-voice-or-text",
+    "fallback": "offline-outcome-prototype",
+    "interruption_policy": "Ask only for source/rights/clinical/creative/spend/publishing decisions that require verified owner or professional authority."
+  },
+  "defaults": {
+    "goal": "booking_intent",
+    "placement": "instagram_reel",
+    "cuts_seconds": [
+      30,
+      15
+    ],
+    "max_outreach_candidates": 10,
+    "paid_media_enabled": false,
+    "automatic_publication_enabled": false,
+    "automatic_outreach_enabled": false
+  },
+  "tools": {
+    "agent": [
+      "creator_outcome_create",
+      "creator_outcome_status",
+      "creator_outcome_get",
+      "creator_source_register",
+      "creator_storyboard_propose",
+      "creator_review_request",
+      "creator_render_plan_prepare",
+      "creator_candidate_propose",
+      "creator_outreach_prepare"
+    ],
+    "forbidden_to_agent": [
+      "owner_approve",
+      "clinical_approve",
+      "rights_verify",
+      "render_authorize",
+      "dispatch_reserve",
+      "publish_authorize",
+      "publish_reserve",
+      "outreach_authorize",
+      "outreach_reserve",
+      "outreach_send",
+      "paid_spend",
+      "patient_data_access"
+    ]
+  },
+  "tasks": [
+    {
+      "id": "intent",
+      "worker": "instinct",
+      "required": [
+        "outcome"
+      ],
+      "tools": [
+        "creator_outcome_create"
+      ],
+      "evidence": "outcome ID, DRAFT receipt"
+    },
+    {
+      "id": "brand-truth",
+      "worker": "hermes:truth",
+      "depends_on": [
+        "intent"
+      ],
+      "tools": [
+        "verified-starNet-knowledge-read-only"
+      ],
+      "evidence": "approved source refs; if knowledge MCP not connected, BLOCK"
+    },
+    {
+      "id": "creative",
+      "worker": "hermes:creative",
+      "depends_on": [
+        "brand-truth"
+      ],
+      "tools": [
+        "creator_source_register",
+        "creator_storyboard_propose"
+      ],
+      "evidence": "source and rights refs, explicit claims and disclosure flags"
+    },
+    {
+      "id": "review",
+      "worker": "paperclip:review-routing",
+      "depends_on": [
+        "creative"
+      ],
+      "tools": [
+        "creator_review_request"
+      ],
+      "evidence": "REVIEW_PENDING, no agent self-approval"
+    },
+    {
+      "id": "rights-and-approval",
+      "worker": "verified-human-reviewer",
+      "depends_on": [
+        "review"
+      ],
+      "tools": [],
+      "evidence": "exact-version owner, clinical if needed, and independent rights grants"
+    },
+    {
+      "id": "plan",
+      "worker": "hermes:production-planner",
+      "depends_on": [
+        "rights-and-approval"
+      ],
+      "tools": [
+        "creator_render_plan_prepare"
+      ],
+      "evidence": "PLANNED_NOT_SUBMITTED; not a video"
+    },
+    {
+      "id": "render",
+      "worker": "trusted-operator",
+      "depends_on": [
+        "plan"
+      ],
+      "tools": [],
+      "evidence": "separate capped render authorization, provider job receipt, no automatic retry"
+    },
+    {
+      "id": "qa",
+      "worker": "independent-qa",
+      "depends_on": [
+        "render"
+      ],
+      "tools": [],
+      "evidence": "two real MP4s with matching SHA-256 and ffprobe duration/orientation"
+    },
+    {
+      "id": "final-approval",
+      "worker": "verified-owner",
+      "depends_on": [
+        "qa"
+      ],
+      "tools": [],
+      "evidence": "exact 30s/15s hashes and decision ref"
+    },
+    {
+      "id": "publish-optional",
+      "worker": "trusted-publisher",
+      "depends_on": [
+        "final-approval"
+      ],
+      "tools": [],
+      "evidence": "separate organic-only owner authorization and real platform receipt"
+    },
+    {
+      "id": "measurement",
+      "worker": "trusted-attribution-bridge",
+      "depends_on": [
+        "publish-optional"
+      ],
+      "tools": [],
+      "evidence": "signed aggregate events; unknown remains null"
+    }
+  ],
+  "specialists": {
+    "spawn_policy": "bounded-ephemeral-within-existing-Paperclip-task-only",
+    "max_parallel": 3,
+    "max_unverified_external_calls": 0,
+    "default_budget_usd": 0,
+    "prohibited": "Persistent autonomous subagents, parallel schedulers, secrets in prompts, unsanctioned creator outreach, paid ads, synthetic testimonials, PHI"
+  },
+  "outcome_receipt": {
+    "required": [
+      "tenant_id",
+      "outcome_id",
+      "version",
+      "status",
+      "next_action",
+      "verified_video",
+      "published"
+    ],
+    "never_invent": [
+      "provider_job_id",
+      "artifact_ref",
+      "video_url",
+      "bookings",
+      "revenue_usd"
+    ]
+  },
+  "release_gates": [
+    "independent-security-review",
+    "owner-brand-approval",
+    "verified-instinct-mcp-call",
+    "verified-existing-paperclip-identity",
+    "real-provider-health",
+    "private-rights-vault",
+    "real-mp4-qa",
+    "rollback-test"
+  ],
+  "rollback": "Disable outbound workers; revoke scoped tokens; stop local services; revert approved patch; retain audit and separately reconcile published content."
+}
