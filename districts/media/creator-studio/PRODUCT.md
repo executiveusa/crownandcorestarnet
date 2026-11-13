@@ -1,12 +1,12 @@
 # Crown & Core Creator Studio — standalone product inside StarNet
 
-Status: **MVP draft / no live connectors / no render claim**. Owner: Crown & Core. Product classification: **USE** (client-specific owned capability). Current workstream: bounded media experiment, not a fourth running controller.
+Status: **P0 local-proof API/MCP + outcome-first UI; no live connectors / no render claim**. Owner: Crown & Core. Product classification: **USE** (client-specific owned capability). Current workstream: bounded media experiment, not a fourth running controller.
 
 ## Decision
 The Creator Studio belongs in `executiveusa/crownandcorestarnet` under `districts/media/creator-studio/`. It is a standalone **Crown & Core application surface**, not a separate repository, not BufferBlaster, not MACS, and not a duplicate StarNet scheduler. Its business objects use StarNet's existing policies and approval/receipt contracts. It does not import Tangles & Locs data.
 
 ## Validated existing constraints
-- Read `../../CONTEXT.md`, `../COMMERCIAL_STUDIO_CONTRACT.md`, `../../../_shared/policy/HEART_AND_SOUL.md` by their actual repository paths; the canonical contract from repository root is `districts/media/references/COMMERCIAL_STUDIO_CONTRACT.md`.
+- Read `../CONTEXT.md`, `../references/COMMERCIAL_STUDIO_CONTRACT.md`, `../../../_shared/policy/HEART_AND_SOUL.md`. Canonical paths are relative to this directory.
 - StarNet owns campaign briefs, audience/service selection, approved claim references, media provenance, creator rights, cost caps, human review, job routing and immutable receipts.
 - Motion Master and Montage are **candidate external production/rendering providers**. Their live runtime/API compatibility has NOT been verified. No embedded video-render engine is required for this MVP.
 - Instinct/Paperclip connection remains a separate unverified gate (PR #24 and issue #25); a working static prototype does not prove live agent dispatch.
@@ -22,19 +22,15 @@ The Creator Studio belongs in `executiveusa/crownandcorestarnet` under `district
 6. **Measurement**: source-tagged landing/booking events, completed bookings and attributable revenue when connected; unknown stays null.
 7. **Campaign insights**: planned/approved/produced/published/verified states; do not confuse video view counts with booked revenue.
 
-## MVP boundary — first independently testable slice
-A browser-based **draft campaign builder** at `districts/media/creator-studio/index.html`. It must:
-- Run without keys/network, allow entry of a Crown & Core campaign and one licensed source.
-- Distinguish real source footage, authorized creator content, and synthetic creative.
-- Reject export for missing required fields, missing usage rights, or unreviewed health-related claims.
-- Export a downloadable JSON brief with `status:DRAFT_NOT_APPROVED`, `execution_enabled:false`, `publish_enabled:false`, `paid_spend_enabled:false` and no invented metrics.
-- Never contact a customer, post, spend, book, or trigger a real render.
+## P0 boundary — first independently testable slice
+- A responsive, no-network outcome-first design prototype at `index.html` accepts one sentence, suggested goals, optional source refs and exports an explicitly **unapproved** JSON draft even when rights are missing. Missing evidence is flagged, not silently asserted.
+- A Node 22 local proof REST API and seven agent-only MCP tools are implemented in `src/`, with a versioned state machine, owner/clinical role separation, rights/claims/disclosure gates and non-executing 30s+15s render plan.
+- `tests/studio.test.mjs` and a dedicated CI workflow exercise authorization, tenant separation, stale decisions, synthetic testimonial blocking, idempotency and no-dispatch.
+- No customer data, live Instinct calls, external provider rendering, paid spend, publishing or bookings are performed. Real voice approvals and production private storage are not implemented.
+- Full details: [PRD](./PRD.md), [Architecture](./ARCHITECTURE.md), [Wireframes](./WIREFRAMES.md), [Instinct Handoff](./INSTINCT_HANDOFF.md).
 
-## Proposed API contract (not deployed)
-`POST /creator-studio/jobs`: requires authenticated Crown & Core tenant, approved immutable brief ref, selected provider, verified adapter, scoped budget approval, asset rights records and idempotency key. Return provider job ID and receipt only after provider confirms.
-`GET /creator-studio/jobs/:id`: status and source evidence with tenant scoping.
-`POST /creator-studio/reviews/:id/decision`: authenticated authorized approver, exact asset revision and recorded decision.
-No API routes are implemented in this change. Do not pass secrets or personal client information in this public repository.
+## API boundary
+The local API is **loopback-only** and must not be exposed publicly. It supports agent draft creation/source/storyboard/review and owner/clinical exact-version approval with separate bearer roles. Render planning is not render execution. Production endpoints and provider integration are proposed in `ARCHITECTURE.md`, not deployed.
 
 ## Studio workflow
 IDEA -> SOURCE+RIGHTS -> STORYBOARD -> DRAFT BRIEF -> OWNER REVIEW -> RENDER JOB (only after approved adapter) -> EXPORT/QA -> HUMAN APPROVAL -> PUBLICATION (separate authorization) -> ATTRIBUTION.
