@@ -219,3 +219,26 @@ test('Gmail message 404 is classified as permanent deletion, not a retryable his
   await assert.rejects(g.message('deletedmessage01'),e=>e.code==='GMAIL_MESSAGE_GONE');
   await assert.rejects(g.changes('100'),/HISTORY_EXPIRED/);
 });
+
+test('notification backlog of 26 receipts drains completely before success',async t=>{
+  const store=fixture(t);
+  const total=26;
+  for(let i=0;i<total;i++)store.saveReply({
+    gmailId:'reply-message-'+String(i).padStart(3,'0'),
+    missionId:mission,threadId:thread,body:'Read-only test receipt '+i
+  });
+  let delivered=0;
+  const bridge=createBridge({store,gmail:{},config:{
+    ...config,notificationUrl:'https://owner-callback.example.test/events',
+    notificationSecret:'z'.repeat(40)
+  },fetchFn:async (_url,options)=>{
+    assert.equal(options.headers['x-cc-event-id'].startsWith('reply-message-'),true);
+    delivered++;
+    return {ok:true,status:200};
+  }});
+  await bridge.flushNotifications();
+  assert.equal(delivered,total);
+  assert.equal(store.pendingNotifications().length,0);
+  await bridge.flushNotifications();
+  assert.equal(delivered,total);
+});
