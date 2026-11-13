@@ -229,20 +229,27 @@ export function createPipeline(studio, { now=()=>new Date().toISOString(), actor
   }
   function published(id,role,input={}) {
     return change(id,role,'publisher',item=>{
-      inState(item,'PUBLISH_RESERVED');
+      inState(item,'PUBLISH_RESERVED','PUBLISH_RECONCILIATION_REQUIRED');
       exact(item,input.version);
+      // This is the authenticated RECEIPT of an already reserved external action.
+      // Approval expiry blocks new reservations, not late provider acknowledgements.
       const auth=item.publication_authorization;
-      if(Date.parse(auth.expires_at)<=Date.parse(now()))deny('AUTH_EXPIRED','Publication approval expired.');
       if(input.channel!==auth.channel || input.published_hash!==auth.hash_30)
         deny('PUBLICATION_MISMATCH','Channel or exact approved video hash mismatch.');
-      if(!item.rights_verification || Date.parse(item.rights_verification.expires_at)<=Date.parse(now()))
-        deny('RIGHTS_EXPIRED','Rights expired before publication.');
+      if(!item.rights_verification)
+        deny('RIGHTS_NOT_VERIFIED','Original rights record must remain auditable.');
       const external_post_ref=ref(input.external_post_ref,'external_post_ref');
       const publication_receipt_ref=ref(input.publication_receipt_ref,'publication_receipt_ref');
       item.publication_receipt={version:item.version,channel:auth.channel,external_post_ref,
         publication_receipt_ref,hash_30:auth.hash_30,at:now(),paid_spend_usd:0};
-      item.status='PUBLISHED_VERIFIED';
-      return 'organic_publication_receipt_verified';
+      item.status=item.rights_verification.revoked ||
+        Date.parse(item.rights_verification.expires_at)<=Date.parse(now()) ||
+        Date.parse(auth.expires_at)<=Date.parse(now()) ||
+        item.status==='PUBLISH_RECONCILIATION_REQUIRED'
+        ? 'TAKEDOWN_REQUIRED':'PUBLISHED_VERIFIED';
+      return item.status==='TAKEDOWN_REQUIRED'
+        ? 'late_publication_receipt_requires_takedown'
+        : 'organic_publication_receipt_verified';
     });
   }
   function attribute(id,role,input={}) {
@@ -290,8 +297,12 @@ export function createPipeline(studio, { now=()=>new Date().toISOString(), actor
       item.rights_verification={...(item.rights_verification??{}),version:item.version,
         revoked:true,revocation_ref,revoked_at:now()};
       item.render_authorization=null;
-      item.publication_authorization=null;
-      item.status=item.publication_receipt?'TAKEDOWN_REQUIRED':'RIGHTS_REVOKED';
+      // Keep an in-flight publish authorization solely for receipt reconciliation.
+      // It is never executable again in PUBLISH_RECONCILIATION_REQUIRED state.
+      const pendingPublish=item.status==='PUBLISH_RESERVED';
+      if(!pendingPublish)item.publication_authorization=null;
+      item.status=item.publication_receipt?'TAKEDOWN_REQUIRED':
+        pendingPublish?'PUBLISH_RECONCILIATION_REQUIRED':'RIGHTS_REVOKED';
       return 'source_rights_revoked_block_future_use';
     });
   }
