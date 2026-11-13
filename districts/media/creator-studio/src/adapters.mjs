@@ -69,7 +69,7 @@ export function createOrganicPublisher({publishUrl,token,fetchFn=fetch,timeoutMs
   return {
     publish:async(item)=>{
       const a=item?.publication_authorization;
-      if(item?.status!=='PUBLISH_AUTHORIZED'||!a||
+      if(item?.status!=='PUBLISH_RESERVED'||!a||
         a.version!==item.version||a.paid_spend_usd!==0||
         Date.parse(a.expires_at)<=Date.now()||
         !item.final_approval||!item.qa?.verified||
