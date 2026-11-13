@@ -5,6 +5,8 @@ import { readFileSync, writeFileSync, renameSync, mkdirSync, existsSync } from '
 import { dirname, resolve, relative, isAbsolute } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createStudio, StudioError } from './domain.mjs';
+import { createPipeline } from './pipeline.mjs';
+import { sqliteStore } from './sqlite-store.mjs';
 
 const json = (res, status, body) => {
   res.writeHead(status, { 'content-type': 'application/json; charset=utf-8',
@@ -39,9 +41,10 @@ async function readBody(req) {
 }
 export function createApiServer({ studio, tokens }) {
   if (!studio) throw new Error('studio required');
-  if (!tokens?.agent || !tokens?.owner || tokens.agent === tokens.owner ||
-      (tokens.clinical && [tokens.agent, tokens.owner].includes(tokens.clinical)))
-    throw new Error('Separate agent and owner credentials required; clinical credential must be distinct.');
+  if (!tokens?.agent || !tokens?.owner) throw new Error('Separate agent and owner credentials required.');
+  const secrets = Object.values(tokens).filter(Boolean);
+  if (new Set(secrets).size !== secrets.length) throw new Error('All configured role credentials must be distinct.');
+  const pipeline = createPipeline(studio);
   return http.createServer(async (req, res) => {
     try {
       const pathname = new URL(req.url, 'http://127.0.0.1').pathname;
@@ -59,12 +62,32 @@ export function createApiServer({ studio, tokens }) {
         agentOnly();
         return json(res, 201, { outcome: studio.create(await readBody(req)) });
       }
-      const match = pathname.match(/^\/v1\/outcomes\/([^/]+)(?:\/(source|storyboard|review-request|approvals|render-plan|summary))?$/);
+      const match = pathname.match(/^\/v1\/outcomes\/([^/]+)(?:\/(source|storyboard|review-request|approvals|render-plan|summary|rights-verify|render-authorize|dispatch-reserve|provider-ack|provider-result|qa-verify|film-approve|publish-authorize|publish-receipt|attribution|job-fail))?$/);
       if (!match) return json(res, 404, { error: 'NOT_FOUND' });
       const [, id, action] = match;
       if (req.method === 'GET' && !action) return json(res, 200, { outcome: studio.get(id) });
       if (req.method === 'GET' && action === 'summary') return json(res, 200, { summary: studio.summary(id) });
       if (req.method !== 'POST') return json(res, 405, { error: 'METHOD_NOT_ALLOWED' });
+      // Privileged pipeline routes are NEVER available through agent MCP.
+      // The operator/QA/publisher credentials belong to separate trusted services.
+      const pipelineRoutes = {
+        'rights-verify': ['rights','verifyRights'],
+        'render-authorize': ['owner','authorizeRender'],
+        'dispatch-reserve': ['operator','reserveDispatch'],
+        'provider-ack': ['operator','acknowledgeProvider'],
+        'provider-result': ['operator','providerResult'],
+        'qa-verify': ['qa','verifyQa'],
+        'film-approve': ['owner','decideFinal'],
+        'publish-authorize': ['owner','authorizePublish'],
+        'publish-receipt': ['publisher','published'],
+        attribution: ['operator','attribute'],
+        'job-fail': ['operator','failJob']
+      };
+      if (pipelineRoutes[action]) {
+        const [requiredRole, method] = pipelineRoutes[action];
+        if (role !== requiredRole) throw new StudioError('FORBIDDEN', requiredRole + ' role required.', 403);
+        return json(res, 200, { outcome: pipeline[method](id, role, await readBody(req)) });
+      }
       if (action === 'approvals') {
         if (!['owner', 'clinical'].includes(role)) throw new StudioError('FORBIDDEN', 'Reviewer role required.', 403);
         return json(res, 200, { outcome: studio.decide(id, role, await readBody(req)) });
@@ -106,14 +129,21 @@ export function localStore(filename) {
 export function startLocalServer(env = process.env) {
   const agent = env.CREATOR_STUDIO_AGENT_TOKEN, owner = env.CREATOR_STUDIO_OWNER_TOKEN;
   if (!agent || !owner || agent.length < 24 || owner.length < 24) throw new Error('Set distinct 24+ character local proof tokens.');
-  const store = localStore(env.CREATOR_STUDIO_STATE_FILE);
+  const store = env.CREATOR_STUDIO_DB_FILE ? sqliteStore(env.CREATOR_STUDIO_DB_FILE) :
+    localStore(env.CREATOR_STUDIO_STATE_FILE);
   const studio = createStudio(store);
-  const server = createApiServer({ studio, tokens: { agent, owner, clinical: env.CREATOR_STUDIO_CLINICAL_TOKEN } });
+  const server = createApiServer({ studio, tokens: {
+    agent, owner, clinical: env.CREATOR_STUDIO_CLINICAL_TOKEN,
+    rights: env.CREATOR_STUDIO_RIGHTS_TOKEN,
+    operator: env.CREATOR_STUDIO_OPERATOR_TOKEN,
+    qa: env.CREATOR_STUDIO_QA_TOKEN,
+    publisher: env.CREATOR_STUDIO_PUBLISHER_TOKEN
+  } });
   const port = Number(env.CREATOR_STUDIO_PORT ?? 8787);
   if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error('Invalid port.');
   server.listen(port, '127.0.0.1', () => {
     console.log('Creator Studio LOCAL_PROOF API on http://127.0.0.1:' + port);
-    console.log('No rendering, publishing, customer contact or paid actions enabled.');
+    console.log('No automatic rendering, publishing, customer contact or paid actions enabled.');
   });
   return server;
 }
