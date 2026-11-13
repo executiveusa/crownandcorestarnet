@@ -255,3 +255,28 @@ test('revoked rights after publication require verified takedown and block silen
   assert.equal(f.studio.summary(f.id).published,false);
   assert.equal(f.studio.get(f.id).status,'TAKEN_DOWN');
 });
+
+test('unflagged medspa treatment claim cannot be rendered without clinical screening',()=>{
+  const studio=createStudio({now:()=>at});
+  const pipeline=createPipeline(studio,{now:()=>at});
+  const id=studio.create({outcome:'Create an accurate medspa service film'}).id;
+  studio.registerSource(id,{source_type:'facility',source_ref:'asset:one',
+    rights_ref:'rights:one',usage_scope:'both'});
+  studio.proposeStoryboard(id,{hook:'Our treatments reduce acne scars',
+    story:'Show the real Crown & Core space',cta:'Explore',
+    claims_present:false,disclosure_present:false});
+  const review=studio.requestReview(id);
+  studio.decide(id,'owner',{version:review.version,decision:'approve',rights_confirmed:true});
+  studio.prepareRenderPlan(id,{provider:'montage',idempotency_key:'job:claim',
+    max_cost_usd:5});
+  pipeline.verifyRights(id,'rights',{version:review.version,rights_ref:'rights:one',
+    grant_ref:'grant:one',grant_sha256:c,asset_sha256:a,scope:'both',
+    revoked:false,expires_at:until});
+  rejected(()=>pipeline.authorizeRender(id,'owner',{version:review.version,
+    max_cost_usd:5,decision_ref:'decision:render',expires_at:until}),'NOT_APPROVED');
+  studio.decide(id,'clinical',{version:review.version,decision:'approve',
+    claim_ref:'claim:screened'});
+  pipeline.authorizeRender(id,'owner',{version:review.version,
+    max_cost_usd:5,decision_ref:'decision:render',expires_at:until});
+  assert.equal(studio.get(id).status,'RENDER_AUTHORIZED');
+});
