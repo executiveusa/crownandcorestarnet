@@ -2,6 +2,7 @@
 // NOT an A2A server, Instinct API, or ChatGPT conversation wake API.
 import { createHash, createHmac, createPublicKey, timingSafeEqual, verify } from 'node:crypto';
 import { DatabaseSync } from 'node:sqlite';
+import { requireOutsideRepository } from '../../../districts/media/creator-studio/src/private-path.mjs';
 
 export const MISSION_PATTERN = /^CC-A2A-[A-Z0-9-]{3,70}$/;
 const safeEq = (a,b) => {
@@ -13,6 +14,7 @@ const digest = (value) => createHash('sha256').update(value).digest('hex');
 
 export function openStore(filename) {
   if (!filename?.startsWith('/') || /\n|\r/.test(filename)) throw Error('Absolute private SQLite path required');
+  requireOutsideRepository(filename);
   const db = new DatabaseSync(filename);
   db.exec(`PRAGMA journal_mode=WAL;
     PRAGMA synchronous=FULL;
@@ -26,6 +28,12 @@ export function openStore(filename) {
       thread_id TEXT NOT NULL, received_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
       content_sha256 TEXT NOT NULL, reply TEXT NOT NULL,
       analysis TEXT, FOREIGN KEY(mission_id) REFERENCES missions(mission_id)
+    );
+    CREATE TABLE IF NOT EXISTS outbox(
+      gmail_id TEXT PRIMARY KEY, delivered_at TEXT,
+      attempts INTEGER NOT NULL DEFAULT 0,
+      last_error TEXT,
+      FOREIGN KEY(gmail_id) REFERENCES inbound(gmail_id)
     );`);
   const getState = (name) => db.prepare('SELECT value FROM state WHERE name=?').get(name)?.value ?? null;
   const setState = (name,value) => db.prepare('INSERT INTO state (name,value) VALUES (?,?) ON CONFLICT(name) DO UPDATE SET value=excluded.value').run(name,String(value));
@@ -45,9 +53,21 @@ export function openStore(filename) {
     saveReply({gmailId,missionId,threadId,body,analysis=null}) {
       const m=this.getMission(missionId);
       if(!m || m.gmail_thread!==threadId) throw Error('Unregistered mission/thread');
-      const r=db.prepare('INSERT OR IGNORE INTO inbound(gmail_id,mission_id,thread_id,content_sha256,reply,analysis) VALUES (?,?,?,?,?,?)')
-        .run(gmailId,missionId,threadId,digest(body),body,analysis);
-      return r.changes===1;
+      db.exec('BEGIN IMMEDIATE');
+      try {
+        const r=db.prepare('INSERT OR IGNORE INTO inbound(gmail_id,mission_id,thread_id,content_sha256,reply,analysis) VALUES (?,?,?,?,?,?)')
+          .run(gmailId,missionId,threadId,digest(body),body,analysis);
+        if(r.changes)db.prepare('INSERT INTO outbox(gmail_id) VALUES (?)').run(gmailId);
+        db.exec('COMMIT');
+        return r.changes===1;
+      } catch(error) { db.exec('ROLLBACK'); throw error; }
+    },
+    pendingNotifications() {
+      return db.prepare('SELECT o.gmail_id,i.mission_id,i.content_sha256,i.received_at FROM outbox o JOIN inbound i ON i.gmail_id=o.gmail_id WHERE o.delivered_at IS NULL ORDER BY i.received_at LIMIT 25').all();
+    },
+    notificationResult(id,{delivered,error=null}={}) {
+      if(delivered) db.prepare('UPDATE outbox SET delivered_at=CURRENT_TIMESTAMP,attempts=attempts+1,last_error=NULL WHERE gmail_id=?').run(id);
+      else db.prepare('UPDATE outbox SET attempts=attempts+1,last_error=? WHERE gmail_id=?').run(String(error??'delivery failure').slice(0,150),id);
     },
     close(){ db.close(); }
   };
