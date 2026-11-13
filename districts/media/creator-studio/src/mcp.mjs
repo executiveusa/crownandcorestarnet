@@ -41,6 +41,10 @@ export const tools = [
       terms_ref: field('string','Opaque terms reference'),
       max_fee_usd: field('number','Fee cap',{minimum:0,maximum:1000}) },
       ['id','creator_ref','message','terms_ref','max_fee_usd']) },
+  { name: 'creator_buffer_status', description: 'Read the authenticated Buffer Blaster API health and provider availability through StarNet. No secret or spend.',
+    inputSchema: object({}) },
+  { name: 'creator_buffer_plan_sync', description: 'Sync a rights/clinical-approved 30s source storyboard as a zero-spend canonical Buffer Blaster draft, not a video or render authorization.',
+    inputSchema: object({ id }, ['id']) },
   { name: 'creator_render_plan_prepare', description: 'Prepare an unsubmitted, non-billable 30s+15s external render plan after separate approval.',
     inputSchema: object({ id, provider: field('string','Candidate provider',{enum:['motion-master','montage']}),
       idempotency_key: field('string','Stable opaque job key'),
@@ -48,6 +52,8 @@ export const tools = [
       ['id','provider','idempotency_key','max_cost_usd']) }
 ];
 const operations = {
+  creator_buffer_status: () => ['GET', '/v1/buffer/status'],
+  creator_buffer_plan_sync: a => ['POST', '/v1/outcomes/' + encodeURIComponent(a.id) + '/buffer-plan', {}],
   creator_outcome_create: a => ['POST', '/v1/outcomes', a],
   creator_outcome_status: a => ['GET', '/v1/outcomes/' + encodeURIComponent(a.id) + '/summary'],
   creator_outcome_get: a => ['GET', '/v1/outcomes/' + encodeURIComponent(a.id)],
@@ -92,7 +98,7 @@ export function startMcp(env = process.env) {
     try {
       let result;
       if (method === 'initialize') result = { protocolVersion: '2024-11-05',
-        capabilities: { tools: {} }, serverInfo: { name: 'crown-core-creator-studio', version: '0.3.0' } };
+        capabilities: { tools: {} }, serverInfo: { name: 'crown-core-creator-studio', version: '0.4.0' } };
       else if (method === 'ping') result = {};
       else if (method === 'tools/list') result = { tools };
       else if (method === 'tools/call') {
