@@ -87,8 +87,10 @@ export async function sendApprovedCreatorOutreach(id,outreach_id,env=process.env
   const item=(await api(env,'operator','GET',outcomePath(id))).outcome;
   const adapter=createCreatorOutreachAdapter({sendUrl:getEnv(env,'CREATOR_OUTREACH_SEND_URL'),
     token:getEnv(env,'CREATOR_OUTREACH_TOKEN'),fetchFn});
-  // Do not retry an ambiguous delivery. Reconcile provider-side by outreach_id.
-  const receipt=await adapter.send(item,outreach_id);
+  const reserved=(await api(env,'operator','POST',outcomePath(id)+'/creator-outreach-reserve',
+    {outreach_id})).outcome;
+  // A lost acknowledgement leaves OUTREACH_RESERVED. Reconcile, never auto-retry.
+  const receipt=await adapter.send(reserved,outreach_id);
   return (await api(env,'operator','POST',outcomePath(id)+'/creator-outreach-sent',receipt)).outcome;
 }
 async function main(args,env){
