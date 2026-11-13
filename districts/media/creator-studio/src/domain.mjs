@@ -96,6 +96,7 @@ export function createStudio({ initial = [], persist = () => {}, now = () => new
     item.publication_authorization = null;
     item.publication_receipt = null;
     item.attribution = null;
+    item.buffer_blaster = null; // Previous external plan remains in Buffer's ledger; new revision requires rebind.
     if (item.creator_campaign) {
       for (const draft of item.creator_campaign.outreach ?? []) {
         if (draft.status !== 'SENT_VERIFIED') {
