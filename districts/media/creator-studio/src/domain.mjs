@@ -56,6 +56,8 @@ function concise(item) {
     READY_FOR_FINAL_REVIEW: 'Owner must approve exact final video hashes.',
     FILM_APPROVED: 'Approved film ready for delivery; publishing requires separate approval.',
     PUBLISH_AUTHORIZED: 'A trusted publisher may execute the authorized organic post.',
+    PUBLISH_RESERVED: 'Reconcile pending external publication; do not retry.',
+    PUBLISH_RECONCILIATION_REQUIRED: 'Rights revoked during pending publication; reconcile and remove any live post.',
     PUBLISHED_VERIFIED: 'Publication receipt recorded; attribution remains unverified unless sourced.',
     FAILED: 'Review failure receipt and request a new creative revision.',
     RIGHTS_REVOKED: 'Rights revoked. Replace the media before further work.',
@@ -127,7 +129,7 @@ export function createStudio({ initial = [], persist = () => {}, now = () => new
     // Never erase the only audit route to a published post or sent message.
     if(['RENDER_AUTHORIZED','DISPATCH_RESERVED','RENDERING','RENDERED',
         'READY_FOR_FINAL_REVIEW','FILM_APPROVED','PUBLISH_AUTHORIZED',
-        'PUBLISH_RESERVED','RIGHTS_REVOKED','TAKEDOWN_REQUIRED','TAKEN_DOWN']
+        'PUBLISH_RESERVED','PUBLISH_RECONCILIATION_REQUIRED','RIGHTS_REVOKED','TAKEDOWN_REQUIRED','TAKEN_DOWN']
        .includes(item.status))
       fail('EXTERNAL_OPERATION_PENDING',
         'Reconcile or complete the external operation before creating a new outcome.',409);
