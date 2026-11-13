@@ -15,13 +15,13 @@ const text=(v,n,max=600)=>{
   return v.trim();
 };
 const sha=v=>createHash('sha256').update(v).digest('hex');
-export function createCreatorWorkflow(studio,{now=()=>new Date().toISOString()}={}){
+export function createCreatorWorkflow(studio,{now=()=>new Date().toISOString(),actorRef=null}={}){
   if(!studio?.applyTrusted)throw new Error('Trusted Studio store required.');
   function mutate(id,role,allowed,fn){
     if(role!==allowed)deny('FORBIDDEN',allowed+' role required.',403);
     return studio.applyTrusted(id,(item,receipt)=>{
       const event=fn(item);
-      receipt(event,role);
+      receipt(event,role,actorRef);
     });
   }
   function proposeCandidate(id,role,input={}){
