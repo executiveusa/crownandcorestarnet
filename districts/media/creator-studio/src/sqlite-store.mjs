@@ -67,8 +67,13 @@ export function sqliteStore(filename){
           verifyChain(item);
           const known=counts.get(item.id)??0;
           const row=db.prepare('SELECT receipt_count FROM outcomes WHERE id=?').get(item.id);
-          if((row?.receipt_count??0)!==known||item.receipts.length<=known)
+          if((row?.receipt_count??0)!==known||item.receipts.length<known)
             invalid('Concurrent or non-append-only state update.');
+          if(row && item.receipts.length===known){
+            if(row.body!==JSON.stringify(item))invalid('Silent mutation without an audit receipt.');
+            continue;
+          }
+          if(item.receipts.length===known)invalid('New outcome requires an initial receipt.');
           if(row){
             db.prepare('UPDATE outcomes SET body=?,receipt_count=? WHERE id=?').run(
               JSON.stringify(item),item.receipts.length,item.id);
