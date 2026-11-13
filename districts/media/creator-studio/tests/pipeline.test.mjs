@@ -69,9 +69,9 @@ test('full approved film to separately authorized organic post with source-backe
   f.pipeline.authorizePublish(f.id,'owner',{version:f.version,channel:'instagram_reel',
     booking_path_verified:true,claim_policy_verified:true,
     decision_ref:'decision:publish',expires_at:until});
+  f.pipeline.reservePublication(f.id,'publisher',{version:f.version,decision_ref:'decision:publish'});
   rejected(()=>f.pipeline.published(f.id,'publisher',{version:f.version,channel:'instagram_reel',
     published_hash:c,external_post_ref:'post:one',publication_receipt_ref:'receipt:post'}),'PUBLICATION_MISMATCH');
-  f.pipeline.reservePublication(f.id,'publisher',{version:f.version,decision_ref:'decision:publish'});
   f.pipeline.published(f.id,'publisher',{version:f.version,channel:'instagram_reel',
     published_hash:a,external_post_ref:'post:one',publication_receipt_ref:'receipt:post'});
   assert.equal(f.studio.summary(f.id).published,true);
