@@ -101,6 +101,8 @@ export function createBufferBlasterClient({baseUrl,token,workspaceId,fetchFn=fet
         uuid(response.asset?.id,'source asset')!==referenceId||
         uuid(response.asset?.workspace_id,'asset workspace')!==workspace)
         fail('BUFFER_REFERENCE_DENIED','Referenced media is not verified in the configured Buffer Blaster workspace.',403);
+      if(!['uploaded_reference','source_video','brand_asset'].includes(response.asset.kind))
+        fail('BUFFER_UNSAFE_SOURCE','Only uploaded or private source-media references are eligible.',403);
       return {source_id:referenceId,workspace_id:workspace,kind:response.asset.kind,
         rights_verified:false};
     },
