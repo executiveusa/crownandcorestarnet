@@ -56,4 +56,6 @@ test('identity mode refuses static owner token while accepting MFA JWT',async t=
   assert.equal((await post(jwt(claims({amr:['pwd']})))).status,401);
   assert.equal((await post(jwt(claims()))).status,200);
   assert.equal(studio.get(created.id).status,'READY_FOR_RENDER_PLAN');
+  const approvalEvent=studio.get(created.id).receipts.at(-1);
+  assert.equal(approvalEvent.actor_ref,'owner:verified-001');
 });
