@@ -122,10 +122,25 @@ export function createStudio({ initial = [], persist = () => {}, now = () => new
     receipt(item, 'outcome_created', 'agent', now());
     return save(item);
   }
+  function requireNoUnresolvedExternalEffects(item) {
+    // Reserved operations are ambiguous until the external provider is reconciled.
+    // Never erase the only audit route to a published post or sent message.
+    if(['RENDER_AUTHORIZED','DISPATCH_RESERVED','RENDERING','RENDERED',
+        'READY_FOR_FINAL_REVIEW','FILM_APPROVED','PUBLISH_AUTHORIZED',
+        'PUBLISH_RESERVED','RIGHTS_REVOKED','TAKEDOWN_REQUIRED','TAKEN_DOWN']
+       .includes(item.status))
+      fail('EXTERNAL_OPERATION_PENDING',
+        'Reconcile or complete the external operation before creating a new outcome.',409);
+    if(item.creator_campaign?.outreach?.some(d=>
+      ['OUTREACH_RESERVED','SENT_VERIFIED'].includes(d.status)))
+      fail('EXTERNAL_OPERATION_PENDING',
+        'Creator delivery must remain auditable; start a new outcome.',409);
+  }
   function registerSource(id, input = {}) {
     ensureTenant(input);
     const item = read(id);
     if (item.publication_receipt) fail('PUBLISHED_IMMUTABLE', 'Create a new outcome; published revisions must retain their audit trail.', 409);
+    requireNoUnresolvedExternalEffects(item);
     const source_type = choice(input.source_type, sourceTypes, 'source_type');
     const source_ref = ref(input.source_ref, 'source_ref');
     const rights_ref = ref(input.rights_ref, 'rights_ref');
@@ -141,6 +156,7 @@ export function createStudio({ initial = [], persist = () => {}, now = () => new
     ensureTenant(input);
     const item = read(id);
     if (item.publication_receipt) fail('PUBLISHED_IMMUTABLE', 'Create a new outcome for new published creative.', 409);
+    requireNoUnresolvedExternalEffects(item);
     const hook = text(input.hook, 'hook', 280);
     const story = text(input.story, 'story', 900);
     const cta = text(input.cta, 'cta', 280);
@@ -186,6 +202,7 @@ export function createStudio({ initial = [], persist = () => {}, now = () => new
     // Even claim-free medspa content may contain an unflagged treatment claim.
     // Qualified clinical reviewers may attest to a claim-free revision.
     if (input.decision === 'request_changes') {
+      requireNoUnresolvedExternalEffects(item);
       reset(item);
       receipt(item, 'changes_requested', role, now(), actorRef);
       return save(item);
@@ -201,6 +218,8 @@ export function createStudio({ initial = [], persist = () => {}, now = () => new
     }
     if (item.approvals.owner?.version === item.version &&
         (!item.storyboard.claims_present || item.approvals.clinical?.version === item.version)) {
+      if (item.render_plan && item.approvals.clinical?.version === item.version)
+        item.render_plan.claim_refs = [item.approvals.clinical.claim_ref];
       item.status = item.render_plan ? 'RENDER_PLAN_READY' : 'READY_FOR_RENDER_PLAN';
     }
     receipt(item, role + '_approved_version', role, now(), actorRef);
