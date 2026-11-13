@@ -169,3 +169,53 @@ test('signed notification outbox retries failed delivery without leaking email c
   assert.equal(delivered.headers['x-cc-signature'],expected);
   assert.equal(delivered.headers['x-cc-event-id'],gmailId);
 });
+
+test('nested MIME text is accepted while text attachments are ignored',()=>{
+  const msg=makeMsg();
+  const raw=Buffer.from('MISSION_ID: '+mission+'\\nSTATUS: VERIFIED NESTED').toString('base64url');
+  msg.payload={mimeType:'multipart/mixed',headers:msg.payload.headers,parts:[
+    {mimeType:'text/plain',filename:'attachment.txt',body:{data:Buffer.from('fake').toString('base64url')}},
+    {mimeType:'multipart/alternative',parts:[
+      {mimeType:'text/html',body:{data:Buffer.from('<p>ignored</p>').toString('base64url')}},
+      {mimeType:'text/plain',body:{data:raw}}
+    ]}
+  ]};
+  const reply=parseReply(msg);
+  assert.equal(reply?.missionId,mission);
+  assert.match(reply.body,/VERIFIED NESTED/);
+  const attachedOnly=makeMsg();
+  attachedOnly.payload={mimeType:'multipart/mixed',headers:attachedOnly.payload.headers,parts:[
+    {mimeType:'text/plain',filename:'fake.txt',body:{data:raw}}
+  ]};
+  assert.equal(parseReply(attachedOnly),null);
+});
+
+test('deleted unrelated Gmail message does not block a later registered reply',async t=>{
+  const store=fixture(t);
+  const gmail={
+    changes:async since=>({ids:['deleted-message-987',gmailId],historyId:'109'}),
+    message:async id=>{
+      if(id==='deleted-message-987'){
+        const error=new Error('GMAIL_MESSAGE_GONE');
+        error.code='GMAIL_MESSAGE_GONE';
+        throw error;
+      }
+      return makeMsg();
+    }
+  };
+  const bridge=createBridge({store,gmail,config});
+  const result=await bridge.sync();
+  assert.equal(result.accepted,1);
+  assert.equal(store.getState('gmail_history_cursor'),'109');
+  assert.equal(store.results(mission).length,1);
+});
+
+test('Gmail message 404 is classified as permanent deletion, not a retryable history outage',async()=>{
+  const g=gmailClient({clientId:'client',clientSecret:'secret',refreshToken:'refresh',
+    fetchFn:async(url)=>{
+      if(url.includes('oauth2'))return {ok:true,json:async()=>({access_token:'mock',expires_in:3600})};
+      return {ok:false,status:404};
+    }});
+  await assert.rejects(g.message('deletedmessage01'),e=>e.code==='GMAIL_MESSAGE_GONE');
+  await assert.rejects(g.changes('100'),/HISTORY_EXPIRED/);
+});
