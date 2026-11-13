@@ -1,0 +1,71 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { createStudio } from '../src/domain.mjs';
+import { createCreatorWorkflow } from '../src/creators.mjs';
+import { createApiServer } from '../src/api.mjs';
+import { tools } from '../src/mcp.mjs';
+const at='2026-11-12T20:00:00Z',expires='2026-11-13T20:00:00Z';
+const code=(fn,c)=>assert.throws(fn,e=>e.code===c);
+function fixture(){
+  const studio=createStudio({now:()=>at});
+  const id=studio.create({outcome:'Create an authorized local creator story'}).id;
+  return {studio,id,creators:createCreatorWorkflow(studio,{now:()=>at})};
+}
+test('agent can shortlist and draft but cannot send creator outreach',()=>{
+  const {studio,id,creators}=fixture();
+  creators.proposeCandidate(id,'agent',{creator_ref:'creator:one',profile_ref:'profile:one',
+    fit_reason:'Local wellness storytelling with disclosed partnerships'});
+  code(()=>creators.proposeCandidate(id,'agent',{creator_ref:'creator:one',
+    profile_ref:'profile:one',fit_reason:'duplicate'}),'DUPLICATE_CANDIDATE');
+  code(()=>creators.prepareOutreach(id,'agent',{creator_ref:'creator:one',
+    message:'Email private@example.com for payment',terms_ref:'terms:one',max_fee_usd:200}),'INVALID_CONTENT');
+  creators.prepareOutreach(id,'agent',{creator_ref:'creator:one',
+    message:'Would you consider an authorized and clearly disclosed Crown & Core visit film?',
+    terms_ref:'terms:one',max_fee_usd:200});
+  const draft=studio.get(id).creator_campaign.outreach[0];
+  assert.equal(draft.status,'DRAFT_UNSENT');
+  assert.equal(draft.delivery,null);
+  code(()=>creators.recordSent(id,'agent',{outreach_id:draft.outreach_id,
+    delivery_receipt_ref:'receipt:one',external_message_ref:'message:one'}),'FORBIDDEN');
+  code(()=>creators.authorizeOutreach(id,'owner',{version:1,outreach_id:draft.outreach_id,
+    message_sha256:'a'.repeat(64),permission_ref:'permission:one',
+    decision_ref:'decision:one',expires_at:expires,max_fee_usd:200}),'STALE_MESSAGE');
+  creators.authorizeOutreach(id,'owner',{version:1,outreach_id:draft.outreach_id,
+    message_sha256:draft.message_sha256,permission_ref:'permission:one',
+    decision_ref:'decision:one',expires_at:expires,max_fee_usd:200});
+  assert.equal(studio.get(id).creator_campaign.outreach[0].status,'OUTREACH_AUTHORIZED_UNSENT');
+  creators.recordSent(id,'operator',{outreach_id:draft.outreach_id,
+    delivery_receipt_ref:'receipt:one',external_message_ref:'message:one'});
+  assert.equal(studio.get(id).creator_campaign.outreach[0].status,'SENT_VERIFIED');
+});
+test('rights reviewer records creator release, agent cannot assert it',()=>{
+  const {studio,id,creators}=fixture();
+  creators.proposeCandidate(id,'agent',{creator_ref:'creator:one',profile_ref:'profile:one',
+    fit_reason:'Public profile evidence'});
+  const release={creator_ref:'creator:one',release_ref:'release:one',
+    release_sha256:'b'.repeat(64),scope:'both',revoked:false,expires_at:expires};
+  code(()=>creators.recordRelease(id,'agent',release),'FORBIDDEN');
+  creators.recordRelease(id,'rights',release);
+  assert.equal(studio.get(id).creator_campaign.candidates[0].status,'RELEASE_VERIFIED');
+});
+test('creator MCP tools remain agent-only, without send or approve capabilities',()=>{
+  assert.equal(tools.length,9);
+  assert.ok(tools.some(t=>t.name==='creator_candidate_propose'));
+  assert.ok(tools.some(t=>t.name==='creator_outreach_prepare'));
+  assert.ok(!tools.some(t=>/send|approve|publish|spend|contact/i.test(t.name)));
+});
+test('creator API denies agent authorizing outreach',async t=>{
+  const {studio,id}=fixture();
+  const tokens={agent:'a'.repeat(30),owner:'b'.repeat(30),operator:'c'.repeat(30),rights:'d'.repeat(30)};
+  const server=createApiServer({studio,tokens});
+  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+  t.after(()=>new Promise(resolve=>server.close(resolve)));
+  const base='http://127.0.0.1:'+server.address().port+'/v1/outcomes/'+id;
+  const post=(path,role,body)=>fetch(base+path,{method:'POST',
+    headers:{authorization:'Bearer '+tokens[role],'content-type':'application/json'},
+    body:JSON.stringify(body)});
+  assert.equal((await post('/creator-candidate','agent',{creator_ref:'creator:one',
+    profile_ref:'profile:one',fit_reason:'Verified local creator profile'})).status,200);
+  assert.equal((await post('/creator-outreach-authorize','agent',{version:1})).status,403);
+  assert.equal((await post('/creator-release','agent',{creator_ref:'creator:one'})).status,403);
+});
