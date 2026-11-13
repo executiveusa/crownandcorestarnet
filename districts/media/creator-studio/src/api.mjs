@@ -73,7 +73,7 @@ export function createApiServer({ studio, tokens, identity = null }) {
         agentOnly();
         return json(res, 201, { outcome: studio.create(await readBody(req)) });
       }
-      const match = pathname.match(/^\/v1\/outcomes\/([^/]+)(?:\/(source|storyboard|review-request|approvals|render-plan|summary|rights-verify|render-authorize|dispatch-reserve|provider-ack|provider-result|qa-verify|film-approve|publish-authorize|publish-receipt|attribution|job-fail))?$/);
+      const match = pathname.match(/^\/v1\/outcomes\/([^/]+)(?:\/(source|storyboard|review-request|approvals|render-plan|summary|rights-verify|render-authorize|dispatch-reserve|provider-ack|provider-result|qa-verify|film-approve|publish-authorize|publish-receipt|attribution|job-fail|rights-revoke|takedown-receipt))?$/);
       if (!match) return json(res, 404, { error: 'NOT_FOUND' });
       const [, id, action] = match;
       if (req.method === 'GET' && !action) return json(res, 200, { outcome: studio.get(id) });
@@ -92,7 +92,9 @@ export function createApiServer({ studio, tokens, identity = null }) {
         'publish-authorize': ['owner','authorizePublish'],
         'publish-receipt': ['publisher','published'],
         attribution: ['operator','attribute'],
-        'job-fail': ['operator','failJob']
+        'job-fail': ['operator','failJob'],
+        'rights-revoke': ['rights','revokeRights'],
+        'takedown-receipt': ['publisher','recordTakedown']
       };
       if (pipelineRoutes[action]) {
         const [requiredRole, method] = pipelineRoutes[action];
