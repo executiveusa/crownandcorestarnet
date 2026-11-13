@@ -24,6 +24,7 @@ function draft(){
     cta:'Explore Crown & Core',claims_present:false,disclosure_present:false});
   const review=studio.requestReview(id);
   studio.decide(id,'owner',{version:review.version,decision:'approve',rights_confirmed:true});
+  studio.decide(id,'clinical',{version:review.version,decision:'approve',claim_ref:'claim:screened'});
   studio.prepareRenderPlan(id,{provider:'montage',idempotency_key:'job:one',max_cost_usd:5});
   return {studio,pipeline,id,version:review.version};
 }
