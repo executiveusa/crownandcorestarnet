@@ -1,11 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
-import { mkdtempSync, rmSync, statSync } from 'node:fs';
+import { mkdtempSync, rmSync, statSync, symlinkSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { localStore } from '../src/api.mjs';
+import { requireOutsideRepository } from '../src/private-path.mjs';
 import { createStudio } from '../src/domain.mjs';
 import { callTool } from '../src/mcp.mjs';
 
@@ -74,4 +75,16 @@ test('optional local proof state persists outside repo with private file mode', 
 test('local proof state refuses repository-relative persistence', () => {
   assert.throws(() => localStore('outbox/creator-state.json'), /absolute/);
   assert.throws(() => localStore(join(process.cwd(), 'outbox', 'creator-state.json')), /outside the public repository/);
+});
+
+test('canonical private state guard denies repo root, prefix tricks and symlinked ancestors',()=>{
+  const repoRoot=fileURLToPath(new URL('../../../../',import.meta.url));
+  assert.throws(()=>requireOutsideRepository(join(repoRoot,'private-state.json')),/outside the public repository/);
+  assert.throws(()=>requireOutsideRepository(join(repoRoot,'..private','state.json')),/outside the public repository/);
+  const temp=mkdtempSync(join(tmpdir(),'cc-symlink-test-'));
+  try{
+    symlinkSync(repoRoot,join(temp,'repo-link'),'dir');
+    assert.throws(()=>requireOutsideRepository(join(temp,'repo-link','private-state.json')),
+      /outside the public repository/);
+  }finally{rmSync(temp,{recursive:true,force:true});}
 });
