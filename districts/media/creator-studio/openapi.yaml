@@ -1,11 +1,12 @@
 openapi: 3.1.0
 info:
   title: Crown & Core Creator Studio — Local Proof API
-  version: 0.2.0
+  version: 0.3.0
   description: >
-    Local loopback-only, no external side effects. This contract does not represent
-    a deployed production service, real video rendering, owner voice authentication,
-    publication, paid advertising, or booking attribution.
+    Local loopback-only API with role-separated workflow, signed callbacks and
+    optional OIDC reviewer identity. External provider adapters are coded but
+    not connected or deployed. This contract does not represent actual video
+    rendering, real publication, voice identity or verified bookings.
 servers:
   - url: http://127.0.0.1:8787
     description: Loopback local proof only
@@ -177,6 +178,512 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/OutcomeEnvelope' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /v1/outcomes/{id}/rights-verify:
+    parameters:
+      - $ref: '#/components/parameters/OutcomeId'
+    post:
+      summary: Verify independent rights grant and asset hashes
+      x-required-role: rights
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+              description: See OPERATIONS.md and src/pipeline.mjs for exact transition requirements.
+      responses:
+        '200':
+          description: Receipt-backed outcome; no implied external execution
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OutcomeEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /v1/outcomes/{id}/render-authorize:
+    parameters:
+      - $ref: '#/components/parameters/OutcomeId'
+    post:
+      summary: Authorize capped render of current creative revision
+      x-required-role: owner
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+              description: See OPERATIONS.md and src/pipeline.mjs for exact transition requirements.
+      responses:
+        '200':
+          description: Receipt-backed outcome; no implied external execution
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OutcomeEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /v1/outcomes/{id}/dispatch-reserve:
+    parameters:
+      - $ref: '#/components/parameters/OutcomeId'
+    post:
+      summary: Reserve render before provider call; no automatic retry
+      x-required-role: operator
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+              description: See OPERATIONS.md and src/pipeline.mjs for exact transition requirements.
+      responses:
+        '200':
+          description: Receipt-backed outcome; no implied external execution
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OutcomeEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /v1/outcomes/{id}/provider-ack:
+    parameters:
+      - $ref: '#/components/parameters/OutcomeId'
+    post:
+      summary: Record actual provider job acceptance
+      x-required-role: operator
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+              description: See OPERATIONS.md and src/pipeline.mjs for exact transition requirements.
+      responses:
+        '200':
+          description: Receipt-backed outcome; no implied external execution
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OutcomeEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /v1/outcomes/{id}/provider-result:
+    parameters:
+      - $ref: '#/components/parameters/OutcomeId'
+    post:
+      summary: Record actual provider output; QA still required
+      x-required-role: operator
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+              description: See OPERATIONS.md and src/pipeline.mjs for exact transition requirements.
+      responses:
+        '200':
+          description: Receipt-backed outcome; no implied external execution
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OutcomeEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /v1/outcomes/{id}/qa-verify:
+    parameters:
+      - $ref: '#/components/parameters/OutcomeId'
+    post:
+      summary: Record independently checked 30s and 15s MP4 hashes
+      x-required-role: qa
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+              description: See OPERATIONS.md and src/pipeline.mjs for exact transition requirements.
+      responses:
+        '200':
+          description: Receipt-backed outcome; no implied external execution
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OutcomeEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /v1/outcomes/{id}/film-approve:
+    parameters:
+      - $ref: '#/components/parameters/OutcomeId'
+    post:
+      summary: Approve exact final video hashes
+      x-required-role: owner
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+              description: See OPERATIONS.md and src/pipeline.mjs for exact transition requirements.
+      responses:
+        '200':
+          description: Receipt-backed outcome; no implied external execution
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OutcomeEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /v1/outcomes/{id}/publish-authorize:
+    parameters:
+      - $ref: '#/components/parameters/OutcomeId'
+    post:
+      summary: Authorize organic publication separately from rendering
+      x-required-role: owner
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+              description: See OPERATIONS.md and src/pipeline.mjs for exact transition requirements.
+      responses:
+        '200':
+          description: Receipt-backed outcome; no implied external execution
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OutcomeEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /v1/outcomes/{id}/publish-reserve:
+    parameters:
+      - $ref: '#/components/parameters/OutcomeId'
+    post:
+      summary: Reserve a single organic publication attempt
+      x-required-role: publisher
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+              description: See OPERATIONS.md and src/pipeline.mjs for exact transition requirements.
+      responses:
+        '200':
+          description: Receipt-backed outcome; no implied external execution
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OutcomeEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /v1/outcomes/{id}/publish-receipt:
+    parameters:
+      - $ref: '#/components/parameters/OutcomeId'
+    post:
+      summary: Record verified external organic post receipt
+      x-required-role: publisher
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+              description: See OPERATIONS.md and src/pipeline.mjs for exact transition requirements.
+      responses:
+        '200':
+          description: Receipt-backed outcome; no implied external execution
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OutcomeEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /v1/outcomes/{id}/attribution:
+    parameters:
+      - $ref: '#/components/parameters/OutcomeId'
+    post:
+      summary: Record source-backed aggregate bookings and revenue
+      x-required-role: operator
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+              description: See OPERATIONS.md and src/pipeline.mjs for exact transition requirements.
+      responses:
+        '200':
+          description: Receipt-backed outcome; no implied external execution
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OutcomeEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /v1/outcomes/{id}/job-fail:
+    parameters:
+      - $ref: '#/components/parameters/OutcomeId'
+    post:
+      summary: Record render failure without claiming completion
+      x-required-role: operator
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+              description: See OPERATIONS.md and src/pipeline.mjs for exact transition requirements.
+      responses:
+        '200':
+          description: Receipt-backed outcome; no implied external execution
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OutcomeEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /v1/outcomes/{id}/rights-revoke:
+    parameters:
+      - $ref: '#/components/parameters/OutcomeId'
+    post:
+      summary: Revoke source rights and require takedown if published
+      x-required-role: rights
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+              description: See OPERATIONS.md and src/pipeline.mjs for exact transition requirements.
+      responses:
+        '200':
+          description: Receipt-backed outcome; no implied external execution
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OutcomeEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /v1/outcomes/{id}/takedown-receipt:
+    parameters:
+      - $ref: '#/components/parameters/OutcomeId'
+    post:
+      summary: Record actual external removal receipt
+      x-required-role: publisher
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+              description: See OPERATIONS.md and src/pipeline.mjs for exact transition requirements.
+      responses:
+        '200':
+          description: Receipt-backed outcome; no implied external execution
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OutcomeEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /v1/outcomes/{id}/creator-candidate:
+    parameters:
+      - $ref: '#/components/parameters/OutcomeId'
+    post:
+      summary: Propose opaque creator reference without contact
+      x-required-role: agent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+              description: See OPERATIONS.md and src/creators.mjs for exact transition requirements.
+      responses:
+        '200':
+          description: Receipt-backed outcome; no implied external execution
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OutcomeEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /v1/outcomes/{id}/creator-outreach:
+    parameters:
+      - $ref: '#/components/parameters/OutcomeId'
+    post:
+      summary: Prepare an unsent creator message
+      x-required-role: agent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+              description: See OPERATIONS.md and src/creators.mjs for exact transition requirements.
+      responses:
+        '200':
+          description: Receipt-backed outcome; no implied external execution
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OutcomeEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /v1/outcomes/{id}/creator-outreach-authorize:
+    parameters:
+      - $ref: '#/components/parameters/OutcomeId'
+    post:
+      summary: Authorize exact outreach message, fee cap and permission
+      x-required-role: owner
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+              description: See OPERATIONS.md and src/creators.mjs for exact transition requirements.
+      responses:
+        '200':
+          description: Receipt-backed outcome; no implied external execution
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OutcomeEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /v1/outcomes/{id}/creator-outreach-reserve:
+    parameters:
+      - $ref: '#/components/parameters/OutcomeId'
+    post:
+      summary: Reserve a single authorized creator contact attempt
+      x-required-role: operator
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+              description: See OPERATIONS.md and src/creators.mjs for exact transition requirements.
+      responses:
+        '200':
+          description: Receipt-backed outcome; no implied external execution
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OutcomeEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /v1/outcomes/{id}/creator-outreach-sent:
+    parameters:
+      - $ref: '#/components/parameters/OutcomeId'
+    post:
+      summary: Record actual zero-spend creator delivery receipt
+      x-required-role: operator
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+              description: See OPERATIONS.md and src/creators.mjs for exact transition requirements.
+      responses:
+        '200':
+          description: Receipt-backed outcome; no implied external execution
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OutcomeEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /v1/outcomes/{id}/creator-release:
+    parameters:
+      - $ref: '#/components/parameters/OutcomeId'
+    post:
+      summary: Record independently verified creator release
+      x-required-role: rights
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+              description: See OPERATIONS.md and src/creators.mjs for exact transition requirements.
+      responses:
+        '200':
+          description: Receipt-backed outcome; no implied external execution
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OutcomeEnvelope' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /v1/webhooks/provider/{id}:
+    parameters:
+      - $ref: '#/components/parameters/OutcomeId'
+    post:
+      summary: HMAC-SHA256 signed provider callback from approved bridge
+      security: []
+      description: >
+        Required x-studio-timestamp, x-studio-event-id and x-studio-signature headers.
+        Signature covers timestamp.event_id.raw_body. No unsigned or stale callbacks.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [event_ref, version]
+              properties:
+                event_ref: { type: string }
+                version: { type: integer }
+      responses:
+        '200': { description: Verified signed event applied }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /v1/webhooks/attribution/{id}:
+    parameters:
+      - $ref: '#/components/parameters/OutcomeId'
+    post:
+      summary: HMAC-SHA256 signed attribution callback from approved bridge
+      security: []
+      description: >
+        Required x-studio-timestamp, x-studio-event-id and x-studio-signature headers.
+        Signature covers timestamp.event_id.raw_body. No unsigned or stale callbacks.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [event_ref, version]
+              properties:
+                event_ref: { type: string }
+                version: { type: integer }
+      responses:
+        '200': { description: Verified signed event applied }
+        '401': { $ref: '#/components/responses/Unauthorized' }
         '409': { $ref: '#/components/responses/Conflict' }
 components:
   securitySchemes:
