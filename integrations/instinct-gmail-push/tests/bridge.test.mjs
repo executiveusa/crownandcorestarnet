@@ -65,8 +65,12 @@ test('signed Google PubSub JWT rejects wrong audience, wrong identity and forged
   const fetchFn=async()=>({ok:true,json:async()=>({keys:[jwk]})});
   assert.equal((await verifyPushJwt(issue(),{audience:config.pubsubAudience,
     serviceAccount:config.pubsubServiceAccount,fetchFn})).aud,config.pubsubAudience);
+  const validToken=issue();
+  const signedParts=validToken.split('.');
+  signedParts[2]=(signedParts[2][0]==='A'?'B':'A')+signedParts[2].slice(1);
+  const corruptedSignature=signedParts.join('.');
   for(const bearer of [issue({aud:'wrong'}),issue({email:'other@example.test'}),
-    issue({exp:now-1}),issue().slice(0,-1)+'X']){
+    issue({exp:now-1}),corruptedSignature]){
     await assert.rejects(verifyPushJwt(bearer,{audience:config.pubsubAudience,
       serviceAccount:config.pubsubServiceAccount,fetchFn}));
   }
