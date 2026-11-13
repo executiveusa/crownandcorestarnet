@@ -1,0 +1,31 @@
+name: CC Instinct Gmail Push Bridge
+on:
+  pull_request:
+    paths:
+      - 'integrations/instinct-gmail-push/**'
+      - '.github/workflows/instinct-gmail-push.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'integrations/instinct-gmail-push/**'
+      - '.github/workflows/instinct-gmail-push.yml'
+permissions:
+  contents: read
+jobs:
+  bridge-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Parse all server and CLI modules
+        run: |
+          for p in integrations/instinct-gmail-push/src/*.mjs; do node --check "$p"; done
+      - name: Exercise offline security, idempotency and Gmail push contracts
+        run: node --test integrations/instinct-gmail-push/tests/*.test.mjs
+      - name: Validate no credential material is required for CI
+        run: |
+          test ! -e integrations/instinct-gmail-push/.env
+          test ! -e integrations/instinct-gmail-push/state.sqlite
