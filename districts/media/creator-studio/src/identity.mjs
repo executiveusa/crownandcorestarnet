@@ -42,7 +42,9 @@ export function createIdentityVerifier({issuer,audience,jwks,now=()=>Date.now()}
         typeof claims.sub!=='string'||claims.sub.length<3||
         !['owner','clinical'].includes(claims.creator_studio_role))
         deny('JWT_CLAIMS','Issuer, audience, tenant, role or token lifetime invalid.');
-      if(!Array.isArray(claims.amr)||!claims.amr.includes('mfa'))
+      if(!Array.isArray(claims.amr)||!claims.amr.includes('mfa')||
+        !Number.isInteger(claims.auth_time)||
+        claims.auth_time>time+30 || time-claims.auth_time>900)
         deny('STEP_UP_REQUIRED','Recent multifactor authentication required.');
       return {role:claims.creator_studio_role,actor_ref:claims.sub,
         issued_at:claims.iat,expires_at:claims.exp};
