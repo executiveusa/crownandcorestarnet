@@ -56,12 +56,15 @@ function concise(item) {
     FILM_APPROVED: 'Approved film ready for delivery; publishing requires separate approval.',
     PUBLISH_AUTHORIZED: 'A trusted publisher may execute the authorized organic post.',
     PUBLISHED_VERIFIED: 'Publication receipt recorded; attribution remains unverified unless sourced.',
-    FAILED: 'Review failure receipt and request a new creative revision.'
+    FAILED: 'Review failure receipt and request a new creative revision.',
+    RIGHTS_REVOKED: 'Rights revoked. Replace the media before further work.',
+    TAKEDOWN_REQUIRED: 'Published content has revoked rights. Authorized publisher must remove it.',
+    TAKEN_DOWN: 'Removal receipt recorded. Publication is no longer live.'
   };
   return { id: item.id, tenant_id: TENANT, version: item.version, status: item.status,
     outcome: item.outcome, next_action: messages[item.status] ?? 'Check the recorded blocker.',
     verified_video: !!item.qa?.verified,
-    published: item.status === 'PUBLISHED_VERIFIED',
+    published: !!item.publication_receipt && !item.takedown,
     attributed_bookings: item.attribution?.bookings ?? null,
     attributed_revenue: item.attribution?.revenue_usd ?? null };
 }
@@ -110,6 +113,7 @@ export function createStudio({ initial = [], persist = () => {}, now = () => new
   function registerSource(id, input = {}) {
     ensureTenant(input);
     const item = read(id);
+    if (item.publication_receipt) fail('PUBLISHED_IMMUTABLE', 'Create a new outcome; published revisions must retain their audit trail.', 409);
     const source_type = choice(input.source_type, sourceTypes, 'source_type');
     const source_ref = ref(input.source_ref, 'source_ref');
     const rights_ref = ref(input.rights_ref, 'rights_ref');
@@ -123,6 +127,7 @@ export function createStudio({ initial = [], persist = () => {}, now = () => new
   function proposeStoryboard(id, input = {}) {
     ensureTenant(input);
     const item = read(id);
+    if (item.publication_receipt) fail('PUBLISHED_IMMUTABLE', 'Create a new outcome for new published creative.', 409);
     const hook = text(input.hook, 'hook', 280);
     const story = text(input.story, 'story', 900);
     const cta = text(input.cta, 'cta', 280);
@@ -144,6 +149,7 @@ export function createStudio({ initial = [], persist = () => {}, now = () => new
   }
   function requestReview(id) {
     const item = read(id);
+    if (item.status !== 'DRAFT') fail('INVALID_STATE', 'Only a draft may enter storyboard review.', 409);
     if (!item.source || !item.storyboard) fail('NOT_READY', 'Source rights reference and storyboard are required.', 409);
     if (item.source.source_type === 'synthetic' && !item.storyboard.disclosure_present)
       fail('DISCLOSURE_REQUIRED', 'Synthetic content requires clear disclosure.', 409);
@@ -167,6 +173,8 @@ export function createStudio({ initial = [], persist = () => {}, now = () => new
       receipt(item, 'changes_requested', role, now());
       return save(item);
     }
+    if (item.approvals[role]?.version === item.version)
+      fail('DUPLICATE_APPROVAL', 'This reviewer already approved the current revision.', 409);
     if (role === 'owner') {
       if (input.rights_confirmed !== true) fail('RIGHTS_NOT_VERIFIED', 'Owner must attest to the actual rights record.', 409);
       item.approvals.owner = { version: item.version, at: now(), rights_ref: item.source.rights_ref };
