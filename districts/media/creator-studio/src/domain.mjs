@@ -43,13 +43,27 @@ function receipt(item, action, role, at) {
   item.receipts.push(event);
 }
 function concise(item) {
-  const next = item.status === 'DRAFT' ? 'Add rights-cleared source and storyboard.' :
-    item.status === 'REVIEW_PENDING' ? 'Await authenticated owner/clinical decision.' :
-    item.status === 'READY_FOR_RENDER_PLAN' ? 'Prepare a provider-neutral render plan.' :
-    'Verify a real renderer adapter and separately authorize any external processing.';
+  const messages = {
+    DRAFT: 'Add rights-cleared source and storyboard.',
+    REVIEW_PENDING: 'Await owner and applicable clinical decision.',
+    READY_FOR_RENDER_PLAN: 'Prepare a provider-neutral render plan.',
+    RENDER_PLAN_READY: 'Verify source rights independently and authorize a capped render.',
+    RENDER_AUTHORIZED: 'A trusted operator must dispatch the approved plan.',
+    DISPATCH_RESERVED: 'Reconcile provider acknowledgement before retrying.',
+    RENDERING: 'Await authenticated provider result.',
+    RENDERED: 'Independently verify both video cuts and their hashes.',
+    READY_FOR_FINAL_REVIEW: 'Owner must approve exact final video hashes.',
+    FILM_APPROVED: 'Approved film ready for delivery; publishing requires separate approval.',
+    PUBLISH_AUTHORIZED: 'A trusted publisher may execute the authorized organic post.',
+    PUBLISHED_VERIFIED: 'Publication receipt recorded; attribution remains unverified unless sourced.',
+    FAILED: 'Review failure receipt and request a new creative revision.'
+  };
   return { id: item.id, tenant_id: TENANT, version: item.version, status: item.status,
-    outcome: item.outcome, next_action: next, verified_video: false, published: false,
-    attributed_bookings: null, attributed_revenue: null };
+    outcome: item.outcome, next_action: messages[item.status] ?? 'Check the recorded blocker.',
+    verified_video: !!item.qa?.verified,
+    published: item.status === 'PUBLISHED_VERIFIED',
+    attributed_bookings: item.attribution?.bookings ?? null,
+    attributed_revenue: item.attribution?.revenue_usd ?? null };
 }
 export function createStudio({ initial = [], persist = () => {}, now = () => new Date().toISOString(), uuid = randomUUID } = {}) {
   const data = new Map(initial.map(item => [item.id, clone(item)]));
@@ -70,6 +84,14 @@ export function createStudio({ initial = [], persist = () => {}, now = () => new
     item.status = 'DRAFT';
     item.approvals = { owner: null, clinical: null };
     item.render_plan = null;
+    item.rights_verification = null;
+    item.render_authorization = null;
+    item.provider_receipt = null;
+    item.qa = null;
+    item.final_approval = null;
+    item.publication_authorization = null;
+    item.publication_receipt = null;
+    item.attribution = null;
   }
   function create(input = {}) {
     ensureTenant(input);
@@ -185,8 +207,15 @@ export function createStudio({ initial = [], persist = () => {}, now = () => new
     receipt(item, 'render_plan_prepared_no_dispatch', 'agent', now());
     return save(item);
   }
+  // Trusted in-process transitions only. Never expose this function over HTTP/MCP.
+  function applyTrusted(id, update) {
+    const item = read(id);
+    update(item, (action, role) => receipt(item, action, role, now()));
+    return save(item);
+  }
   return {
     create, get: read, list: () => [...data.values()].filter(item => item.tenant_id === TENANT).slice(-25).map(concise),
-    summary: id => concise(read(id)), registerSource, proposeStoryboard, requestReview, decide, prepareRenderPlan
+    summary: id => concise(read(id)), registerSource, proposeStoryboard, requestReview, decide, prepareRenderPlan,
+    applyTrusted
   };
 }
