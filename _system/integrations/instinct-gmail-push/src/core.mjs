@@ -89,11 +89,16 @@ export function parseReply(message,{sender='cityops@mail.instinct.com',recipient
 }
 function extractPlainText(payload) {
   if(!payload) return '';
+  const disposition=(payload.headers??[]).find(h=>String(h.name).toLowerCase()==='content-disposition')?.value??'';
+  // Never interpret a text/plain attachment as an Instinct instruction/result.
+  if(payload.filename || /^\s*attachment\b/i.test(disposition))return '';
   if(payload.mimeType==='text/plain' && payload.body?.data) {
     try{return Buffer.from(payload.body.data.replace(/-/g,'+').replace(/_/g,'/'),'base64').toString('utf8');}catch{return '';}
   }
-  for(const p of payload.parts ?? []) {
-    if(p.mimeType==='text/plain' && p.body?.data) return extractPlainText(p);
+  // Gmail MIME may nest multipart/mixed -> multipart/alternative -> text/plain.
+  for(const part of payload.parts??[]) {
+    const text=extractPlainText(part);
+    if(text) return text;
   }
   return '';
 }
