@@ -71,6 +71,7 @@ test('full approved film to separately authorized organic post with source-backe
     decision_ref:'decision:publish',expires_at:until});
   rejected(()=>f.pipeline.published(f.id,'publisher',{version:f.version,channel:'instagram_reel',
     published_hash:c,external_post_ref:'post:one',publication_receipt_ref:'receipt:post'}),'PUBLICATION_MISMATCH');
+  f.pipeline.reservePublication(f.id,'publisher',{version:f.version,decision_ref:'decision:publish'});
   f.pipeline.published(f.id,'publisher',{version:f.version,channel:'instagram_reel',
     published_hash:a,external_post_ref:'post:one',publication_receipt_ref:'receipt:post'});
   assert.equal(f.studio.summary(f.id).published,true);
@@ -180,7 +181,7 @@ test('organic publisher requires separate exact-film authorization and never sen
       return {ok:true,headers:{get:()=>null},text:async()=>JSON.stringify(
         {published:true,external_post_ref:'post:one',publication_receipt_ref:'receipt:post'})};
     }});
-  const item={id:'outcome:one',tenant_id:'crown-and-core',version:2,status:'PUBLISH_AUTHORIZED',
+  const item={id:'outcome:one',tenant_id:'crown-and-core',version:2,status:'PUBLISH_RESERVED',
     publication_authorization:{version:2,paid_spend_usd:0,expires_at:future(),channel:'instagram_reel',
       hash_30:a,decision_ref:'decision:publish'},final_approval:{version:2},
     qa:{verified:true,cuts:[{artifact_ref:'artifact:one'}]},
@@ -237,6 +238,7 @@ test('revoked rights after publication require verified takedown and block silen
   f.pipeline.decideFinal(f.id,'owner',{version:f.version,decision:'approve',hash_30:a,hash_15:b,decision_ref:'decision:film'});
   f.pipeline.authorizePublish(f.id,'owner',{version:f.version,channel:'instagram_reel',
     booking_path_verified:true,claim_policy_verified:true,decision_ref:'decision:post',expires_at:until});
+  f.pipeline.reservePublication(f.id,'publisher',{version:f.version,decision_ref:'decision:post'});
   f.pipeline.published(f.id,'publisher',{version:f.version,channel:'instagram_reel',
     published_hash:a,external_post_ref:'post:one',publication_receipt_ref:'receipt:post'});
   f.pipeline.revokeRights(f.id,'rights',{version:f.version,rights_ref:'rights:one',
