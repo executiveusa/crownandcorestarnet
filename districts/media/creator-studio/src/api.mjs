@@ -74,6 +74,9 @@ export function createApiServer({ studio, tokens, identity = null, webhookSecret
         }
         const raw = Buffer.concat(chunks).toString('utf8');
         const body = verifySignedEvent({raw,headers:req.headers,secret});
+        if(body.outcome_id !== id)
+          throw new StudioError('WEBHOOK_OUTCOME_MISMATCH',
+            'Signed callback outcome does not match the requested outcome.',409);
         const outcome = kind === 'provider' ?
           pipeline.providerResult(id,'operator',body) :
           pipeline.attribute(id,'operator',{...body,verified_source:true});
