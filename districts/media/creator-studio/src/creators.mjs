@@ -66,6 +66,7 @@ export function createCreatorWorkflow(studio,{now=()=>new Date().toISOString(),a
       const outreach_id=ref(input.outreach_id,'outreach_id');
       const draft=item.creator_campaign?.outreach.find(x=>x.outreach_id===outreach_id);
       if(!draft||draft.status!=='DRAFT_UNSENT')deny('INVALID_STATE','No unsent outreach draft.');
+      if(draft.version!==item.version)deny('STALE_VERSION','Outreach draft was invalidated by a creative revision.');
       if(input.message_sha256!==draft.message_sha256)
         deny('STALE_MESSAGE','Approve exact message hash.');
       const permission_ref=ref(input.permission_ref,'permission_ref');
