@@ -1,8 +1,8 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "id": "crown-core-creator-studio",
   "tenant_id": "crown-and-core",
-  "authority": "Existing Instinct interprets owner intent; existing Paperclip schedules one bounded mission; Hermes coordinates specialists only as supported within that mission. Creator Studio enforces policy.",
+  "authority": "Instinct owns owner conversation; existing Paperclip alone schedules; Hermes may coordinate bounded specialists. StarNet owns Crown & Core decisions and truth. Buffer Blaster is an external tenant-scoped media-plan and optional rendering engine under its own wallet/provider approval. No shared identity, database, secrets or second scheduler.",
   "mode": "agent-first-api-mcp",
   "owner_interface": {
     "primary": "existing-instinct-voice-or-text",
@@ -19,7 +19,8 @@
     "max_outreach_candidates": 10,
     "paid_media_enabled": false,
     "automatic_publication_enabled": false,
-    "automatic_outreach_enabled": false
+    "automatic_outreach_enabled": false,
+    "buffer_blaster_mode": "NO_SPEND_PLAN_ONLY"
   },
   "tools": {
     "agent": [
@@ -31,7 +32,9 @@
       "creator_review_request",
       "creator_render_plan_prepare",
       "creator_candidate_propose",
-      "creator_outreach_prepare"
+      "creator_outreach_prepare",
+      "creator_buffer_status",
+      "creator_buffer_plan_sync"
     ],
     "forbidden_to_agent": [
       "owner_approve",
@@ -45,7 +48,10 @@
       "outreach_reserve",
       "outreach_send",
       "paid_spend",
-      "patient_data_access"
+      "patient_data_access",
+      "buffer_operator_key",
+      "buffer_paid_execute",
+      "buffer_generic_mcp_tools_call"
     ]
   },
   "tasks": [
@@ -79,7 +85,8 @@
       ],
       "tools": [
         "creator_source_register",
-        "creator_storyboard_propose"
+        "creator_storyboard_propose",
+        "creator_buffer_status"
       ],
       "evidence": "source and rights refs, explicit claims and disclosure flags"
     },
@@ -101,10 +108,29 @@
         "review"
       ],
       "tools": [],
-      "evidence": "exact-version owner, clinical if needed, and independent rights grants"
+      "evidence": "Exact-version owner storyboard approval and mandatory qualified clinical screening; grant verification occurs after render plan via trusted rights service"
     },
     {
-      "id": "plan",
+      "id": "rights-verify",
+      "worker": "trusted-rights",
+      "depends_on": [
+        "starnet-render-plan"
+      ],
+      "tools": [],
+      "evidence": "rights-verify REST action establishes exact licensed rights_ref, source and grant SHA-256, scope, expiry, nonrevocation; authorized rights identity"
+    },
+    {
+      "id": "buffer-source-bind",
+      "worker": "trusted-rights",
+      "depends_on": [
+        "rights-verify"
+      ],
+      "tools": [],
+      "evidence": "Server-only Buffer workspace UUID and exact source reference readback, bound to StarNet verified asset SHA; cannot be authorized by agent",
+      "notes": "Must complete before creator_buffer_plan_sync even though plan state is later."
+    },
+    {
+      "id": "starnet-render-plan",
       "worker": "hermes:production-planner",
       "depends_on": [
         "rights-and-approval"
@@ -112,16 +138,27 @@
       "tools": [
         "creator_render_plan_prepare"
       ],
-      "evidence": "PLANNED_NOT_SUBMITTED; not a video"
+      "evidence": "StarNet non-executing RENDER_PLAN_READY; the rights officer must verify grant in next task. No cost, no media."
+    },
+    {
+      "id": "buffer-plan-sync",
+      "worker": "hermes:production-planner",
+      "depends_on": [
+        "buffer-source-bind"
+      ],
+      "tools": [
+        "creator_buffer_plan_sync"
+      ],
+      "evidence": "Canonical Buffer Supabase no-spend draft read back with exact source/script/shot/rights/version; output Buffer plan UUID, NOT a video"
     },
     {
       "id": "render",
       "worker": "trusted-operator",
       "depends_on": [
-        "plan"
+        "buffer-plan-sync"
       ],
       "tools": [],
-      "evidence": "separate capped render authorization, provider job receipt, no automatic retry"
+      "evidence": "BLOCKED on incompatible Buffer 10s+10s UGC factory; require verified authentic 30s+15s renderer, owner budget grant, actual provider job, no automatic retry"
     },
     {
       "id": "qa",
@@ -193,7 +230,45 @@
     "real-provider-health",
     "private-rights-vault",
     "real-mp4-qa",
-    "rollback-test"
+    "rollback-test",
+    "buffer-workspace-isolation-PR-reviewed-merged",
+    "real-buffer-api-readback",
+    "compatible-30-15-video-intake-and-render-contract",
+    "open-code-review-independent-review"
   ],
-  "rollback": "Disable outbound workers; revoke scoped tokens; stop local services; revert approved patch; retain audit and separately reconcile published content."
+  "rollback": "Disable outbound workers; revoke scoped tokens; stop local services; revert approved patch; retain audit and separately reconcile published content.",
+  "integration": {
+    "engine_repo": "executiveusa/buffer-blaster-",
+    "engine_auth": "server-side-only",
+    "server_environment": [
+      "CROWN_BUFFER_API_URL",
+      "CROWN_BUFFER_API_KEY",
+      "CROWN_BUFFER_WORKSPACE_ID"
+    ],
+    "safe_routes": [
+      "GET /api/health",
+      "GET /api/studio/status",
+      "GET /api/studio/references/{uuid}",
+      "POST /api/studio/ugc/plans",
+      "GET /api/studio/ugc/plans/{plan_id}",
+      "POST /api/mcp tools/list only"
+    ],
+    "expected_media": {
+      "cuts_seconds": [
+        30,
+        15
+      ],
+      "source_type": "facility",
+      "rights_verified": true,
+      "clinical_screening": true
+    },
+    "observed_engine_limit": "Existing paid UGC factory produces 10s+10s first-person synthetic scripts; not approved for medspa film; paid execute disabled",
+    "canonical_plan_backend": "supabase",
+    "release_dependency": [
+      "executiveusa/buffer-blaster- PR #119",
+      "executiveusa/crownandcorestarnet PR #26",
+      "executiveusa/crownandcorestarnet PR #28"
+    ],
+    "status": "code-only-mocked-no-live-endpoint"
+  }
 }

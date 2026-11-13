@@ -51,7 +51,7 @@ test('rights reviewer records creator release, agent cannot assert it',()=>{
   assert.equal(studio.get(id).creator_campaign.candidates[0].status,'RELEASE_VERIFIED');
 });
 test('creator MCP tools remain agent-only, without send or approve capabilities',()=>{
-  assert.equal(tools.length,9);
+  assert.equal(tools.length,11);
   assert.ok(tools.some(t=>t.name==='creator_candidate_propose'));
   assert.ok(tools.some(t=>t.name==='creator_outreach_prepare'));
   assert.ok(!tools.some(t=>/send|approve|publish|spend|contact/i.test(t.name)));

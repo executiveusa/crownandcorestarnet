@@ -36,5 +36,7 @@ jobs:
           node --check districts/media/creator-studio/src/worker.mjs
           node --check districts/media/creator-studio/src/creators.mjs
           node --check districts/media/creator-studio/src/webhooks.mjs
+          node --check districts/media/creator-studio/src/buffer-blaster.mjs
+          node --check districts/media/creator-studio/src/buffer-cli.mjs
       - name: Exercise authorization, idempotency, state and MCP contracts
         run: node --test districts/media/creator-studio/tests/*.test.mjs

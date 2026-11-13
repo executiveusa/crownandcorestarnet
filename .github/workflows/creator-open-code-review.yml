@@ -1,0 +1,47 @@
+name: Creator Studio — OpenCodeReview (independent)
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - 'districts/media/creator-studio/**'
+      - '.github/workflows/creator-open-code-review.yml'
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+  models: read
+
+jobs:
+  ocr-review:
+    if: github.event.pull_request.draft == false && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Review diff using pinned OpenCodeReview action
+        id: review
+        uses: executiveusa/open-code-review@c8e4c02b6f0e9467b755fc7e24b2619f6854a6a4
+        with:
+          llm_url: https://models.github.ai/inference/chat/completions
+          llm_auth_token: ${{ github.token }}
+          llm_model: openai/gpt-4.1
+          llm_use_anthropic: 'false'
+          llm_extra_body: '{"enable_thinking": false}'
+          github_token: ${{ github.token }}
+          ocr_version: 1.13.8
+          review_concurrency: '1'
+          route_severity_below: low
+          route_categories: style,documentation
+          incremental: 'true'
+          sticky_summary: 'true'
+          upload_artifacts: 'true'
+      - name: Record reviewer receipt or failure in job summary
+        if: always()
+        env:
+          STATUS: ${{ steps.review.outcome }}
+          TOTAL: ${{ steps.review.outputs.comments_total }}
+        run: |
+          echo "## Independent OpenCodeReview gate" >> "$GITHUB_STEP_SUMMARY"
+          echo "Review action outcome: ${STATUS}." >> "$GITHUB_STEP_SUMMARY"
+          echo "Findings: ${TOTAL:-unknown}." >> "$GITHUB_STEP_SUMMARY"
+          echo "If provider configuration or GitHub Models fails, the review is NOT complete. Obtain a separate independent review before merge." >> "$GITHUB_STEP_SUMMARY"
