@@ -108,6 +108,9 @@ export function createStudio({ initial = [], persist = () => {}, now = () => new
         /testimonial|patient review|real customer|my treatment|my results/i.test(hook + ' ' + story + ' ' + cta)) {
       fail('SYNTHETIC_TESTIMONIAL', 'Synthetic footage cannot impersonate a customer or treatment experience.');
     }
+    if (input.claims_present === false &&
+        /guaranteed results|cures?\b|treats?\b|eliminates? wrinkles|fda[- ]approved|no side effects|permanent results|before and after/i.test(hook + ' ' + story + ' ' + cta))
+      fail('CLAIM_REVIEW_REQUIRED', 'Potential treatment or outcome claim must be explicitly flagged for clinical review.');
     if (typeof input.claims_present !== 'boolean') fail('INVALID_INPUT', 'claims_present must be an explicit boolean.');
     if (typeof input.disclosure_present !== 'boolean') fail('INVALID_INPUT', 'disclosure_present must be an explicit boolean.');
     reset(item);
@@ -124,8 +127,8 @@ export function createStudio({ initial = [], persist = () => {}, now = () => new
       fail('DISCLOSURE_REQUIRED', 'Synthetic content requires clear disclosure.', 409);
     if (item.source.source_type === 'creator' && !item.storyboard.disclosure_present)
       fail('DISCLOSURE_REQUIRED', 'Creator content requires material-connection disclosure review.', 409);
-    if (item.source.usage_scope === 'organic' && item.placement !== 'organic_video')
-      fail('RIGHTS_SCOPE', 'This placement requires paid/social channel rights confirmation.', 409);
+    // Organic social posts are not automatically paid ads; the owner verifies the actual use.
+    // No publication or paid media execution is available in this proof build.
     item.status = 'REVIEW_PENDING';
     receipt(item, 'review_requested', 'agent', now());
     return save(item);
@@ -183,7 +186,7 @@ export function createStudio({ initial = [], persist = () => {}, now = () => new
     return save(item);
   }
   return {
-    create, get: read, list: () => [...data.values()].slice(-25).map(concise),
+    create, get: read, list: () => [...data.values()].filter(item => item.tenant_id === TENANT).slice(-25).map(concise),
     summary: id => concise(read(id)), registerSource, proposeStoryboard, requestReview, decide, prepareRenderPlan
   };
 }
