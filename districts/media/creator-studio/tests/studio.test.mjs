@@ -136,3 +136,42 @@ test('MCP tool list is agent-scoped and cannot authorize publication', () => {
   assert.ok(tools.every(tool => tool.name.startsWith('creator_')));
   assert.ok(!tools.some(tool => /approve|publish|spend|launch/i.test(tool.name)));
 });
+
+test('replacing a media source invalidates its storyboard and prior approvals',()=>{
+  const {studio,id}=fixture();
+  studio.registerSource(id,{source_type:'facility',source_ref:'asset:first',
+    rights_ref:'rights:first',usage_scope:'both'});
+  studio.proposeStoryboard(id,{hook:'A real place',story:'Verified footage',
+    cta:'Explore',claims_present:false,disclosure_present:false});
+  studio.registerSource(id,{source_type:'synthetic',source_ref:'asset:second',
+    rights_ref:'rights:second',usage_scope:'both'});
+  assert.equal(studio.get(id).storyboard,null);
+  expectCode(()=>studio.requestReview(id),'NOT_READY');
+});
+test('synthetic first-person invented visitor experience is blocked even with disclosure',()=>{
+  const {studio,id}=fixture();
+  studio.registerSource(id,{source_type:'synthetic',source_ref:'asset:fake',
+    rights_ref:'rights:fake',usage_scope:'both'});
+  expectCode(()=>studio.proposeStoryboard(id,{hook:'I visited Crown & Core and loved it',
+    story:'I felt wonderful after my visit',cta:'Learn more',
+    claims_present:false,disclosure_present:true}),'SYNTHETIC_TESTIMONIAL');
+});
+test('wrong-tenant reviewer decisions and render plans are rejected',()=>{
+  const {studio,id}=fixture();
+  const draft=addReadyDraft(studio,id);
+  expectCode(()=>studio.decide(id,'owner',{tenant_id:'tangles-and-locs',version:draft.version,
+    decision:'approve',rights_confirmed:true}),'TENANT_DENIED');
+  studio.decide(id,'owner',{version:draft.version,decision:'approve',rights_confirmed:true});
+  expectCode(()=>studio.prepareRenderPlan(id,{tenant_id:'tangles-and-locs',
+    provider:'montage',idempotency_key:'job:one',max_cost_usd:0}),'TENANT_DENIED');
+});
+test('same idempotency key with changed provider or budget is a conflict',()=>{
+  const {studio,id}=fixture();
+  const draft=addReadyDraft(studio,id);
+  studio.decide(id,'owner',{version:draft.version,decision:'approve',rights_confirmed:true});
+  studio.prepareRenderPlan(id,{provider:'montage',idempotency_key:'job:one',max_cost_usd:5});
+  expectCode(()=>studio.prepareRenderPlan(id,{provider:'motion-master',
+    idempotency_key:'job:one',max_cost_usd:5}),'DUPLICATE_PLAN');
+  expectCode(()=>studio.prepareRenderPlan(id,{provider:'montage',
+    idempotency_key:'job:one',max_cost_usd:6}),'DUPLICATE_PLAN');
+});
