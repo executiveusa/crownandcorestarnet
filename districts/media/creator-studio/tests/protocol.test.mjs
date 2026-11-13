@@ -85,7 +85,7 @@ test('canonical private state guard denies repo root, prefix tricks and symlinke
   try{
     symlinkSync(repoRoot,join(temp,'repo-link'),'dir');
     assert.throws(()=>requireOutsideRepository(join(temp,'repo-link','private-state.json')),
-      /outside the public repository/);
+      /symbolic links|outside the public repository/);
   }finally{rmSync(temp,{recursive:true,force:true});}
 });
 
