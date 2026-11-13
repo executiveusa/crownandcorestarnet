@@ -40,3 +40,22 @@ test('unauthenticated provider webhook is rejected before state changes',async t
   assert.equal(response.status,409); // valid signature, but no approved/rendering job
   assert.equal(studio.get(item.id).status,'DRAFT');
 });
+
+test('signed callback cannot be replayed into another outcome URL',async t=>{
+  const studio=createStudio();
+  const one=studio.create({outcome:'First actual campaign'});
+  const two=studio.create({outcome:'Second actual campaign'});
+  const server=createApiServer({studio,tokens:{agent:'a'.repeat(30),owner:'b'.repeat(30)},
+    webhookSecrets:{provider:secret,attribution:secret}});
+  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+  t.after(()=>new Promise(resolve=>server.close(resolve)));
+  const payload={event_ref:'event:cross',outcome_id:one.id,version:one.version,
+    verified_source:true,source_ref:'booking:source',bookings:2,revenue_usd:100};
+  const signed=envelope(payload);
+  const base='http://127.0.0.1:'+server.address().port+'/v1/webhooks/attribution/';
+  const response=await fetch(base+two.id,{method:'POST',headers:{
+    'content-type':'application/json',...signed.headers},body:signed.raw});
+  assert.equal(response.status,409);
+  assert.equal((await response.json()).error,'WEBHOOK_OUTCOME_MISMATCH');
+  assert.equal(studio.get(two.id).attribution,undefined);
+});
