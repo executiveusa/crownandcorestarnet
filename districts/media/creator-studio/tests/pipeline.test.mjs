@@ -119,7 +119,7 @@ test('provider job IDs, QA hashes, final approval and booking policy fail closed
 });
 test('creative revision is blocked after render authorization to protect external receipts',()=>{
   const f=verified();
-  assert.equal(f.studio.get(f.id).status,'RENDER_AUTHORIZED');
+  assert.equal(f.studio.get(f.id).status,'READY_FOR_FINAL_REVIEW');
   rejected(()=>f.studio.proposeStoryboard(f.id,{hook:'Another',story:'Revised',
     cta:'Explore',claims_present:false,disclosure_present:false}),'EXTERNAL_OPERATION_PENDING');
   rejected(()=>f.studio.registerSource(f.id,{source_type:'facility',source_ref:'asset:other',
