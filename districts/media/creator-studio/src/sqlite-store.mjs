@@ -8,8 +8,10 @@ import { TENANT, StudioError } from './domain.mjs';
 
 function invalid(message){throw new StudioError('STORAGE_INTEGRITY',message,500);}
 function digest(event){
-  const {action,role,at,version,previous_hash}=event;
-  return createHash('sha256').update(JSON.stringify({action,role,at,version,previous_hash})).digest('hex');
+  const {action,role,at,version,previous_hash,actor_ref}=event;
+  const payload={action,role,at,version,previous_hash};
+  if(actor_ref)payload.actor_ref=actor_ref;
+  return createHash('sha256').update(JSON.stringify(payload)).digest('hex');
 }
 function verifyChain(item){
   if(item.tenant_id!==TENANT || !Array.isArray(item.receipts))invalid('Tenant or receipt chain invalid.');
