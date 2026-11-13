@@ -1,0 +1,564 @@
+{
+  "audit_name": "Full-Stack Wiring Audit v2",
+  "version": "2.0.0",
+  "audit_mode": "FULL targeted cross-repo media flow",
+  "date": "2026-11-12",
+  "release_ready": false,
+  "full_product_verified": false,
+  "frontend_verified_routes": 1,
+  "backend_capability_families_reviewed": 10,
+  "findings": [
+    {
+      "id": "CC-BB-01",
+      "title": "UGC render duration and testimonial semantics mismatch",
+      "severity": "S1",
+      "classification": "MISWIRED",
+      "flags": [
+        "SCHEMA_DRIFT",
+        "PROMISE_BLOCKED"
+      ],
+      "confidence": "B",
+      "observed": "Buffer UGC executor builds 2x10-second first-person generated ad scripts.",
+      "expected": "Genuine rights-cleared 30-second and separate 15-second medspa clips.",
+      "root_cause": "Existing UGC factory is product-ad-focused and not an editorial footage renderer.",
+      "impact": "Primary deliverable cannot be produced; synthetic patient-style claims risk.",
+      "proposed_fix": "Implement/reuse vetted licensed-source footage renderer on established engine with two actual MP4 outputs.",
+      "likely_files_services": [
+        "buffer-blaster-/api/services/ugc_factory.py",
+        "buffer-blaster-/api/services/ugc_executor.py",
+        "crownandcorestarnet/districts/media/creator-studio/src/qa.mjs"
+      ],
+      "acceptance_test": "Use a licensed 30s+ source; produce two distinct H264 1080x1920 30/15 MP4s, hash and verify, no invented visitor.",
+      "dependencies": [
+        "real video source and rights vault",
+        "owner capped render approval"
+      ],
+      "approval_required": "OWNER_APPROVAL_REQUIRED",
+      "evidence": [
+        "Buffer code inspection",
+        "StarNet tests 50/50 PASS"
+      ],
+      "status": "OPEN"
+    },
+    {
+      "id": "CC-BB-02",
+      "title": "Cross-workspace source reference exposure/list leakage",
+      "severity": "S1",
+      "classification": "PARTIAL",
+      "flags": [
+        "AUTH",
+        "STATE_FRAGMENTATION"
+      ],
+      "confidence": "B",
+      "observed": "Global Buffer source index formerly returned references without workspace scope; new PR #119 scopes exact lookup and filters Redis/Supabase.",
+      "expected": "Every external source read restricted to configured workspace and no mutable tenant from agent.",
+      "root_cause": "Global index + service-role queries need explicit workspace predicate.",
+      "impact": "Potential visibility of other customer assets and wrong-tenant creative selection.",
+      "proposed_fix": "Review/merge Buffer PR #119 and validate actual workspace + real asset readback.",
+      "likely_files_services": [
+        "buffer-blaster-/api/services/source_assets.py",
+        "buffer-blaster-/api/routers/assets.py"
+      ],
+      "acceptance_test": "Foreign-workspace exact read rejected on both Postgres and Redis, list scans past foreign entries before count.",
+      "dependencies": [
+        "Buffer PR #119 CI/independent review"
+      ],
+      "approval_required": "OWNER_MERGE_APPROVAL",
+      "evidence": [
+        "Codex review found Redis pagination issue, code fixed + new tests"
+      ],
+      "status": "FIXED_IN_PR_UNMERGED"
+    },
+    {
+      "id": "CC-BB-03",
+      "title": "No verified live Instinct/Paperclip or Buffer API connection",
+      "severity": "S1",
+      "classification": "DEPENDENCY_MISSING",
+      "flags": [
+        "LOCAL_SERVICE",
+        "ENV",
+        "NO_EVIDENCE"
+      ],
+      "confidence": "C",
+      "observed": "No live authenticated provider endpoint, workspace UUID, Instinct task or model-originated MCP receipts.",
+      "expected": "Voice-outcome to real agent workflow, durable plan and verifiable response.",
+      "root_cause": "Existing Paperclip identity and server topology unresolved (#25).",
+      "impact": "Primary agent promise unproven despite synthetic CI.",
+      "proposed_fix": "Server operator resolves issue #25 and proves real model-originated and live Buffer API readbacks.",
+      "likely_files_services": [
+        "crownandcorestarnet/issues/25",
+        "crownandcorestarnet/issues/27"
+      ],
+      "acceptance_test": "Actual authenticated tool call IDs, deployment SHAs, source/plan IDs and failure/rollback receipts.",
+      "dependencies": [
+        "authorized server access"
+      ],
+      "approval_required": "OWNER_SERVER_ACCESS_APPROVAL",
+      "evidence": [
+        "No connected runtime evidence from GitHub PR CI"
+      ],
+      "status": "OPEN"
+    },
+    {
+      "id": "CC-BB-04",
+      "title": "No real source-video ingestion path",
+      "severity": "S1",
+      "classification": "DEPENDENCY_MISSING",
+      "flags": [
+        "CAPACITY_LIMIT",
+        "PROMISE_BLOCKED"
+      ],
+      "confidence": "B",
+      "observed": "Buffer references upload only accepts image/jpeg,png,webp ≤25MB; client job requires video.",
+      "expected": "Rights-cleared private video can enter pipeline and be durably verified at target sizes.",
+      "root_cause": "Image reference uploader and whole-body asset storage not designed for footage.",
+      "impact": "Video production cannot begin from authentic Crown & Core footage.",
+      "proposed_fix": "Reuse approved private vault/ingest or build streaming video source path with scoped provenance and checksum.",
+      "likely_files_services": [
+        "buffer-blaster-/api/routers/assets.py",
+        "buffer-blaster-/api/services/asset_storage.py"
+      ],
+      "acceptance_test": "Upload representative large authorized footage with bounded memory, metadata, checksums, restart and private readback.",
+      "dependencies": [
+        "private vault/consent"
+      ],
+      "approval_required": "OWNER_SOURCE_APPROVAL",
+      "evidence": [
+        "Current Buffer API inspection"
+      ],
+      "status": "OPEN"
+    },
+    {
+      "id": "CC-BB-05",
+      "title": "Direct Buffer MCP exposes privileged paid factory",
+      "severity": "S2",
+      "classification": "PARTIAL",
+      "flags": [
+        "AUTH",
+        "BACKEND_SURFACE_GAP"
+      ],
+      "confidence": "B",
+      "observed": "Buffer MCP catalog includes execute_ugc_ad_factory; Buffer operator key has broad authority.",
+      "expected": "Instinct sees only bounded no-spend tools; separate owner/wallet approval controls paid execution.",
+      "root_cause": "Existing general-purpose Buffer MCP is not intended to be directly exposed to medspa agent.",
+      "impact": "Agent could accidentally trigger paid generation with broad token if improperly registered.",
+      "proposed_fix": "Use StarNet scoped proxy only; never give Buffer operator key to Instinct; verify live registration.",
+      "likely_files_services": [
+        "crownandcorestarnet/districts/media/creator-studio/src/mcp.mjs",
+        "crownandcorestarnet/districts/media/creator-studio/src/buffer-blaster.mjs"
+      ],
+      "acceptance_test": "Eleven allowed tools; no generic Buffer tool executor or raw operator token in model process.",
+      "dependencies": [
+        "StarNet PR #28"
+      ],
+      "approval_required": "OWNER_CREDENTIAL_BOUNDARY",
+      "evidence": [
+        "Node role/MCP contract tests PASS"
+      ],
+      "status": "FIXED_IN_PR_UNMERGED"
+    },
+    {
+      "id": "CC-BB-06",
+      "title": "Redis degraded fallback changes canonical plan semantics",
+      "severity": "S2",
+      "classification": "PARTIAL",
+      "flags": [
+        "FALLBACK_SEMANTIC_DRIFT",
+        "PERSISTENCE"
+      ],
+      "confidence": "B",
+      "observed": "Buffer plan persistence falls back to Redis when Supabase is unavailable; response identifies backend.",
+      "expected": "Plan must be canonically durable for medspa production audit.",
+      "root_cause": "Provider's degraded fallback is not equivalent to canonical ledger.",
+      "impact": "A result could look saved without canonical proof.",
+      "proposed_fix": "StarNet bridge rejects anything except backend=supabase; server confirms actual durable readback.",
+      "likely_files_services": [
+        "buffer-blaster-/api/services/media_receipts.py",
+        "crownandcorestarnet/districts/media/creator-studio/src/buffer-blaster.mjs"
+      ],
+      "acceptance_test": "Redis response must fail closed, Supabase saved plan must read back ID and exact content.",
+      "dependencies": [
+        "authorized workspace"
+      ],
+      "approval_required": "OPERATOR",
+      "evidence": [
+        "Node negative case tests PASS"
+      ],
+      "status": "MITIGATED_IN_PR"
+    },
+    {
+      "id": "CC-BB-07",
+      "title": "OpenCodeReview model provider errors",
+      "severity": "S2",
+      "classification": "BROKEN",
+      "flags": [
+        "NO_EVIDENCE"
+      ],
+      "confidence": "A",
+      "observed": "Both repo OCR jobs failed: Buffer 2/2 provider/subtasks; Crown 12/12 non-JSON text/plain response from GitHub Models.",
+      "expected": "Independent OCR findings/success recorded at exact PR SHA.",
+      "root_cause": "GitHub Models completion endpoint responds in unsupported format or task fails.",
+      "impact": "Independent review remains incomplete; cannot call code security-approved.",
+      "proposed_fix": "Fix approved provider configuration and rerun pinned OCR or obtain qualified independent review.",
+      "likely_files_services": [
+        "buffer-blaster-/.github/workflows/vibe-code-review.yml",
+        "crownandcorestarnet/.github/workflows/creator-open-code-review.yml"
+      ],
+      "acceptance_test": "Complete OCR report artifact or signed independent review, resolved material issues and exact SHA.",
+      "dependencies": [
+        "working model provider and approved reviewer"
+      ],
+      "approval_required": "HUMAN_REVIEW_REQUIRED",
+      "evidence": [
+        "Buffer Actions #43372852877",
+        "StarNet Actions #43373991999"
+      ],
+      "status": "OPEN"
+    },
+    {
+      "id": "CC-BB-08",
+      "title": "Single-host SQLite not operationally proven",
+      "severity": "S2",
+      "classification": "DEPENDENCY_MISSING",
+      "flags": [
+        "PERSISTENCE",
+        "LOCAL_SERVICE"
+      ],
+      "confidence": "B",
+      "observed": "StarNet uses experimental Node 22 node:sqlite single-writer store; unit restart tests pass.",
+      "expected": "Encrypted approved private volume, safe backup/restart and tenant isolation in real staging.",
+      "root_cause": "Repository cannot provision/verify owner's live storage.",
+      "impact": "Risk of data loss or deployment concurrency divergence.",
+      "proposed_fix": "Server agent inspects existing DB; run private backup/restore and single-writer limits before deploy.",
+      "likely_files_services": [
+        "crownandcorestarnet/districts/media/creator-studio/src/sqlite-store.mjs"
+      ],
+      "acceptance_test": "Backup/restore, restart, tamper detection and approved encrypted storage proven.",
+      "dependencies": [
+        "approved deployment topology"
+      ],
+      "approval_required": "OWNER_DB_APPROVAL",
+      "evidence": [
+        "Node SQLite contract tests PASS"
+      ],
+      "status": "OPEN"
+    },
+    {
+      "id": "CC-BB-09",
+      "title": "Real voice identity not bound to exact film hashes",
+      "severity": "S2",
+      "classification": "DEPENDENCY_MISSING",
+      "flags": [
+        "AUTH",
+        "NO_EVIDENCE"
+      ],
+      "confidence": "C",
+      "observed": "StarNet OIDC RS256 MFA verifier and hash-bound film approval code exists; real voice channel not connected.",
+      "expected": "Owner or clinician identity is independently authenticated with scoped expiring version/hash challenge.",
+      "root_cause": "No verified IdP/voice channel integration.",
+      "impact": "Spoken yes cannot be accepted as authenticated approval.",
+      "proposed_fix": "Connect verified owner channel to exact-version OIDC and challenge semantics; test replay and denial.",
+      "likely_files_services": [
+        "crownandcorestarnet/districts/media/creator-studio/src/identity.mjs",
+        "crownandcorestarnet/issues/27"
+      ],
+      "acceptance_test": "Real owner-approved film hash receipt and denied stale/spoofed voice decision.",
+      "dependencies": [
+        "existing Instinct owner channel"
+      ],
+      "approval_required": "OWNER_AND_CLINICIAN",
+      "evidence": [
+        "Static code/CI tests, no production proof"
+      ],
+      "status": "OPEN"
+    },
+    {
+      "id": "CC-BB-10",
+      "title": "Plan metadata does not equal video generation",
+      "severity": "S2",
+      "classification": "PARTIAL",
+      "flags": [
+        "SCHEMA_DRIFT",
+        "PROMISE_OVERSTATED"
+      ],
+      "confidence": "B",
+      "observed": "Buffer canonical draft contains duration_seconds=30 and metadata requested_cuts_seconds=[30,15] but no MP4.",
+      "expected": "Actual separate 30 and 15-second output and provider job receipt.",
+      "root_cause": "Provider API is no-spend plan store; generation factory incompatible.",
+      "impact": "False video-completion narrative possible.",
+      "proposed_fix": "Enforce paid_generation=false, renderer_supported=false until real files independently QA pass.",
+      "likely_files_services": [
+        "crownandcorestarnet/districts/media/creator-studio/src/buffer-blaster.mjs"
+      ],
+      "acceptance_test": "No mock asserts video exists; real independent 2 MP4 hashes needed.",
+      "dependencies": [
+        "CC-BB-01"
+      ],
+      "approval_required": "OWNER",
+      "evidence": [
+        "Node 50/50 code tests PASS"
+      ],
+      "status": "MITIGATED_IN_PR"
+    },
+    {
+      "id": "CC-BB-11",
+      "title": "Whole-body media buffering and image-only upload",
+      "severity": "S2",
+      "classification": "PARTIAL",
+      "flags": [
+        "WHOLE_BODY_BUFFERING",
+        "CAPACITY_LIMIT"
+      ],
+      "confidence": "B",
+      "observed": "Buffer asset_storage.upload_file uses Path.read_bytes() before posting; uploader only accepts 25MB images.",
+      "expected": "Bounded-memory authenticated video transfer at realistic file sizes.",
+      "root_cause": "Existing storage helper predates large video ingest.",
+      "impact": "Memory pressure and failed large-footage imports.",
+      "proposed_fix": "Use streaming/chunked object transfer, size/checksum/expiry boundaries; do not increase limit alone.",
+      "likely_files_services": [
+        "buffer-blaster-/api/services/asset_storage.py"
+      ],
+      "acceptance_test": "≥100MB authorized test file transferred with bounded memory and resume/failure receipt.",
+      "dependencies": [
+        "private media vault"
+      ],
+      "approval_required": "OWNER_MEDIA_APPROVAL",
+      "evidence": [
+        "Current Buffer code inspection"
+      ],
+      "status": "OPEN"
+    },
+    {
+      "id": "CC-BB-12",
+      "title": "Ad container / refund tracking overstatements",
+      "severity": "S2",
+      "classification": "PARTIAL",
+      "flags": [
+        "PROMISE_OVERSTATED"
+      ],
+      "confidence": "B",
+      "observed": "Existing Buffer 2026-08-31 audit notes Meta/TikTok create only campaign containers; refunds not fully netted.",
+      "expected": "Ads delivered only after complete hierarchy/readback, revenue net of returns.",
+      "root_cause": "Existing implementation's provider/ad and Shopify accounting incomplete.",
+      "impact": "Unreliable ROAS or paid campaign claims.",
+      "proposed_fix": "Keep paid media outside scope, separately fix and verify entire hierarchy and refund events.",
+      "likely_files_services": [
+        "buffer-blaster-/docs/audits/2026-08-31-full-stack-wiring.md"
+      ],
+      "acceptance_test": "Actual delivery receipts and refund-adjusted net numbers before claims.",
+      "dependencies": [
+        "paid media scope approval"
+      ],
+      "approval_required": "OWNER_SPEND_APPROVAL",
+      "evidence": [
+        "Historical audit file and source inspection"
+      ],
+      "status": "PARK_OUT_OF_VIDEO_MVP"
+    },
+    {
+      "id": "CC-BB-13",
+      "title": "Offline owner fallback not connected to live voice/video approval",
+      "severity": "S2",
+      "classification": "UI_ONLY",
+      "flags": [
+        "UX_DEAD_END",
+        "NO_EVIDENCE"
+      ],
+      "confidence": "C",
+      "observed": "HTML prototype exports a JSON brief and copy prompt; does not send to a server or preview real MP4.",
+      "expected": "Owner delegates to Instinct and reviews verified artifact without desk.",
+      "root_cause": "UI was intentionally built offline pending server identity.",
+      "impact": "Owner cannot finish actual film through shown page today.",
+      "proposed_fix": "Connect existing Instinct voice/mobile surface; preserve low-text design and accessibility tests.",
+      "likely_files_services": [
+        "crownandcorestarnet/districts/media/creator-studio/index.html"
+      ],
+      "acceptance_test": "Voice-intent to actual MCP receipt, real mobile video playback and exact version approval.",
+      "dependencies": [
+        "authenticated server/preview"
+      ],
+      "approval_required": "OWNER_VISUAL_APPROVAL",
+      "evidence": [
+        "Static UI code; no browser automation"
+      ],
+      "status": "OPEN"
+    },
+    {
+      "id": "CC-BB-14",
+      "title": "Actual production boundaries untested",
+      "severity": "S2",
+      "classification": "UNTESTABLE",
+      "flags": [
+        "AUTH",
+        "NO_EVIDENCE"
+      ],
+      "confidence": "C",
+      "observed": "No authorized production APIs, credentials or patient assets accessed during audit.",
+      "expected": "Verified tenant, provider and deployment version in owner-controlled staging.",
+      "root_cause": "Private runtime access not available.",
+      "impact": "Unverified security and operational assumptions remain.",
+      "proposed_fix": "Hand server operator bounded read-only discovery mission; no debug secrets in logs/issues.",
+      "likely_files_services": [
+        "crownandcorestarnet/issues/27"
+      ],
+      "acceptance_test": "Direct signed staging receipts for config, denial, provider version and rollback.",
+      "dependencies": [
+        "owner-controlled server connection"
+      ],
+      "approval_required": "OWNER_SERVER_ACCESS_APPROVAL",
+      "evidence": [
+        "No production test run"
+      ],
+      "status": "OPEN"
+    },
+    {
+      "id": "CC-BB-15",
+      "title": "Generic renderer adapter did not speak Buffer contract",
+      "severity": "S3",
+      "classification": "PARTIAL",
+      "flags": [
+        "METHOD_PATH_DRIFT"
+      ],
+      "confidence": "B",
+      "observed": "StarNet generic provider bridge expects GET health/POST jobs, while Buffer exposes actual /api/health, /api/mcp and UGC plans.",
+      "expected": "Safe intermediary uses source-confirmed exact API paths.",
+      "root_cause": "Contract mismatch between independent repos.",
+      "impact": "Direct generic requests would fail.",
+      "proposed_fix": "PR #28 implements real existing status/list/reference/no-spend plan paths; render still separate.",
+      "likely_files_services": [
+        "crownandcorestarnet/districts/media/creator-studio/src/buffer-blaster.mjs"
+      ],
+      "acceptance_test": "Authenticated mocked calls match actual Buffer code; live readback pending.",
+      "dependencies": [
+        "Buffer #119 and Crown #26/#28"
+      ],
+      "approval_required": "OWNER_MERGE_APPROVAL",
+      "evidence": [
+        "Node 50/50 tests PASS"
+      ],
+      "status": "FIXED_SAFE_PLAN_ONLY"
+    },
+    {
+      "id": "CC-BB-16",
+      "title": "Critical vulnerable Next.js runtime dependency",
+      "severity": "S1",
+      "classification": "BROKEN",
+      "flags": [
+        "SECURITY_FINDING_UNRESOLVED",
+        "DEPENDENCY_MISSING"
+      ],
+      "confidence": "A",
+      "observed": "Buffer frontend pins next@16.4.0; npm audit --omit=dev --audit-level=high fails with 1 critical vulnerability and three advisories.",
+      "expected": "Fix vulnerable runtime dependency and ensure no critical/high prod advisories before launch.",
+      "root_cause": "Preexisting frontend dependency behind existing Buffer production path.",
+      "impact": "Potential unauthenticated RCE/DoS if affected surfaces exposed; not confirmed exploitable.",
+      "proposed_fix": "Isolated version and lockfile upgrade, routes/build/lint/security regression, no blind force.",
+      "likely_files_services": [
+        "buffer-blaster-/frontend/package.json",
+        "buffer-blaster-/frontend/package-lock.json"
+      ],
+      "acceptance_test": "npm audit, npm ci, frontend build/lint/route smoke, real deployed reachability audit and rollback.",
+      "dependencies": [
+        "Issue #120 security patch"
+      ],
+      "approval_required": "OWNER_RELEASE_APPROVAL",
+      "evidence": [
+        "Buffer Actions #43372852531",
+        "GHSA-2464-fhr4-w9xw",
+        "GHSA-p3m5-59mp-jv5r",
+        "GHSA-673q-mjm6-r5xr"
+      ],
+      "status": "OPEN"
+    }
+  ],
+  "counts": {
+    "S0": 0,
+    "S1": 5,
+    "S2": 10,
+    "S3": 1
+  },
+  "repair_dependency_graph": [
+    [
+      "CC-BB-16",
+      "secure Buffer frontend runtime before production"
+    ],
+    [
+      "CC-BB-02",
+      "merge and deploy workspace-isolated Buffer source route"
+    ],
+    [
+      "CC-BB-07",
+      "obtain independent code/security review"
+    ],
+    [
+      "CC-BB-03",
+      "verify existing Instinct/Paperclip and Buffer deployed identity"
+    ],
+    [
+      "CC-BB-09",
+      "bind authenticated owner/clinical/rights"
+    ],
+    [
+      "CC-BB-04",
+      "prove private licensed video ingest"
+    ],
+    [
+      "CC-BB-01",
+      "implement verified 30+15 footage renderer"
+    ],
+    [
+      "CC-BB-08",
+      "verify private DB persistence and rollback"
+    ],
+    [
+      "CC-BB-10",
+      "prove real output and QA"
+    ],
+    [
+      "CC-BB-13",
+      "connect voice/mobile preview and live business receipts"
+    ]
+  ],
+  "approval_packet": [
+    {
+      "finding_id": "CC-BB-16",
+      "approval": "one narrow security dependency PR",
+      "risk": "framework breaking changes",
+      "test": "npm ci+audit+build+route smoke"
+    },
+    {
+      "finding_id": "CC-BB-02",
+      "approval": "review and merge Buffer workspace isolation PR",
+      "risk": "legacy Redis pagination",
+      "test": "all foreign-workspace tests and staging source read"
+    },
+    {
+      "finding_id": "CC-BB-07",
+      "approval": "independent review signal",
+      "risk": "LLM provider unavailable",
+      "test": "genuine report or qualified reviewer"
+    },
+    {
+      "finding_id": "CC-BB-03",
+      "approval": "read-only server discovery",
+      "risk": "identity confusion",
+      "test": "actual Instinct/Paperclip/Buffer readback"
+    },
+    {
+      "finding_id": "CC-BB-04",
+      "approval": "licensed media ingest",
+      "risk": "privacy/large file",
+      "test": "private 100MB+ upload+checksum+resume proof"
+    },
+    {
+      "finding_id": "CC-BB-01",
+      "approval": "capped single render smoke",
+      "risk": "cost/claims",
+      "test": "30s+15s actual MP4 ffprobe/hashes"
+    }
+  ],
+  "merge_gate": "Block until independent code/security review, critical Next fixed, all CI green, owner review, and correct stacked dependency order.",
+  "deploy_gate": "Block until live approved Instinct/Paperclip/Buffer tenant, JWT/rights/clinical identity, media vault, DB restore, actual video and rollback.",
+  "publish_spend_gate": "Separate owner authorization, exact media hashes and source rights; do not expose Buffer paid factory to agent.",
+  "rollback": "Revoke CROWN_BUFFER_* secrets, disable StarNet Buffer bridge, stop side effects, revert PRs and preserve receipts."
+}
