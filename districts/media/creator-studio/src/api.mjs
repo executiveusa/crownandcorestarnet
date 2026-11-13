@@ -10,6 +10,7 @@ import { sqliteStore } from './sqlite-store.mjs';
 import { createIdentityVerifier } from './identity.mjs';
 import { createCreatorWorkflow } from './creators.mjs';
 import { verifySignedEvent } from './webhooks.mjs';
+import { requireOutsideRepository } from './private-path.mjs';
 
 const json = (res, status, body) => {
   res.writeHead(status, { 'content-type': 'application/json; charset=utf-8',
@@ -169,11 +170,7 @@ export function createApiServer({ studio, tokens, identity = null, webhookSecret
 }
 export function localStore(filename) {
   if (!filename) return { initial: [], persist: () => {} };
-  if (!isAbsolute(filename)) throw new Error('State path must be absolute and outside the repository.');
-  const target = resolve(filename);
-  const cwd = resolve(process.cwd());
-  const rel = relative(cwd, target);
-  if (!rel.startsWith('..') && rel !== '..') throw new Error('State must not be stored inside this public repository.');
+  const target = requireOutsideRepository(filename);
   const initial = existsSync(target) ? JSON.parse(readFileSync(target, 'utf8')) : [];
   if (!Array.isArray(initial)) throw new Error('State must be a JSON array.');
   return { initial, persist: snapshot => {
