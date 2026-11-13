@@ -4,6 +4,7 @@ import { createStudio } from '../src/domain.mjs';
 import { createCreatorWorkflow } from '../src/creators.mjs';
 import { createApiServer } from '../src/api.mjs';
 import { tools } from '../src/mcp.mjs';
+import { createCreatorOutreachAdapter } from '../src/adapters.mjs';
 const at='2026-11-12T20:00:00Z',expires='2026-11-13T20:00:00Z';
 const code=(fn,c)=>assert.throws(fn,e=>e.code===c);
 function fixture(){
@@ -68,4 +69,32 @@ test('creator API denies agent authorizing outreach',async t=>{
     profile_ref:'profile:one',fit_reason:'Verified local creator profile'})).status,200);
   assert.equal((await post('/creator-outreach-authorize','agent',{version:1})).status,403);
   assert.equal((await post('/creator-release','agent',{creator_ref:'creator:one'})).status,403);
+});
+
+test('outreach adapter only sends exact owner-approved message to opaque creator reference',async()=>{
+  const {studio,id,creators}=fixture();
+  creators.proposeCandidate(id,'agent',{creator_ref:'creator:one',profile_ref:'profile:one',
+    fit_reason:'Local relevant public profile'});
+  creators.prepareOutreach(id,'agent',{creator_ref:'creator:one',
+    message:'Would you consider a clearly disclosed Crown & Core creator project?',
+    terms_ref:'terms:one',max_fee_usd:100});
+  const draft=studio.get(id).creator_campaign.outreach[0];
+  creators.authorizeOutreach(id,'owner',{version:1,outreach_id:draft.outreach_id,
+    message_sha256:draft.message_sha256,permission_ref:'permission:one',
+    decision_ref:'decision:one',expires_at:new Date(Date.now()+3600000).toISOString(),max_fee_usd:100});
+  let posted;
+  const adapter=createCreatorOutreachAdapter({sendUrl:'https://contact.example.test/send',
+    token:'x'.repeat(30),fetchFn:async(_url,opts)=>{
+      posted=JSON.parse(opts.body);
+      return {ok:true,headers:{get:()=>null},text:async()=>JSON.stringify(
+        {delivered:true,charged_usd:0,external_message_ref:'message:one',delivery_receipt_ref:'receipt:one'})};
+    }});
+  const receipt=await adapter.send(studio.get(id),draft.outreach_id);
+  assert.equal(receipt.delivery_receipt_ref,'receipt:one');
+  assert.equal(posted.creator_ref,'creator:one');
+  assert.equal(posted.permission_ref,'permission:one');
+  assert.equal(posted.charged_usd,0);
+  assert.equal(posted.message_sha256,draft.message_sha256);
+  await assert.rejects(adapter.send({...studio.get(id),creator_campaign:{outreach:[]}},draft.outreach_id),
+    e=>e.code==='NOT_AUTHORIZED');
 });
