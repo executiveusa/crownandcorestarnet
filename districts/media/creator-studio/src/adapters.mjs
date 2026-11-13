@@ -1,5 +1,6 @@
 // Explicitly configured external renderer/publisher bridge. No guessed provider URLs.
 // The existing Motion Master / Montage deployment must supply actual supported endpoints.
+import { createHash } from 'node:crypto';
 import { StudioError } from './domain.mjs';
 const fail=(code,msg,status=409)=>{throw new StudioError(code,msg,status);};
 function endpoint(raw){
@@ -46,13 +47,16 @@ export function createRendererAdapter({healthUrl,submitUrl,token,fetchFn=fetch,t
         fail('AUTH_EXPIRED','Version, rights or budget authorization invalid.');
       if(plan.max_cost_usd<authorization.max_cost_usd)
         fail('INVALID_BUDGET','Budget exceeds approved plan.');
+      const scopedIdempotencyKey='cc:'+createHash('sha256')
+        .update(JSON.stringify([plan.tenant_id,plan.outcome_id,plan.job_id,plan.idempotency_key]))
+        .digest('hex');
       const payload={job_id:plan.job_id,tenant_id:plan.tenant_id,
         destination:plan.provider,brief_ref:plan.outcome_id,
         asset_refs:plan.source_refs,rights_refs:plan.rights_refs,
         approved_claim_refs:plan.claim_refs,dimensions:plan.dimensions,
         cuts_seconds:plan.cuts_seconds,max_cost_usd:authorization.max_cost_usd,
-        idempotency_key:plan.idempotency_key};
-      const response=await request(fetchFn,submit,token,'POST',payload,plan.idempotency_key,timeoutMs);
+        idempotency_key:scopedIdempotencyKey};
+      const response=await request(fetchFn,submit,token,'POST',payload,scopedIdempotencyKey,timeoutMs);
       if(response?.accepted!==true||typeof response.provider_job_id!=='string'||
         !/^[a-z][a-z0-9._:-]{2,119}$/i.test(response.provider_job_id))
         fail('PROVIDER_NOT_ACCEPTED','Provider did not acknowledge the job.',502);
