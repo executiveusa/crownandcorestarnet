@@ -178,3 +178,34 @@ test('MCP exports only safe Buffer operations, not arbitrary tools or paid execu
   assert.ok(tools.some(t=>t.name==='creator_buffer_plan_sync'));
   assert.ok(!tools.some(t=>/execute_ugc|spend|approve|publish|send/i.test(t.name)));
 });
+
+test('canonical plan readback rejects modified script, shot plan, usage rights and finish mode',async()=>{
+  for(const mutate of [
+    plan=>{plan.script='I tried this clinic and my life changed';},
+    plan=>{plan.shot_plan[0].text='Invented before-and-after scene';},
+    plan=>{plan.finish_mode='raw_ugc';},
+    plan=>{plan.consent_rights_refs=['rights:unapproved'];}
+  ]){
+    const f=fixture(),b=fakeBuffer(),link=createBufferLink(f.studio,b.client);
+    await link.bindSource(f.id,{version:f.version,source_uuid:asset},'rights');
+    await link.syncPlan(f.id);
+    mutate(b.read());
+    await errorCode(()=>link.syncPlan(f.id),'BUFFER_CONTRACT_DRIFT');
+    assert.equal(f.studio.get(f.id).buffer_blaster.plan.status,'DRAFT_NOT_RENDERED');
+  }
+});
+test('replayed plan readback cannot succeed after concurrent creative revision',async()=>{
+  const f=fixture(),b=fakeBuffer(),link=createBufferLink(f.studio,b.client);
+  await link.bindSource(f.id,{version:f.version,source_uuid:asset},'rights');
+  await link.syncPlan(f.id);
+  const originalRead=b.client.readPlan;
+  b.client.readPlan=async(...args)=>{
+    const result=await originalRead(...args);
+    f.studio.proposeStoryboard(f.id,{hook:'A different film',story:'Only verified footage',
+      cta:'Explore services',claims_present:false,disclosure_present:false});
+    return result;
+  };
+  await errorCode(()=>link.syncPlan(f.id),'NOT_READY');
+  assert.equal(f.studio.get(f.id).status,'DRAFT');
+  assert.equal(f.studio.get(f.id).buffer_blaster,null);
+});
