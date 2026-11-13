@@ -9,26 +9,42 @@ import { localStore } from '../src/api.mjs';
 import { createStudio } from '../src/domain.mjs';
 import { callTool } from '../src/mcp.mjs';
 
-test('MCP stdio initialize and tools/list respond with valid JSON-RPC and no owner actions', async () => {
+test('MCP stdio completes initialize before tools/list and exposes no owner actions', async () => {
   const filename = fileURLToPath(new URL('../src/mcp.mjs', import.meta.url));
   const child = spawn(process.execPath, [filename], { stdio: ['pipe','pipe','pipe'] });
-  const output = [], errors = [];
-  child.stdout.on('data', chunk => output.push(chunk.toString('utf8')));
+  const responses = [], errors = [];
+  let buffer = '', initialized = false;
   child.stderr.on('data', chunk => errors.push(chunk.toString('utf8')));
-  child.stdin.end(
-    JSON.stringify({ jsonrpc:'2.0', id:1, method:'initialize', params:{} }) + '\n' +
-    JSON.stringify({ jsonrpc:'2.0', id:2, method:'tools/list', params:{} }) + '\n'
-  );
+  child.stdout.on('data', chunk => {
+    buffer += chunk.toString('utf8');
+    let end;
+    while ((end = buffer.indexOf('\\n')) >= 0) {
+      const line = buffer.slice(0,end);
+      buffer = buffer.slice(end+1);
+      if (!line) continue;
+      const response = JSON.parse(line);
+      responses.push(response);
+      if (response.id === 1 && !initialized) {
+        initialized = true;
+        child.stdin.end(
+          JSON.stringify({jsonrpc:'2.0',method:'notifications/initialized',params:{}})+'\\n'+
+          JSON.stringify({jsonrpc:'2.0',id:2,method:'tools/list',params:{}})+'\\n'
+        );
+      }
+    }
+  });
+  child.stdin.write(JSON.stringify({jsonrpc:'2.0',id:1,method:'initialize',
+    params:{protocolVersion:'2024-11-05',capabilities:{},
+      clientInfo:{name:'creator-contract-test',version:'1.0.0'}}})+'\\n');
   const code = await new Promise((resolve, reject) => {
     child.on('error', reject);
     child.on('close', resolve);
   });
   assert.equal(code, 0, errors.join(''));
-  const responses = output.join('').trim().split('\n').map(JSON.parse);
-  const initialized = responses.find(r => r.id === 1);
+  const init = responses.find(r => r.id === 1);
   const listed = responses.find(r => r.id === 2);
-  assert.equal(initialized.result.serverInfo.name, 'crown-core-creator-studio');
-  assert.equal(initialized.result.protocolVersion, '2024-11-05');
+  assert.equal(init.result.serverInfo.name, 'crown-core-creator-studio');
+  assert.equal(init.result.protocolVersion, '2024-11-05');
   assert.equal(listed.result.tools.length, 9);
   assert.ok(!listed.result.tools.some(t => /approve|publish|spend|render_execute/.test(t.name)));
 });
@@ -57,5 +73,5 @@ test('optional local proof state persists outside repo with private file mode', 
 });
 test('local proof state refuses repository-relative persistence', () => {
   assert.throws(() => localStore('outbox/creator-state.json'), /absolute/);
-  assert.throws(() => localStore(join(process.cwd(), 'outbox', 'creator-state.json')), /inside this public repository/);
+  assert.throws(() => localStore(join(process.cwd(), 'outbox', 'creator-state.json')), /outside the public repository/);
 });
