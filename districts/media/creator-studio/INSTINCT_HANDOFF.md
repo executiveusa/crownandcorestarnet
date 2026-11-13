@@ -55,7 +55,11 @@ MCP on the **same trust boundary**, with agent token only:
 
 ```bash
 export CREATOR_STUDIO_API_URL="http://127.0.0.1:8787"
-node districts/media/creator-studio/src/mcp.mjs
+# Start from a separate agent-only environment; strip reviewer/service credentials.
+env -u CREATOR_STUDIO_OWNER_TOKEN -u CREATOR_STUDIO_CLINICAL_TOKEN \
+    -u CREATOR_STUDIO_RIGHTS_TOKEN -u CREATOR_STUDIO_OPERATOR_TOKEN \
+    -u CREATOR_STUDIO_QA_TOKEN -u CREATOR_STUDIO_PUBLISHER_TOKEN \
+    node districts/media/creator-studio/src/mcp.mjs
 ```
 
 MCP handshake must list nine `creator_*` tools: outcome create/status/get, source register, storyboard propose, review request, render plan prepare, creator candidate propose and outreach prepare. **No agent approval or outbound action tools.**
