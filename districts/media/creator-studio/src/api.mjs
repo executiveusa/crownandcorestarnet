@@ -11,6 +11,7 @@ import { createIdentityVerifier } from './identity.mjs';
 import { createCreatorWorkflow } from './creators.mjs';
 import { verifySignedEvent } from './webhooks.mjs';
 import { requireOutsideRepository } from './private-path.mjs';
+import { createBufferBlasterClient, createBufferLink } from './buffer-blaster.mjs';
 
 const json = (res, status, body) => {
   res.writeHead(status, { 'content-type': 'application/json; charset=utf-8',
@@ -43,7 +44,7 @@ async function readBody(req) {
     return body;
   } catch { throw new StudioError('INVALID_JSON', 'A JSON object is required.', 400); }
 }
-export function createApiServer({ studio, tokens, identity = null, webhookSecrets = {} }) {
+export function createApiServer({ studio, tokens, identity = null, webhookSecrets = {}, bufferClient = null }) {
   if (!studio) throw new Error('studio required');
   if (!tokens?.agent || (!tokens?.owner && !identity))
     throw new Error('Agent credential and owner identity provider or local proof credential required.');
@@ -51,6 +52,7 @@ export function createApiServer({ studio, tokens, identity = null, webhookSecret
   if (new Set(secrets).size !== secrets.length) throw new Error('All configured role credentials must be distinct.');
   const pipeline = createPipeline(studio);
   const creators = createCreatorWorkflow(studio);
+  const bufferLink = bufferClient ? createBufferLink(studio,bufferClient) : null;
   return http.createServer(async (req, res) => {
     try {
       const pathname = new URL(req.url, 'http://127.0.0.1').pathname;
@@ -98,18 +100,39 @@ export function createApiServer({ studio, tokens, identity = null, webhookSecret
       const agentOnly = () => {
         if (role !== 'agent') throw new StudioError('FORBIDDEN', 'Agent role required.', 403);
       };
+      if (pathname === '/v1/buffer/status' && req.method === 'GET') {
+        if (!bufferClient) return json(res, 503, { error: 'BUFFER_NOT_CONFIGURED' });
+        return json(res, 200, { buffer: await bufferClient.status() });
+      }
+      if (pathname === '/v1/buffer/mcp-tools' && req.method === 'GET') {
+        if (!bufferClient) return json(res, 503, { error: 'BUFFER_NOT_CONFIGURED' });
+        const catalog = await bufferClient.tools();
+        return json(res, 200, { buffer: { connected: true, ...catalog } });
+      }
       if (pathname === '/v1/outcomes' && req.method === 'GET')
         return json(res, 200, { outcomes: studio.list() });
       if (pathname === '/v1/outcomes' && req.method === 'POST') {
         agentOnly();
         return json(res, 201, { outcome: studio.create(await readBody(req)) });
       }
-      const match = pathname.match(/^\/v1\/outcomes\/([^/]+)(?:\/(source|storyboard|review-request|approvals|render-plan|summary|rights-verify|render-authorize|dispatch-reserve|provider-ack|provider-result|qa-verify|film-approve|publish-authorize|publish-reserve|publish-receipt|attribution|job-fail|rights-revoke|takedown-receipt|creator-candidate|creator-outreach|creator-outreach-authorize|creator-outreach-reserve|creator-outreach-sent|creator-release))?$/);
+      const match = pathname.match(/^\/v1\/outcomes\/([^/]+)(?:\/(source|storyboard|review-request|approvals|render-plan|summary|rights-verify|render-authorize|dispatch-reserve|provider-ack|provider-result|qa-verify|film-approve|publish-authorize|publish-reserve|publish-receipt|attribution|job-fail|rights-revoke|takedown-receipt|creator-candidate|creator-outreach|creator-outreach-authorize|creator-outreach-reserve|creator-outreach-sent|creator-release|buffer-source-bind|buffer-plan))?$/);
       if (!match) return json(res, 404, { error: 'NOT_FOUND' });
       const [, id, action] = match;
       if (req.method === 'GET' && !action) return json(res, 200, { outcome: studio.get(id) });
       if (req.method === 'GET' && action === 'summary') return json(res, 200, { summary: studio.summary(id) });
       if (req.method !== 'POST') return json(res, 405, { error: 'METHOD_NOT_ALLOWED' });
+      if (action === 'buffer-source-bind') {
+        if (role !== 'rights') throw new StudioError('FORBIDDEN','Rights service required.',403);
+        if (!bufferLink) return json(res,503,{error:'BUFFER_NOT_CONFIGURED'});
+        return json(res,200,{outcome:await bufferLink.bindSource(id,await readBody(req),'rights')});
+      }
+      if (action === 'buffer-plan') {
+        agentOnly();
+        if (!bufferLink) return json(res,503,{error:'BUFFER_NOT_CONFIGURED'});
+        const body=await readBody(req);
+        if (Object.keys(body).length) throw new StudioError('INVALID_INPUT','No provider inputs may be supplied by agent.',400);
+        return json(res,200,await bufferLink.syncPlan(id,'agent'));
+      }
       // Privileged pipeline routes are NEVER available through agent MCP.
       // The operator/QA/publisher credentials belong to separate trusted services.
       const creatorRoutes = {
@@ -191,7 +214,14 @@ export function startLocalServer(env = process.env) {
   const store = env.CREATOR_STUDIO_DB_FILE ? sqliteStore(env.CREATOR_STUDIO_DB_FILE) :
     localStore(env.CREATOR_STUDIO_STATE_FILE);
   const studio = createStudio(store);
-  const server = createApiServer({ studio, identity, webhookSecrets: {
+  const bufferSettings = [env.CROWN_BUFFER_API_URL, env.CROWN_BUFFER_API_KEY, env.CROWN_BUFFER_WORKSPACE_ID];
+  if (bufferSettings.some(Boolean) && !bufferSettings.every(Boolean))
+    throw new Error('All three private Crown Buffer Blaster integration settings are required.');
+  const bufferClient = bufferSettings.every(Boolean) ? createBufferBlasterClient({
+    baseUrl:env.CROWN_BUFFER_API_URL,token:env.CROWN_BUFFER_API_KEY,
+    workspaceId:env.CROWN_BUFFER_WORKSPACE_ID
+  }) : null;
+  const server = createApiServer({ studio, identity, bufferClient, webhookSecrets: {
     provider: env.CREATOR_PROVIDER_WEBHOOK_SECRET,
     attribution: env.CREATOR_ATTRIBUTION_WEBHOOK_SECRET
   }, tokens: {
