@@ -59,7 +59,7 @@ Fallback UI has three states: **Ask**, **Making**, **Review**. The review state 
 - The FTC requires truthful endorsements and disclosure of material relationships. Synthetic media may require disclosure and must never be passed off as real experience.
 - Medspa HIPAA coverage depends on entity and activities; determine Crown & Core's actual status with counsel. If HIPAA applies, marketing use of PHI generally needs a valid authorization, not just an ordinary release. Regardless, do not ingest customer identifiers/health records into this public repo or the prototype.
 - A rights reference alone is **not** verified permission. The authorized reviewer must validate scope, channel, term, paid usage and revocation.
-- Any treatment claim needs clinical/legal approval. Heuristic text checks do not establish regulatory compliance. Confirm current Meta ad rules and any age/targeting restrictions before publishing.
+- Every medspa render requires independent qualified clinical screening, even when an agent flags the storyboard claim-free; treatment claims additionally need explicit clinical/legal approval. Heuristic text checks do not establish regulatory compliance. Confirm current Meta ad rules and any age/targeting restrictions before publishing.
 - The owner must approve customer contact, brand-defining creative, public publishing, booking changes and paid acquisition. Clinical/legal approvers separately approve claims.
 - Paid media remains blocked until mobile booking, lead response, attribution and reputation/trust path have been verified per `_shared/policy/HEART_AND_SOUL.md`.
 
