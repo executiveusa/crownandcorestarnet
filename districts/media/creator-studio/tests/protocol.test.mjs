@@ -88,3 +88,13 @@ test('canonical private state guard denies repo root, prefix tricks and symlinke
       /outside the public repository/);
   }finally{rmSync(temp,{recursive:true,force:true});}
 });
+
+test('dangling private-state symlink pointing into repo is rejected',()=>{
+  const repoRoot=fileURLToPath(new URL('../../../../',import.meta.url));
+  const temp=mkdtempSync(join(tmpdir(),'cc-dangling-'));
+  try{
+    symlinkSync(join(repoRoot,'missing-private-target.sqlite'),join(temp,'alias.sqlite'));
+    assert.throws(()=>requireOutsideRepository(join(temp,'alias.sqlite')),
+      /symbolic links/);
+  }finally{rmSync(temp,{recursive:true,force:true});}
+});
