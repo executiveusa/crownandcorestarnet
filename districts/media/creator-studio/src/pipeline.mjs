@@ -254,6 +254,35 @@ export function createPipeline(studio, { now=()=>new Date().toISOString() }={}) 
       return 'production_failed_no_success_claim';
     });
   }
+  // Rights revocation is not an ordinary creative edit: published content must
+  // remain visible in the audit and be explicitly removed by a trusted publisher.
+  function revokeRights(id,role,input={}) {
+    return change(id,role,'rights',item=>{
+      exact(item,input.version);
+      if(!item.source||input.rights_ref!==item.source.rights_ref)
+        deny('RIGHTS_MISMATCH','Rights reference mismatch.');
+      const revocation_ref=ref(input.revocation_ref,'revocation_ref');
+      item.rights_verification={...(item.rights_verification??{}),version:item.version,
+        revoked:true,revocation_ref,revoked_at:now()};
+      item.render_authorization=null;
+      item.publication_authorization=null;
+      item.status=item.publication_receipt?'TAKEDOWN_REQUIRED':'RIGHTS_REVOKED';
+      return 'source_rights_revoked_block_future_use';
+    });
+  }
+  function recordTakedown(id,role,input={}) {
+    return change(id,role,'publisher',item=>{
+      inState(item,'TAKEDOWN_REQUIRED');
+      exact(item,input.version);
+      if(input.external_post_ref!==item.publication_receipt?.external_post_ref)
+        deny('POST_MISMATCH','Takedown receipt does not match published post.');
+      const takedown_receipt_ref=ref(input.takedown_receipt_ref,'takedown_receipt_ref');
+      item.takedown={version:item.version,takedown_receipt_ref,at:now()};
+      item.status='TAKEN_DOWN';
+      return 'revoked_media_takedown_verified';
+    });
+  }
   return {verifyRights,authorizeRender,reserveDispatch,acknowledgeProvider,
-    providerResult,verifyQa,decideFinal,authorizePublish,published,attribute,failJob};
+    providerResult,verifyQa,decideFinal,authorizePublish,published,attribute,failJob,
+    revokeRights,recordTakedown};
 }
