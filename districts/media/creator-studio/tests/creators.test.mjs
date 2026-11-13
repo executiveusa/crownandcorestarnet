@@ -100,3 +100,22 @@ test('outreach adapter only sends exact owner-approved message to opaque creator
   await assert.rejects(adapter.send({...studio.get(id),creator_campaign:{outreach:[]}},draft.outreach_id),
     e=>e.code==='NOT_AUTHORIZED');
 });
+
+test('creative revision invalidates unsent outreach and preserves sent receipt history',()=>{
+  const {studio,id,creators}=fixture();
+  creators.proposeCandidate(id,'agent',{creator_ref:'creator:one',profile_ref:'profile:one',
+    fit_reason:'Verified public source'});
+  creators.prepareOutreach(id,'agent',{creator_ref:'creator:one',
+    message:'Would you consider a licensed and disclosed brand film?',
+    terms_ref:'terms:one',max_fee_usd:0});
+  const old=studio.get(id).creator_campaign.outreach[0];
+  studio.registerSource(id,{source_type:'facility',source_ref:'asset:one',
+    rights_ref:'rights:one',usage_scope:'both'});
+  const updated=studio.get(id).creator_campaign;
+  assert.equal(updated.outreach[0].status,'INVALIDATED_REVISION');
+  assert.equal(updated.candidates[0].status,'PROPOSED_UNCONTACTED');
+  code(()=>creators.authorizeOutreach(id,'owner',{version:studio.get(id).version,
+    outreach_id:old.outreach_id,message_sha256:old.message_sha256,
+    permission_ref:'permission:one',decision_ref:'decision:one',
+    expires_at:expires,max_fee_usd:0}),'INVALID_STATE');
+});
