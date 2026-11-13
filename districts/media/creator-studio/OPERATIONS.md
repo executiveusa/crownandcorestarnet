@@ -1,6 +1,6 @@
 # Creator Studio — implementation, integration and operations contract (v0.3)
 
-**Scope:** Crown & Core-only, agent-first product within StarNet. **Status:** code-side implementation; NOT live until Instinct/Paperclip/Hermes and external providers are connected and independently verified. No MACS, BufferBlaster or new orchestration service.
+**Scope:** Crown & Core-only, agent-first product within StarNet. **Status:** code-side implementation; NOT live until Instinct/Paperclip/Hermes and external providers are connected and independently verified. No MACS or duplicate orchestration service. Buffer Blaster is a **separate existing media engine**, reused through a limited authenticated API/MCP/CLI boundary.
 
 ## 1. Runtime and modes
 
@@ -115,7 +115,7 @@ The last two require their distinct `ENABLE_*` switches. All side-effecting oper
 
 ## 8. What remains **server-only** after code review
 
-- Verify existing Paperclip company/project/Instinct identity and register the nine agent-only MCP tools in the actual Instinct runtime.
+- Verify existing Paperclip company/project/Instinct identity and register the eleven agent-only MCP tools in the actual Instinct runtime.
 - Verify Hermes supported worker invocation within the **existing** Paperclip job; no second scheduler.
 - Bind owner-controlled TLS gateway, pinned OIDC IdP, roles, secret manager, SQLite encrypted volume or approved existing DB, backup/restore, private media vault and actual Motion Master/Montage provider endpoints.
 - Prove an authenticated model-originated tool call, rights and owner identity, a nonclinical zero/low-cost provider smoke, real MP4 ffprobe+hash QA, preview and owner decision.
@@ -127,3 +127,28 @@ The last two require their distinct `ENABLE_*` switches. All side-effecting oper
 **Code-side gate:** all Creator Studio tests + StarNet verify pass at exact reviewed SHA; independent code/security review and owner visual approval. **Staging gate:** actual live agent/provider/IdP/vault evidence. **Production gate:** separate owner authorization, clinical/legal approval as applicable, real asset and release proof, monitored rollback.
 
 Rollback: disable outbound worker switches and revoke provider tokens first, stop API/MCP, restore prior deployment/revert PR, preserve private audit and published/takedown evidence. Never delete a real published post solely because a local DB reverted. If rights are revoked, a verified takedown is required.
+
+## 10. Concrete Buffer Blaster engine integration (PR #28 stacked on #26)
+
+**Canonical upstream:** [executiveusa/buffer-blaster-](https://github.com/executiveusa/buffer-blaster-). **Security prerequisite:** [Buffer PR #119](https://github.com/executiveusa/buffer-blaster-/pull/119) implements `GET /api/studio/references/{uuid}` and enforces the server-owned workspace on source asset listing and readback. Do not configure this bridge against older unscoped versions.
+
+StarNet's private API process receives all three variables, **as a single atomic integration configuration**: `CROWN_BUFFER_API_URL` (HTTPS Buffer API origin), `CROWN_BUFFER_API_KEY` (24+ character private Buffer operator token), and `CROWN_BUFFER_WORKSPACE_ID` (actual Buffer workspace UUID). A missing partial combination blocks startup. None of these variables belongs in the MCP process, Instinct prompt, browser, GitHub or owner voice conversation.
+
+### Real source-backed route mapping
+
+| StarNet role/path | Existing Buffer API called | Result | Effect |
+| --- | --- | --- | --- |
+| `GET /v1/buffer/status` (authenticated) | `GET /api/health` + `GET /api/studio/status` | Actual service health/version and approval-gate state | Read-only |
+| `GET /v1/buffer/mcp-tools` (authenticated) | `POST /api/mcp`, JSON-RPC `tools/list` | Readback of actual Buffer tool names | Read-only, never arbitrary tool calls |
+| `POST /v1/outcomes/:id/buffer-source-bind` (**rights role only**) | `GET /api/studio/references/{uuid}` | Verified workspace/member source UUID; StarNet already must hold current grant and asset hash | StarNet provenance projection, no provider call |
+| `POST /v1/outcomes/:id/buffer-plan` (**agent role only**, empty body) | `POST /api/studio/ugc/plans` then `GET /api/studio/ugc/plans/{plan_id}` | Canonical Supabase draft plan UUID and exact response readback | **NO-SPEND**, no render, no publishing |
+
+The two safe new agent MCP tools are `creator_buffer_status` and `creator_buffer_plan_sync`; they bring the total to **11**. An operator can call `node districts/media/creator-studio/src/buffer-cli.mjs status|tools|plan <id>|bind <id> <version> <source-uuid>`, using only its authorized StarNet role. The CLI never consumes the Buffer operator key.
+
+**External result projection:** StarNet stores Buffer source UUID, verified asset SHA and Buffer plan UUID/version/idempotency key; Buffer owns the actual plan and media ledger. Creative source changes clear the local projection; the previous Buffer plan remains a historical draft there and must never be relabeled a new approved version.
+
+**Strict no-spend contract:** the bridge submits an `editorial_brand`, `9:16`, `duration_seconds:30`, `approval_state:draft`, `estimated_cost_ceiling_cents:0` canonical UGC plan with `requested_cuts_seconds:[30,15]` as **metadata only**. It independently verifies same workspace, plan UUID, rights reference, source UUID and exact idempotent readback, rejecting noncanonical Redis fallback. It does **not** call `/api/studio/ugc/factory/execute`, which makes two approximately 10-second synthetic first-person ads and requires an active server wallet; those are not an authentic medspa film. Do not treat a plan, provider option or installed CLI as a video export.
+
+**Unimplemented video-completion dependency:** approved private source-video ingest (existing Buffer image upload is limited to JPEG/PNG/WebP 25 MB), verified backend render/edit path outputting **both distinct, playable 30s and 15s H.264 1080×1920 MP4s**, source and music license verification, actual provider job receipts/capped budget, vault transfer and independent StarNet ffprobe/SHA-256 QA. If the existing Motion Master/Montage or a Buffer media renderer can satisfy this contract, connect the **verified** path. Otherwise implement and independently review a minimal licensed-footage processor in the established engine; do not repurpose the two-10s testimonial factory.
+
+**Review/merge sequence:** Buffer #119 independent audit + all CI; Creator #26 independent review/owner approval; stacked Creator #28 rebase/retarget and CI; actual server read-only proof; only then capped media smoke. OpenCodeReview on Buffer #119 failed in GitHub Actions #43372852877 (provider/subtask error), so independent review remains open. See [full audit](./FULL_STACK_WIRING_AUDIT_2026-11-12.md).
