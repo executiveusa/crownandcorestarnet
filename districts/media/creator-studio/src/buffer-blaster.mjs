@@ -40,18 +40,30 @@ function current(item,now){
     fail('RIGHTS_MISMATCH','Current source rights do not match verified grant.');
   return rights;
 }
+function stable(value){
+  if(Array.isArray(value))return value.map(stable);
+  if(value && typeof value==='object')
+    return Object.fromEntries(Object.entries(value)
+      .sort(([a],[b])=>a.localeCompare(b))
+      .map(([key,inner])=>[key,stable(inner)]));
+  return value;
+}
+const same=(a,b)=>JSON.stringify(stable(a))===JSON.stringify(stable(b));
 function ensurePlanMatches(response,expected,workspace){
   const plan=response?.plan;
+  const creativeFields=[
+    'product_source_refs','script','shot_plan','aspect_ratio','duration_seconds',
+    'finish_mode','provider_preference','approval_state','estimated_cost_ceiling_cents',
+    'consent_rights_refs','idempotency_key','metadata'
+  ];
   if(response?.ok!==true||response.paid_generation!==false||
     !plan||uuid(plan.workspace_id,'workspace_id')!==workspace ||
-    plan.idempotency_key!==expected.idempotency_key ||
     plan.duration_seconds!==30 || plan.aspect_ratio!=='9:16' ||
-    plan.approval_state!=='draft' ||plan.estimated_cost_ceiling_cents!==0 ||
-    plan.metadata?.outcome_id!==expected.metadata.outcome_id ||
-    plan.metadata?.source_version!==expected.metadata.source_version ||
+    plan.approval_state!=='draft'||plan.estimated_cost_ceiling_cents!==0 ||
     plan.metadata?.tenant_id!==TENANT ||
-    JSON.stringify(plan.product_source_refs)!==JSON.stringify(expected.product_source_refs))
-    fail('BUFFER_CONTRACT_DRIFT','Buffer Blaster plan response does not match Crown & Core v1 contract.',502);
+    creativeFields.some(field=>!same(plan[field],expected[field])))
+    fail('BUFFER_CONTRACT_DRIFT',
+      'Buffer Blaster plan creative, rights or provenance differs from approved Crown & Core draft.',502);
   uuid(plan.plan_id,'plan_id');
   if(response.backend!=='supabase')fail('NONCANONICAL_BUFFER_BACKEND','Buffer Blaster must persist plans in its canonical Supabase ledger.',502);
   return plan;
@@ -167,16 +179,24 @@ export function createBufferLink(studio,client,{now=()=>Date.now()}={}){
     if(!['agent','operator'].includes(role))fail('FORBIDDEN','Agent or operator role required.',403);
     const item=studio.get(id),draft=draftFor(item);
     if(item.buffer_blaster?.plan){
-      const verified=await client.readPlan(item.buffer_blaster.plan.plan_id,draft);
-      return {outcome:studio.get(id),external:{...verified,created:false}};
+      const savedPlanId=item.buffer_blaster.plan.plan_id;
+      const verified=await client.readPlan(savedPlanId,draft);
+      const after=studio.get(id);
+      const currentDraft=draftFor(after); // revalidates state, rights, revision and source after the await
+      if(!same(currentDraft,draft)||
+        after.buffer_blaster?.plan?.plan_id!==savedPlanId||
+        after.buffer_blaster.plan.version!==after.version||
+        after.buffer_blaster.plan.idempotency_key!==draft.idempotency_key)
+        fail('STALE_VERSION','Crown & Core plan or source changed during external readback.');
+      return {outcome:after,external:{...verified,created:false}};
     }
     const result=await client.createPlan(draft);
     // Provider is canonical for its plan. StarNet holds a minimal projection/receipt.
     const readback=await client.readPlan(result.plan.plan_id,draft);
     const updated=studio.applyTrusted(id,(record,receipt)=>{
       const currentDraft=draftFor(record);
-      if(currentDraft.idempotency_key!==draft.idempotency_key)
-        fail('STALE_VERSION','Creative changed while syncing provider plan.');
+      if(!same(currentDraft,draft))
+        fail('STALE_VERSION','Creative or grant changed while syncing provider plan.');
       record.buffer_blaster.plan={plan_id:readback.plan_id,workspace_id:client.workspaceId,
         version:record.version,idempotency_key:draft.idempotency_key,
         backend:readback.backend,paid_generation:false,status:'DRAFT_NOT_RENDERED'};
