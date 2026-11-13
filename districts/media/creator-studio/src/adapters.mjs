@@ -88,3 +88,30 @@ export function createOrganicPublisher({publishUrl,token,fetchFn=fetch,timeoutMs
     }
   };
 }
+
+// Creator outreach goes through an approved private contact service.
+// It never accepts raw phone numbers, email addresses or uncontrolled recipient URLs.
+export function createCreatorOutreachAdapter({sendUrl,token,fetchFn=fetch,timeoutMs=10000}={}){
+  const url=endpoint(sendUrl);
+  if(typeof token!=='string'||token.length<24)throw new Error('Private creator outreach credential required.');
+  return {
+    send:async(item,outreach_id)=>{
+      const draft=item?.creator_campaign?.outreach?.find(x=>x.outreach_id===outreach_id);
+      if(!draft||draft.status!=='OUTREACH_AUTHORIZED_UNSENT'||
+        draft.version!==item.version||!draft.authorization||
+        Date.parse(draft.authorization.expires_at)<=Date.now())
+        fail('NOT_AUTHORIZED','Current owner-approved outreach message required.');
+      const payload={tenant_id:item.tenant_id,outcome_id:item.id,version:item.version,
+        outreach_id,creator_ref:draft.creator_ref,permission_ref:draft.authorization.permission_ref,
+        terms_ref:draft.terms_ref,message:draft.message,message_sha256:draft.message_sha256,
+        max_fee_usd:draft.max_fee_usd,charged_usd:0};
+      const response=await request(fetchFn,url,token,'POST',payload,outreach_id,timeoutMs);
+      if(response?.delivered!==true||response?.charged_usd!==0||
+        !/^[a-z][a-z0-9._:-]{2,119}$/i.test(response.external_message_ref??'')||
+        !/^[a-z][a-z0-9._:-]{2,119}$/i.test(response.delivery_receipt_ref??''))
+        fail('OUTREACH_NOT_VERIFIED','No zero-spend verified delivery receipt.',502);
+      return {outreach_id,external_message_ref:response.external_message_ref,
+        delivery_receipt_ref:response.delivery_receipt_ref};
+    }
+  };
+}
