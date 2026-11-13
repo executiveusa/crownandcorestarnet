@@ -11,7 +11,7 @@ const jwk={...publicKey.export({format:'jwk'}),kid:'key-one',alg:'RS256',use:'si
 const now=Math.floor(Date.now()/1000);
 const claims=(overrides={})=>({iss:issuer,aud:audience,sub:'owner:verified-001',
   tenant_id:'crown-and-core',creator_studio_role:'owner',amr:['pwd','mfa'],
-  iat:now-10,exp:now+300,...overrides});
+  iat:now-10,auth_time:now-20,exp:now+300,...overrides});
 function jwt(body){
   const head=Buffer.from(JSON.stringify({alg:'RS256',typ:'JWT',kid:'key-one'})).toString('base64url');
   const payload=Buffer.from(JSON.stringify(body)).toString('base64url');
@@ -23,7 +23,7 @@ test('pinned RS256 JWT authenticates owner and requires MFA',()=>{
   assert.equal(verifier.verify(jwt(claims())).role,'owner');
   assert.equal(verifier.verify(jwt(claims({creator_studio_role:'clinical'}))).role,'clinical');
   for(const bad of [
-    {tenant_id:'tangles-and-locs'},{amr:['pwd']},{iss:'https://wrong.example.test'},
+    {tenant_id:'tangles-and-locs'},{amr:['pwd']},{auth_time:now-3600},{auth_time:undefined},{iss:'https://wrong.example.test'},
     {aud:'wrong-audience'},{exp:now-1},{exp:now+3600},
     {creator_studio_role:'agent'}
   ]){
