@@ -3,7 +3,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { createRendererAdapter, createOrganicPublisher } from './adapters.mjs';
+import { createRendererAdapter, createOrganicPublisher, createCreatorOutreachAdapter } from './adapters.mjs';
 import { inspectVideoCuts } from './qa.mjs';
 
 function apiOrigin(env){
@@ -79,6 +79,16 @@ export async function publishApprovedOrganic(id,env=process.env,fetchFn=fetch){
   const receipt=await adapter.publish(item);
   return (await api(env,'publisher','POST',outcomePath(id)+'/publish-receipt',receipt)).outcome;
 }
+export async function sendApprovedCreatorOutreach(id,outreach_id,env=process.env,fetchFn=fetch){
+  if(env.CREATOR_STUDIO_ENABLE_CREATOR_OUTREACH!=='yes')
+    throw new Error('Creator outreach disabled; explicit owner/operator release required.');
+  const item=(await api(env,'operator','GET',outcomePath(id))).outcome;
+  const adapter=createCreatorOutreachAdapter({sendUrl:getEnv(env,'CREATOR_OUTREACH_SEND_URL'),
+    token:getEnv(env,'CREATOR_OUTREACH_TOKEN'),fetchFn});
+  // Do not retry an ambiguous delivery. Reconcile provider-side by outreach_id.
+  const receipt=await adapter.send(item,outreach_id);
+  return (await api(env,'operator','POST',outcomePath(id)+'/creator-outreach-sent',receipt)).outcome;
+}
 async function main(args,env){
   const [command,id,manifest]=args;
   if(command==='inspect'){
@@ -95,7 +105,10 @@ async function main(args,env){
     const item=await publishApprovedOrganic(id,env);
     console.log(JSON.stringify({outcome_id:item.id,status:item.status,
       publication_receipt_ref:item.publication_receipt.publication_receipt_ref}));
-  }else throw new Error('Usage: node worker.mjs inspect | dispatch <outcome-id> | qa <outcome-id> <private-manifest.json> | publish <outcome-id>');
+  }else if(command==='outreach'&&id&&manifest){
+    const item=await sendApprovedCreatorOutreach(id,manifest,env);
+    console.log(JSON.stringify({outcome_id:item.id,outreach_id:manifest,status:'SENT_VERIFIED'}));
+  }else throw new Error('Usage: node worker.mjs inspect | dispatch <outcome-id> | qa <outcome-id> <private-manifest.json> | publish <outcome-id> | outreach <outcome-id> <outreach-id>');
 }
 if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url)){
   main(process.argv.slice(2),process.env).catch(e=>{
